@@ -1,0 +1,13 @@
+{
+    "name": "agency",
+    "version": "0.1.0",
+    "main": "index.js",
+    "author": "Matt Nawrocki <mjnrock@umich.edu>",
+    "license": "None",
+    "dependencies": {
+        "esm": "^3.2.25"
+    },
+    "scripts": {
+        "start": "node esm-index.js"
+    }
+}
