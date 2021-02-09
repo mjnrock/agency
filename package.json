@@ -5,7 +5,8 @@
     "author": "Matt Nawrocki <mjnrock@umich.edu>",
     "license": "None",
     "dependencies": {
-        "esm": "^3.2.25"
+        "esm": "^3.2.25",
+        "uuid": "^8.3.2"
     },
     "scripts": {
         "start": "node esm-index.js"
