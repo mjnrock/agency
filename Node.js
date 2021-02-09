@@ -1,10 +1,6 @@
 import EventEmitter from "events";
 import { v4 as uuidv4 } from "uuid";
 
-/**
- * ? <Node>
- * 
- */
 export default class Node extends EventEmitter {
     constructor(...evaluators) {
         super();
@@ -43,46 +39,34 @@ export default class Node extends EventEmitter {
      * @param  {...any} args 
      */
     run(...args) {
-        if(this._isConjunctive === true) {
-            let result = true;
-
-            for(let evaluator of this._evaluators) {
-                if(typeof evaluator === "function") {
-                    result = result && evaluator(...args);
-                } else {
-                    throw new Error("@evaluator must be a function");
-                }
-            }
-
-            if(this._isNegation) {
-                result = !result;
-            }
-    
-            if(result === true) {
-                this.emit("activate");
-
-                return true;
-            }
-
-            return false;
-        }
+        let result = this._isConjunctive;
 
         for(let evaluator of this._evaluators) {
+            let res = false;
+
             if(typeof evaluator === "function") {
-                let result = evaluator(...args);
-
-                if(this._isNegation) {
-                    result = !result;
-                }
-
-                if(result === true) {
-                    this.emit("activate");
-
-                    return true;
-                }
+                res = evaluator(...args);
+            } else if(evaluator instanceof Node) {
+                res = evaluator.run(...args);
             } else {
                 throw new Error("@evaluator must be a function");
             }
+
+            if(this._isConjunctive) {
+                result = result && res;
+            } else {
+                result = result || res;
+            }
+        }
+
+        if(this._isNegation) {
+            result = !result;
+        }
+
+        if(result === true) {
+            this.emit("activate");
+
+            return true;
         }
 
         return false;
