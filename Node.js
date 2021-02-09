@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 
 export default class Node extends EventEmitter {
     constructor(...evaluators) {
-        this._uuid = uuidv4();
+        this._id = uuidv4();
         this._evaluators = evaluators;
     }
 

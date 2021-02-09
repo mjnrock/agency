@@ -1,14 +1,14 @@
-import Context from "./Context";
+console.log("asdfsadfa");
 
-const ctx = new Context({
-    state: 2,
-    participants: [
-        "Matt",
-    ]
-});
+// import Context from "./Context";
+// import Node from "./Node";
 
-console.log(ctx);
+// const ctx = new Context("BuddhaTest");
 
-ctx.add("Cat");
-ctx.add("Matt");
-console.log(ctx);
+// // ctx.attach(new Node(
+// //     entry => entry === true,
+// // ));
+
+// // ctx.addListener("update", console.log);
+
+// // ctx.run(true);
