@@ -2,36 +2,22 @@ import EventEmitter from "events";
 import { v4 as uuidv4 } from "uuid";
 
 export default class Node extends EventEmitter {
+    static LogicalType = {
+        CONJUNCT: 2 << 0,
+        NEGATION: 2 << 1,
+    };
+    
     constructor(...evaluators) {
         super();
 
         this._id = uuidv4();
         this._evaluators = evaluators;        
-        this._isConjunctive = false;
-        this._isNegation = false;
-    }
+        this._mask = 0;
 
-    /* LOGICAL MANIPULATION FLAGS */
-    negation() {
-        this._isNegation = true;
-
-        return this;
-    }
-    affirmative() {
-        this._isNegation = false;
-
-        return this;
-    }
-
-    dysjunct() {
-        this._isConjunctive = false;
-
-        return this;
-    }
-    conjunct() {
-        this._isConjunctive = true;
-
-        return this;
+        if(typeof evaluators[ 0 ] === "number") {
+            this._mask = evaluators[ 0 ];
+            this._evaluators = evaluators.slice(1);
+        }
     }
 
     /**
@@ -39,7 +25,8 @@ export default class Node extends EventEmitter {
      * @param  {...any} args 
      */
     run(...args) {
-        let result = this._isConjunctive;
+        let result = (this._mask & Node.LogicalType.CONJUNCT) === Node.LogicalType.CONJUNCT;
+        console.log(this._mask, Node.LogicalType, this._mask & Node.LogicalType.CONJUNCT)
 
         for(let evaluator of this._evaluators) {
             let res = false;
@@ -52,14 +39,14 @@ export default class Node extends EventEmitter {
                 throw new Error("@evaluator must be a function");
             }
 
-            if(this._isConjunctive) {
+            if((this._mask & Node.LogicalType.CONJUNCT) === Node.LogicalType.CONJUNCT) {
                 result = result && res;
             } else {
                 result = result || res;
             }
         }
 
-        if(this._isNegation) {
+        if((this._mask & Node.LogicalType.NEGATION) === Node.LogicalType.NEGATION) {
             result = !result;
         }
 

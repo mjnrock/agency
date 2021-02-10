@@ -72,33 +72,25 @@ export default class Context extends EventEmitter {
     /**
      * Run every Node passings destructured @args to each.  If any |true| exists, update the state.  Because the Nodes can have more logically-complex evaluators, Context only responds to |true|.
      */
-    run(...args) {
+    run(args = [], { reducerArgs = [], exclude = null } = {}) {
         for(let node of this.nodes) {
             const result = node.run(...args);
 
-            if(result === true && this._reducers.size) {
-                for(let reducer of this._reducers) {
-                    if(typeof reducer === "function") {
-                        this.state = reducer(this.state);
+            if(exclude === null || !(typeof exclude === "function" && exclude(node, result, ...args) === true)) {
+                if(result === true && this._reducers.size) {
+                    for(let reducer of this._reducers) {
+                        if(typeof reducer === "function") {
+                            this.state = reducer(this.state, ...reducerArgs);
+                        }
                     }
+    
+                    const txid = uuidv4();
+                    this.emit("update", this.state, txid);
+                    setTimeout(() => this.emit("hash", txid, hash(this.state)));
+    
+                    return;
                 }
-
-                const txid = uuidv4();
-                this.emit("update", this.state, txid);
-                setTimeout(() => this.emit("hash", txid, hash(this.state)));
-
-                return;
             }
         }
-    }
-    /**
-     * Same as .run, but iterate the @args instead of destructuring
-     */
-    each(...args) {
-        for(let arg of args) {
-            this.run(arg);
-        }
-
-        return this;
     }
 };
