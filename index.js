@@ -1,5 +1,6 @@
 import Context from "./Context";
 import Node from "./Node";
+import Registry from "./Registry";
 
 /**
  * This is the sandbox for the Context Evaluation Network
@@ -21,23 +22,36 @@ const ctx = new Context("BuddhaTest", {
     ]
 });
 
-ctx.attach(Node.$(
+const n1 = Node.$(
     entry => entry == true,
-    Node.$(
-        entry => entry == true,
-        entry => entry == false,
-    )
-));
+    entry => entry == false,
+);
+const n2 = Node.$(
+    entry => entry == true,
+    n1
+);
 
+ctx.attach(n2);
 ctx.addListener("update", console.log);
 // ctx.addListener("hash", console.log);
 
-ctx.run([ true ], {
-    reducerArgs: [ 5 ],
-    exclude: (node, result, ...args) => false
-});
+const reg = new Registry();
+
+reg.alias(n1, "cat", 1234, false);
 
 console.log("========");
-console.log(`State`);
-console.log(ctx.state);
+console.log(`Registry`);
+console.log(reg);
+console.log(reg.get(false));
+console.log(reg.lookup(n1, true));
 console.log("========");
+
+// ctx.run([ true ], {
+//     reducerArgs: [ 5 ],
+//     exclude: (node, result, ...args) => false
+// });
+
+// console.log("========");
+// console.log(`Context -> State`);
+// console.log(ctx.state);
+// console.log("========");
