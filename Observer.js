@@ -72,7 +72,7 @@ export default class Observer {
         return new Promise((resolve, reject) => {
             for(let effect of this._effects) {
                 if(typeof effect === "function") {
-                    effect(...args);
+                    effect.call(ctx, ...args);
                 }
             }
 

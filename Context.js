@@ -7,13 +7,19 @@ export default class Context extends EventEmitter {
         super();
 
         this._id = uuidv4();
+        this._name = name;
+        this._state = state;
         this._reducers = new Set(reducers);
-
-        this.name = name;
-        this.state = state;
-        this.nodes = nodes;
+        this._nodes = nodes;
 
         return this;
+    }
+
+    get state() {
+        return this._state;
+    }
+    set state(state) {
+        this._state = state;
     }
 
     /**
@@ -21,20 +27,20 @@ export default class Context extends EventEmitter {
      */
     attach(...nodes) {
         for(let node of nodes) {
-            this.nodes.push(node);
+            this._nodes.push(node);
         }
 
-        return this.nodes;
+        return this._nodes;
     }
     /**
      * Remove a Node from the <Context>
      */
     detach(...nodes) {
         for(let node of nodes) {
-            this.nodes.delete(node);
+            this._nodes.delete(node);
         }
 
-        return this.nodes;
+        return this._nodes;
     }
     /**
      * Find a Node (if present) by @_id and return the Node, if found
@@ -73,20 +79,20 @@ export default class Context extends EventEmitter {
      * Run every Node passings destructured @args to each.  If any |true| exists, update the state.  Because the Nodes can have more logically-complex evaluators, <Context> only responds to |true|.
      */
     run(args = [], { reducerArgs = [], exclude = null } = {}) {
-        for(let node of this.nodes) {
+        for(let node of this._nodes) {
             const result = node.run(...args);
 
             if(exclude === null || !(typeof exclude === "function" && exclude(node, result, ...args) === true)) {
                 if(result === true && this._reducers.size) {
                     for(let reducer of this._reducers) {
                         if(typeof reducer === "function") {
-                            this.state = reducer(this.state, ...reducerArgs);
+                            this._state = reducer(this._state, ...reducerArgs);
                         }
                     }
     
                     const txid = uuidv4();
-                    this.emit("update", this.state, txid);
-                    setTimeout(() => this.emit("hash", txid, hash(this.state)));
+                    this.emit("update", this._state, txid);
+                    setTimeout(() => this.emit("hash", txid, hash(this._state)));
 
                     return true;
                 }

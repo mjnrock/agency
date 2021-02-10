@@ -1,4 +1,5 @@
 import { validate, v4 as uuidv4 } from "uuid";
+import Context from "./Context";
 import Node from "./Node";
 
 /**
@@ -16,6 +17,25 @@ export default class Registry {
         }
 
         this._synonyms = new Map();     // Really just here as a convenience if a human is maintaing the <Node/s>
+    }
+
+    get entries() {
+        return this._entries.entries();
+    }
+    get keys() {
+        return [
+            ...this._entries.keys(),
+            ...this._synonyms.keys(),
+        ];
+    }
+    get values() {
+        return [
+            ...this._entries.values(),
+            ...this._synonyms.values(),
+        ];
+    }
+    get size() {
+        return this._entries.size;
     }
 
     add(...entries) {
@@ -132,5 +152,24 @@ export default class Registry {
 
     toUnique() {
         return new Set(this._entries.values());
+    }    
+
+    runNode(idOrSynonym, ...args) {
+        const node = this.get(idOrSynonym);
+
+        if(node instanceof Node) {
+            return node.run(...args);
+        }
+
+        return false;
+    }
+    runContext(idOrSynonym, ...args) {
+        const ctx = this.get(idOrSynonym);
+
+        if(ctx instanceof Context) {
+            return ctx.run(...args);
+        }
+
+        return false;
     }
 };
