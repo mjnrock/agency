@@ -1,6 +1,7 @@
 import Context from "./Context";
 import Node from "./Node";
 import Registry from "./Registry";
+import Observer from "./Observer";
 
 /**
  * This is the sandbox for the Context Evaluation Network
@@ -38,6 +39,11 @@ ctx.attach(n2);
 ctx.addListener("update", console.log);
 // ctx.addListener("hash", console.log);
 
+const observer = new Observer(ctx);
+observer.add(
+    (...args) => console.log(`OBSERVER`, ...args),
+);
+
 const reg = new Registry();
 
 reg.alias(n1, "cat", 1234, false);
@@ -55,7 +61,7 @@ console.log("========");
 ctx.run([ true ], {
     reducerArgs: [ 5 ],
     exclude: (node, result, ...args) => false
-}).then(([ state, txid ]) => console.log(txid, state));
+});
 
 // console.log("========");
 // console.log(`Context -> State`);
