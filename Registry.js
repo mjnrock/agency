@@ -78,19 +78,18 @@ export default class Registry {
     }
 
     get(...idsOrSynonyms) {
-        let result = {};
-
         for(let idsyn of idsOrSynonyms) {
             if(validate(idsyn)) {
-                result[ idsyn ] = this._entries.get(idsyn);
+                return this._entries.get(idsyn);
             } else {
-                let id = this._synonyms.get(idsyn);
+                let id = this._synonyms.get(idsyn),
+                entry = this._entries.get(id);
 
-                result[ idsyn ] = this._entries.get(id);
+                if(entry !== void 0) {
+                    return entry;
+                }
             }
         }
-
-        return result;
     }
     lookup(entry, asArray = false) {
         let keys = [];

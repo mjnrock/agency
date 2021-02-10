@@ -19,6 +19,9 @@ const ctx = new Context("BuddhaTest", {
             now: Date.now(),
             args
         })
+    ],
+    effects: [
+        () => console.log(11111)
     ]
 });
 
@@ -46,10 +49,13 @@ console.log(reg.get(false));
 console.log(reg.lookup(n1, true));
 console.log("========");
 
-// ctx.run([ true ], {
-//     reducerArgs: [ 5 ],
-//     exclude: (node, result, ...args) => false
-// });
+/**
+ * <Context>.run(...) returns a <Promise> that will resolve once all effects have executed.
+ */
+ctx.run([ true ], {
+    reducerArgs: [ 5 ],
+    exclude: (node, result, ...args) => false
+}).then(([ state, txid ]) => console.log(txid, state));
 
 // console.log("========");
 // console.log(`Context -> State`);
