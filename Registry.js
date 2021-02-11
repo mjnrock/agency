@@ -57,13 +57,23 @@ export default class Registry {
 
         return eids;
     }
-    /**
-     * Will ALWAYS ADD the entry *as* a new entry
-     * @param {*} entry 
-     * @param  {...any} synonyms 
-     */
+    
     alias(entry, ...synonyms) {
         const eid = this.add(entry);
+        this.addSynonym(eid, ...synonyms);
+
+        return eid;
+    }
+    valias(entry, ...synonyms) {
+        let eid;
+        if(typeof entry === "function") {
+            eid = this.add(new Validator(entry));
+        } else if(entry instanceof Validator) {
+            eid = this.add(entry);
+        } else {
+            return false;
+        }
+
         this.addSynonym(eid, ...synonyms);
 
         return eid;

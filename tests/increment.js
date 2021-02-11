@@ -4,9 +4,10 @@ import Registry from "../Registry";
 import Observer from "../Observer";
 
 const reg = new Registry();
-reg.alias(new Validator(
+reg.valias(
     (state) => Date.now() > state.lastTimestamp - 50,
-), "Incrementor");
+    "Incrementor",
+);
 
 const ctx = new Context({
     lastTimestamp: Date.now(),
