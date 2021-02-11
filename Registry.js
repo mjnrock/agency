@@ -157,13 +157,13 @@ export default class Registry {
     }    
 
     /**
-     * This is just a convenience elevation for a <Validator> or a <Context>
+     * This is just a convenience elevation for a runnable
      */
     run(idOrSynonym, ...args) {
-        const valsOrCtxs = this.get(idOrSynonym);
+        const runnable = this.get(idOrSynonym);
 
-        if(valsOrCtxs instanceof Validator || valsOrCtxs instanceof Context) {
-            return valsOrCtxs.run(...args);
+        if(typeof runnable.run === "function") {
+            return runnable.run(...args);
         }
 
         return false;
