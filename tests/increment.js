@@ -4,11 +4,9 @@ import Registry from "../Registry";
 import Observer from "../Observer";
 
 const reg = new Registry();
-
-const val1 = new Validator(
+reg.alias(new Validator(
     (state) => Date.now() > state.lastTimestamp - 50,
-);
-reg.alias(val1, "Incrementor");
+), "Incrementor");
 
 const ctx = new Context({
     lastTimestamp: Date.now(),
@@ -26,12 +24,12 @@ const ctx = new Context({
 const obs = new Observer(ctx, console.log);
 
 // //! Unattached execution (<Context.state> is not natively passed to unattached executions)
-ctx.attempt(val1, ctx.state);
-ctx.attempt(val1, ctx.state);
+ctx.attempt(reg.get("Incrementor"), ctx.state);
+ctx.attempt(reg.get("Incrementor"), ctx.state);
 console.warn(`[Test]: Expected - ${ 2 } | Actual - ${ ctx.state.count }`);
 
 // //! Attached execution
-// ctx.attach(val1);
+// ctx.attach(reg.get("Incrementor"));
 // ctx.run();
 // ctx.run();
 // console.info(`[Test]: Expected - ${ 4 } | Actual - ${ ctx.state.count }`);
