@@ -1,6 +1,5 @@
 import EventEmitter from "events";
 import { v4 as uuidv4 } from "uuid";
-import Context from "./Context";
 
 export default class Validator extends EventEmitter {
     static LogicalType = {
@@ -57,14 +56,6 @@ export default class Validator extends EventEmitter {
         }
 
         return false;
-    }
-
-    attempt(ctx, ...args) {
-        if(this.run(...args) === true && ctx instanceof Context) {
-            ctx.run({ allowVacuous: true }, ...args);
-        }
-
-        return this;
     }
 
     /* STATIC HELPER FUNCTIONS */
