@@ -120,4 +120,16 @@ export default class Context extends EventEmitter {
 
         return false;
     }
+
+    static ValId(comp, fn) {
+        if(comp === void 0) {
+            return
+        }
+        
+        return (state, validatorId, ...args) => {
+            if(validatorId === comp) {
+                return fn(state, validatorId, ...args);
+            }
+        };
+    }
 };

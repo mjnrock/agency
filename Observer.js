@@ -1,23 +1,18 @@
 import { v4 as uuidv4 } from "uuid";
 import Context from "./Context";
+import Validator from "./Validator";
 
 /**
- * The <Observer> role is singular in purpose: execute all of its effects whenever the <Context> emits an "update" event.
- *      The <Observer> is meant to be an abstract of "effects" that would otherwise be an internal property of <Context>
- *      that would be executed whenever .run(...) is invoked.  This keeps it subscription-based and asynchronous.
+ * The <Observer> role is to react to signals, whether that be a state change by <Context>, or an activation signal by <Validator>
  */
 export default class Observer {
-    constructor(ctx, ...effects) {
+    constructor(subject, ...effects) {
         this._id = uuidv4();
         this._effects = new Set(effects);
 
-        this.__meta = {
-            context: ctx,
-            subscription: null,
-        };
-
-        if(ctx) {
-            this.__meta.subscription = this.watch(ctx);
+        if(subject) {
+            this.__subject = subject;
+            this.__subscription = this.watch(subject);
         }
 
         return this;
@@ -45,38 +40,51 @@ export default class Observer {
         return this._effects;
     }
 
-    watch(ctx) {
-        if(ctx instanceof Context) {
-            const fn = (...args) => this.run.call(this, ctx || this.__meta.context, ...args);
+    watch(subject) {
+        const fn = (...args) => this.run.call(this, subject, ...args);
 
-            ctx.on("update", fn);
-
-            this.__meta.context = ctx;
-            this.__meta.subscription = fn;
+        if(subject instanceof Context) {
+            subject.on("update", fn);
+        } else if(subject instanceof Validator) {
+            subject.on("activate", fn);
+        } else {
+            throw new Error("@subject must be a <Context> or <Validator>");
         }
+
+        // Cleanup previous subject, if no .unwatch(...) invocation occurred
+        if(this.__subject instanceof Context || this.__subject instanceof Validator) {
+            this.unwatch(this.__subject);
+        }
+
+        this.__subject = subject;
+        this.__subscription = fn;
 
         return this;
     }
-    unwatch(ctx) {
-        if(ctx instanceof Context) {
-            ctx.off("update", this.__meta.subscription);
-
-            this.__meta.context = null;
-            this.__meta.subscription = null;
+    unwatch(subject) {
+        if(subject instanceof Context) {
+            subject.off("update", this.__subscription);
+        } else if(subject instanceof Validator) {
+            subject.off("activate", this.__subscription);
+        } else {
+            throw new Error("@subject must be a <Context> or <Validator>");
         }
+
+        this.__subject = null;
+        this.__subscription = null;
 
         return this;
     }
     
-    run(ctx, ...args) {
+    run(subject, ...args) {
         return new Promise((resolve, reject) => {
             for(let effect of this._effects) {
                 if(typeof effect === "function") {
-                    effect.call(ctx, ...args);
+                    effect.call(subject, ...args);
                 }
             }
 
-            resolve(ctx, ...args);
+            resolve(subject, ...args);
         });
     }
 };
