@@ -4,11 +4,10 @@ import hash from "object-hash";
 import Validator from "./Validator";
 
 export default class Context extends EventEmitter {
-    constructor(name, { state = {}, reducers = [], validators = [] } = {}) {
+    constructor(state = {}, reducers = [], { validators = [] } = {}) {
         super();
 
         this._id = uuidv4();
-        this._name = name;
         this._state = state;
         this._reducers = new Set(reducers);
         this._validators = validators;
@@ -92,7 +91,7 @@ export default class Context extends EventEmitter {
     }
     attempt(validator, ...args) {
         if(validator instanceof Validator && validator.run(...args) === true) {
-            this.__runOps(...args);
+            this.__runOps(validator._id, ...args);
 
             return true;
         }
@@ -112,7 +111,7 @@ export default class Context extends EventEmitter {
 
             if(exclude === null || !(typeof exclude === "function" && exclude(validator, result, ...args) === true)) {
                 if(result === true && this._reducers.size) {
-                    this.__runOps(...args);
+                    this.__runOps(validator._id, ...args);
 
                     return true;
                 }

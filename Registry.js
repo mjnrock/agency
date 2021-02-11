@@ -2,9 +2,6 @@ import { validate, v4 as uuidv4 } from "uuid";
 import Context from "./Context";
 import Validator from "./Validator";
 
-/**
- * <Registry> intentionally allows duplicates, but there are helper functions for filtering.
- */
 export default class Registry {
     constructor(...entries) {
         this._id = uuidv4();
@@ -43,6 +40,11 @@ export default class Registry {
 
         for(let entry of entries) {
             let eid = uuidv4();
+
+            if("_id" in (entry || {})) {
+                eid = entry._id;
+            }
+
             this._entries.set(eid, entry);
             eids.push(eid);
         }
@@ -133,6 +135,10 @@ export default class Registry {
             id: keys[ 0 ],
             synonyms: keys.slice(1),
         };
+    }
+
+    getId(synonym) {
+        return this._synonyms.get(synonym);
     }
 
     addSynonym(id, ...synonyms) {
