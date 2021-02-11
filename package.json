@@ -10,6 +10,6 @@
         "uuid": "^8.3.2"
     },
     "scripts": {
-        "start": "node esm-index.js"
+        "start": "validators esm-index.js"
     }
 }

@@ -1,6 +1,6 @@
 import { validate, v4 as uuidv4 } from "uuid";
 import Context from "./Context";
-import Node from "./Node";
+import Validator from "./Validator";
 
 /**
  * <Registry> intentionally allows duplicates, but there are helper functions for filtering.
@@ -16,7 +16,7 @@ export default class Registry {
             this.add(...entries);
         }
 
-        this._synonyms = new Map();     // Really just here as a convenience if a human is maintaing the <Node/s>
+        this._synonyms = new Map();     // Really just here as a convenience if a human is maintaing the <Validator/s>
     }
 
     get entries() {
@@ -150,24 +150,20 @@ export default class Registry {
         return this;
     }
 
+
+    //  BEGIN:  HELPER FUNCTIONS
     toUnique() {
         return new Set(this._entries.values());
     }    
 
-    runNode(idOrSynonym, ...args) {
-        const node = this.get(idOrSynonym);
+    /**
+     * This is just a convenience elevation for a <Validator> or a <Context>
+     */
+    run(idOrSynonym, ...args) {
+        const valsOrCtxs = this.get(idOrSynonym);
 
-        if(node instanceof Node) {
-            return node.run(...args);
-        }
-
-        return false;
-    }
-    runContext(idOrSynonym, ...args) {
-        const ctx = this.get(idOrSynonym);
-
-        if(ctx instanceof Context) {
-            return ctx.run(...args);
+        if(valsOrCtxs instanceof Validator || valsOrCtxs instanceof Context) {
+            return valsOrCtxs.run(...args);
         }
 
         return false;
