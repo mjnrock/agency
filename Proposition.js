@@ -7,8 +7,6 @@ export default class Proposition {
     };
 
     constructor(...evaluators) {
-        super();
-
         this._id = uuidv4();
         this._evaluators = evaluators;
         this._mask = 0;     // The logical group type (dysjunct, conjunct, negation)
