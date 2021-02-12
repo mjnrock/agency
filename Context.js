@@ -1,10 +1,14 @@
 import EventEmitter from "events";
 import { v4 as uuidv4 } from "uuid";
-import hash from "object-hash";
 import Mutator from "./Mutator";
 import Proposition from "./Proposition";
 
 export default class Context extends EventEmitter {
+    /**
+     * OVERLOADS
+     * (state = {}, evaluators = [ ...[ <Mutator>|fn, ...Array<<Proposition>|fn> ] ])
+     * (state = {}, <Mutator>|fn)
+     */
     constructor(state = {}, evaluators = []) {
         super();
 
@@ -12,8 +16,12 @@ export default class Context extends EventEmitter {
         this._state = state;
         this._evaluators = new Map();
 
-        for(let [ mutator, ...propositions ] of evaluators) {
-            this.attach(mutator, ...propositions);
+        if(typeof evaluators === "function" || evaluators instanceof Mutator)  {
+            this.attach(evaluators);
+        } else {
+            for(let [ mutator, ...propositions ] of evaluators) {
+                this.attach(mutator, ...propositions);
+            }
         }
     }
 
@@ -65,9 +73,10 @@ export default class Context extends EventEmitter {
         return this._evaluators.delete(mutator);
     }
 
+    // <Context> is vacuously true, if no propositions are connected to a given <Mutator>
     run(...args) {
         for(let [ mutator, props ] of this._evaluators.entries()) {
-            if(props.every(prop => prop.run(...args) === true)) {
+            if(props.length === 0 || props.every(prop => prop.run(...args) === true)) {
                 this._state = mutator.mutate(this._state);
             } else {
                 return false;

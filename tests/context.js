@@ -1,5 +1,4 @@
 import Proposition from "../Proposition";
-import Mutator from "../Mutator";
 import Context from "../Context";
 import Observer from "../Observer";
 
@@ -11,15 +10,11 @@ const ctx = new Context({
             ...state,
             _now: Date.now(),
         }),
-        (...args) => {
-            console.log(`[PROPOSITION]`, ...args);
-
-            return true;
-        }
+        Proposition.IsType("cat"),
     ]
 ]);
 
 const obs = new Observer(ctx, (...args) => console.log(`[OBSERVER]`, ...args));
 
-ctx.run(1, "fish");
+ctx.run("cat");
 console.log(`[.]`, ctx.state);
