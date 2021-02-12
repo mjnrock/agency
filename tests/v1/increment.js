@@ -1,7 +1,7 @@
-import Context from "../Context";
-import Validator from "../Validator";
-import Registry from "../Registry";
-import Observer from "../Observer";
+import Context from "../../v1/Context";
+import Validator from "../../v1/Validator";
+import Registry from "../../v1/Registry";
+import Observer from "../../v1/Observer";
 
 const reg = new Registry();
 reg.valias(
