@@ -1,5 +1,6 @@
 import EventEmitter from "events";
 import { v4 as uuidv4 } from "uuid";
+import hash from "object-hash";
 import Mutator from "./Mutator";
 import Proposition from "./Proposition";
 
@@ -73,6 +74,58 @@ export default class Context extends EventEmitter {
             }
         }
 
+        this.emit("update", this.state);
+
         return true;
     }
 };
+
+//* Synonymous Usage Examples
+// //* Ex. 1
+// const ctx = new Context({
+//     cats: 2,
+// }, [
+//     [
+//         state => ({
+//             ...state,
+//             _now: Date.now(),
+//         }),
+//         (...args) => {
+//             console.log(...args);
+
+//             return true;
+//         }
+//     ]
+// ]);
+
+// //* Ex. 2
+// const ctx = new Context({
+//     cats: 2,
+// });
+// ctx.attach(
+//     state => ({
+//         ...state,
+//         _now: Date.now(),
+//     }),
+//     (...args) => {
+//         console.log(...args);
+
+//         return true;
+//     }
+// );
+
+// //* Ex. 3
+// const ctx = new Context({
+//     cats: 2,
+// });
+// ctx.attach(
+//     new Mutator(state => ({
+//         ...state,
+//         _now: Date.now(),
+//     })),
+//     new Proposition((...args) => {
+//         console.log(...args);
+
+//         return true;
+//     })
+// );
