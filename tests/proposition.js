@@ -1,4 +1,4 @@
-import Proposition from "../Proposition";
+import Proposition from "../src/Proposition";
 
 const val1 = new Proposition();
 val1.add(

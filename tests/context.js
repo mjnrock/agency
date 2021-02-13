@@ -1,6 +1,6 @@
-import Proposition from "../Proposition";
-import Context from "../Context";
-import Observer from "../Observer";
+import Proposition from "../src/Proposition";
+import Context from "../src/Context";
+import Observer from "../src/Observer";
 
 const ctx = new Context({
     cats: 2,
