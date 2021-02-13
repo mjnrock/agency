@@ -61,10 +61,7 @@ export default class Proposition {
 
     //* All static helpers assume that you put the meaningful arguments first
     static IsType(type) {
-        return new Proposition((t, ...args) => {
-            console.log(t, ...args);
-            return type === t;
-        });
+        return new Proposition((t, ...args) => type === t);
     }
 
     static IsPrimitiveType(type) {

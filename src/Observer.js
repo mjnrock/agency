@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import Context from "./Context";
 
 export default class Observer {
-    constructor(ctx, ...effects) {
+    constructor(ctx, ...effects) {        
         this._id = uuidv4();
         this._effects = new Set(effects);
 

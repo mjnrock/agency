@@ -1,0 +1,13 @@
+{
+    "name": "_agency",
+    "version": "1.0.0",
+    "main": "index.js",
+    "license": "MIT",
+    "scripts": {
+        "start": "node esm-index.js"
+    },
+    "dependencies": {
+        "@lespantsfancy/agency": "^0.1.1",
+        "esm": "^3.2.25"
+    }
+}
