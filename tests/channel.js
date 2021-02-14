@@ -18,4 +18,4 @@ const channel = new Channel(ctx);
 
 channel.subscribe(([ state ]) => console.log(`CHANNEL`, state));
 
-ctx.run("cat");
+ctx.run([ "cat" ]);

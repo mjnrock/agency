@@ -33,7 +33,7 @@ export default class Proposition {
         return this;
     }
 
-    run(...args) {
+    run(...args) {        
         const results = [];
         for(let fn of this._evaluators) {
             if(typeof fn === "function") {

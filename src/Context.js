@@ -74,18 +74,25 @@ export default class Context extends EventEmitter {
     }
 
     // <Context> is vacuously true, if no propositions are connected to a given <Mutator>
-    run(...args) {
+    run(args = [], ...mutatorArgs) {
+        if(!Array.isArray(args)) {
+            args = [ args ];
+        }
+
+        let tests = [];
         for(let [ mutator, props ] of this._evaluators.entries()) {
             if(props.length === 0 || props.every(prop => prop.run(...args) === true)) {
-                this._state = mutator.mutate(this._state);
+                this._state = mutator.mutate(this._state, ...mutatorArgs);
+
+                tests.push(true);
             } else {
-                return false;
+                tests.push(false);
             }
         }
 
-        this.emit("update", this.state);
+        this.emit("update", this._state);
 
-        return true;
+        return tests.some(t => t === true);
     }
 };
 

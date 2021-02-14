@@ -32,9 +32,9 @@ export default class Mutator {
         return this;
     }
 
-    mutate(state = {}) {
+    mutate(state = {}, ...args) {
         for(let fn of this._sequence) {
-            state = fn(state);
+            state = fn(state, ...args);
         }
 
         return state;
