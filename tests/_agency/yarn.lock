@@ -3,9 +3,9 @@
 
 
 "@lespantsfancy/agency@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@lespantsfancy/agency/-/agency-0.1.1.tgz#51c635f6c6e603ee0e85d975a87e562a009f8f3d"
-  integrity sha512-D0daP5IaoAtz+/dAYTQ74q/v6rhXSRih6tPwC/xhaf4YwKVsW90BZJs4HdVKkxe43ifuxQE0wqgs731ybZoZrA==
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@lespantsfancy/agency/-/agency-0.1.2.tgz#b712ef8448b1b8b4479c800d59c710b258e07f1c"
+  integrity sha512-hmNjPUYXa9mTjYmdc3eQXooymeNQ6zMn7IGCXYo8dM9hSfW+q5BC16XqU5L2un7VtYfPOptkE7B0MdesXpg6IQ==
   dependencies:
     esm "^3.2.25"
     object-hash "^2.1.1"
