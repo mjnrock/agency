@@ -63,6 +63,9 @@ export default class Proposition {
     static IsType(type) {
         return new Proposition((t, ...args) => type === t);
     }
+    static IsMessageType(type) {
+        return new Proposition((msg, ...args) => type === (msg || {}).type);
+    }
 
     static IsPrimitiveType(type) {
         return new Proposition((input, ...args) => typeof input === type);

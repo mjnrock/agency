@@ -1,4 +1,5 @@
 import EventEmitter from "events";
+import { type } from "os";
 import { v4 as uuidv4 } from "uuid";
 import Mutator from "./Mutator";
 import Proposition from "./Proposition";
@@ -93,6 +94,24 @@ export default class Context extends EventEmitter {
         this.emit("update", this._state);
 
         return tests.some(t => t === true);
+    }
+
+    static IdDecorator(entry) {
+        if(typeof entry === "object") {
+            if(!("_id" in entry)) {
+                entry._id = uuidv4();
+
+                return entry;
+            }
+        } else if(entry !== void 0) {
+            return {
+                _id: uuidv4(),
+                _value: entry,
+                _assigned: Date.now(),
+            };
+        }
+
+        return false;
     }
 };
 

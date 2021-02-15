@@ -16,8 +16,8 @@ export default class Registry extends Context {
     }
 
     // Convenience invocation methods
-    register(...args) {
-        this.run([ "register" ], ...args);
+    register(entry, ...synonyms) {
+        this.run([ "register" ], entry, ...synonyms);
     }
     unregister(...args) {
         this.run([ "unregister" ], ...args);
@@ -39,12 +39,16 @@ export default class Registry extends Context {
         return Registry.GetBySynonym(this._state, ...args);
     }
 
-    static Register(registry, state, entry) {
+    static Register(registry, state, entry, ...synonyms) {
         const eid = (entry || {})._id || uuidv4();
 
         state.entries.set(eid, entry);
 
-        registry.emit("addition", eid, entry);
+        for(let synonym of synonyms) {
+            state.synonyms.set(synonym, eid);
+        }
+
+        registry.emit("addition", eid, entry, ...synonyms);
 
         return state;
     }
@@ -124,11 +128,11 @@ export default class Registry extends Context {
     static Get(state, id) {
         return state.entries.get(id);
     }
-    static GetBySynonym(synonym) {
+    static GetBySynonym(state, synonym) {
         const eid = state.synonyms.get(synonym);
 
         if(validate(eid)) {
-            return Registry.Get(eid);
+            return Registry.Get(state, eid);
         }
     }
 }
