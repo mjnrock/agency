@@ -7,7 +7,7 @@
         "start": "node esm-index.js"
     },
     "dependencies": {
-        "@lespantsfancy/agency": "^0.1.1",
+        "@lespantsfancy/agency": "^0.1.3",
         "esm": "^3.2.25"
     }
 }
