@@ -98,16 +98,34 @@ export default class Context extends EventEmitter {
         return this._evaluators.delete(mutator);
     }
 
+    //  Convenience function if using this with React
+    //  Accounts for a direct type, or the type being nested within a message object
+    attachTyped(type, fn) {
+        return this.attach(fn, new Agency.Proposition(
+            Agency.Proposition.IsType(type),
+            Agency.Proposition.IsMessageType(type)
+        ));
+    }
+
     // <Context> is vacuously true, if no propositions are connected to a given <Mutator>
+    // In the case where @args looks like a Redux message (object with "type"), add it to the mutator params
     run(args = [], ...mutatorArgs) {
+        let mutArgs = mutatorArgs;
         if (!Array.isArray(args)) {
+            if(typeof args === "object" && "type" in args) {
+                mutArgs = [
+                    args,
+                    ...mutArgs
+                ];
+            }
+
             args = [ args ];
         }
 
         let tests = [];
         for (let [ mutator, props ] of this._evaluators.entries()) {
             if (props.length === 0 || props.every(prop => prop.run(...args) === true)) {
-                this._state = mutator.mutate(this._state, ...mutatorArgs);
+                this._state = mutator.mutate(this._state, ...mutArgs);
 
                 tests.push(true);
             } else {
