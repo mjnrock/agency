@@ -129,8 +129,11 @@ export default class Context extends EventEmitter {
         return tests.some(t => t === true);
     }
 
+    //  ============== BEGIN REACT CONVENIENCE METHODS =================
     //! These are named according to their React convenience functionality, and thus are NOT named consistently with <Context> terms
-    //  Convenience functions if using this with React
+    //?  A singleton pattern on <Context> descendent(s) should be used when using this with React (e.g. Game::Context ---> Game.Instance/Game.$)
+    //      This will allow for easy invocation of .dispatch and .addReducer
+    //?  If an "effect" is needed, invoke an <Observer> and .watch the <Context> to respond to updates (e.g. const obs = new Observer(Game.$, console.log))
     /**
      * This mutator will activate if a <String> @type matches OR if an object containing a matching "type" prop (e.g. { type: @type, ... })
      */
@@ -154,6 +157,8 @@ export default class Context extends EventEmitter {
 
         return false;
     }
+
+    //  ============== END REACT CONVENIENCE METHODS =================
 };
 
 //* Synonymous Usage Examples
