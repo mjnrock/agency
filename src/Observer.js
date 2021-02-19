@@ -36,6 +36,7 @@ export default class Observer {
 
         if(ctx instanceof Context) {
             ctx.on("update", fn);
+            this.__subscription = fn;
         } else {
             throw new Error("@subject must be a <Context>");
         }
@@ -45,6 +46,7 @@ export default class Observer {
     unwatch(ctx) {
         if(ctx instanceof Context) {
             ctx.off("update", this.__subscription);
+            delete this.__subscription;
         } else {
             throw new Error("@subject must be a <Context>");
         }

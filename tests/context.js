@@ -2,6 +2,9 @@ import Proposition from "../src/Proposition";
 import Context from "../src/Context";
 import Observer from "../src/Observer";
 
+const ctx = new Context({
+    cats: 2,
+})
 // const ctx = new Context({
 //     cats: 2,
 // }, [
@@ -14,7 +17,9 @@ import Observer from "../src/Observer";
 //     ]
 // ]);
 
-// const obs = new Observer(ctx, (...args) => console.log(`[OBSERVER]`, ...args));
+const obs = new Observer(ctx, (...args) => console.log(`[OBSERVER]`, ...args));
+
+ctx.cats = 5;
 
 // ctx.run("cat");
 // console.log(`[.]`, ctx.state);
