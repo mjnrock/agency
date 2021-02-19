@@ -1,3 +1,4 @@
+import Observer from "./Observer";
 import { useState, useEffect, useContext } from "react";
 
 export function useObserver(context, ) {
@@ -11,7 +12,7 @@ export function useObserver(context, ) {
             });
         };
 
-        let obs = new Agency.Observer(ctx, fn);
+        let obs = new Observer(ctx, fn);
 
         return () => {
             obs.unwatch(ctx);
