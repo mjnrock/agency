@@ -101,9 +101,9 @@ export default class Context extends EventEmitter {
     //  Convenience function if using this with React
     //  Accounts for a direct type, or the type being nested within a message object
     attachTyped(type, fn) {
-        return this.attach(fn, new Agency.Proposition(
-            Agency.Proposition.IsType(type),
-            Agency.Proposition.IsMessageType(type)
+        return this.attach(fn, new Proposition(
+            Proposition.IsType(type),
+            Proposition.IsMessageType(type)
         ));
     }
 
