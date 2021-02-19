@@ -24,6 +24,16 @@ export default class Context extends EventEmitter {
                 this.attach(mutator, ...propositions);
             }
         }
+
+        return new Proxy(this, {
+            get: function(target, prop, receiver) {
+                if(prop in (target._state || {})) {
+                    return target._state[ prop ];
+                }
+                
+                return Reflect.get(...arguments);
+            }
+        })
     }
 
     get state() {

@@ -1,3 +1,5 @@
+import Util from "./util/package";
+
 import Proposition from "./Proposition";
 import Mutator from "./Mutator";
 import Context from "./Context";
@@ -7,6 +9,8 @@ import Registry from "./Registry";
 import Message from "./Message";
 
 export default {
+    Util,
+    
     Proposition,
     Mutator,
     Context,
