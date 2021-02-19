@@ -98,15 +98,6 @@ export default class Context extends EventEmitter {
         return this._evaluators.delete(mutator);
     }
 
-    //  Convenience function if using this with React
-    //  Accounts for a direct type, or the type being nested within a message object (i.e. { type: ... })
-    attachTyped(type, fn) {
-        return this.attach(fn, new Proposition(
-            Proposition.IsType(type),
-            Proposition.IsMessageType(type)
-        ));
-    }
-
     // <Context> is vacuously true, if no propositions are connected to a given <Mutator>
     // In the case where @args looks like a Redux message (object with "type"), add it to the mutator params
     run(args = [], ...mutatorArgs) {
@@ -138,19 +129,27 @@ export default class Context extends EventEmitter {
         return tests.some(t => t === true);
     }
 
-    static IdDecorator(entry) {
-        if (typeof entry === "object") {
-            if (!("_id" in entry)) {
-                entry._id = uuidv4();
-
-                return entry;
-            }
-        } else if (entry !== void 0) {
-            return {
-                _id: uuidv4(),
-                _value: entry,
-                _assigned: Date.now(),
-            };
+    //! These are named according to their React convenience functionality, and thus are NOT named consistently with <Context> terms
+    //  Convenience functions if using this with React
+    /**
+     * This mutator will activate if a <String> @type matches OR if an object containing a matching "type" prop (e.g. { type: @type, ... })
+     */
+    addReducer(type, fn) {
+        return this.attach(fn, new Proposition(
+            Proposition.IsType(type),
+            Proposition.IsMessageType(type)
+        ));
+    }
+    /**
+     * OVERLOADS
+     * (type, data, ...args) | The type-data paradigm
+     * ({ type, data, ... }, ...args) | The message-/event-object paradigm
+     */
+    dispatch(...args) {
+        if(typeof args[ 0 ] === "string" || args[ 0 ] instanceof String) {
+            return this.run([ args[ 0 ] ], { type: args[ 0 ], data: args[ 1 ] }, ...args.slice(2));
+        } else if(typeof args[ 0 ] === "object") {
+            return this.run([ args[ 0 ], ], ...args);
         }
 
         return false;
