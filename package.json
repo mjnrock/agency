@@ -15,7 +15,9 @@
         "object-hash": "^2.1.1",
         "uuid": "^8.3.2"
     },
-    "peerDependencies": {},
+    "peerDependencies": {
+        "react": "^17.0.1"
+    },
     "devDependencies": {
         "babel-cli": "^6.26.0",
         "babel-core": "^6.26.3",
