@@ -32,17 +32,25 @@ export default class Context extends EventEmitter {
 
         return new Proxy(this, {
             get: function (target, prop, receiver) {
-                if (prop in (target._state || {})) {
+                if (prop in (target || {})) {
+                    return target[ prop ];
+                } else if (prop in (target._state || {})) {
                     return target._state[ prop ];
                 }
 
                 return Reflect.get(...arguments);
             },
             set(target, prop, value) {
-                if (prop in (target._state || {})) {
+                if (prop in (target || {})) {
+                    target[ prop ] = value;
+
+                    return target;
+                } else if (prop in (target._state || {})) {
                     target._state[ prop ] = value;
                     
-                    target.emit("update", target._state, false);
+                    target.emit("update", target._state, [ false, prop, value ]);
+
+                    return target;
                 }
                 
                 return Reflect.set(...arguments);
@@ -124,7 +132,7 @@ export default class Context extends EventEmitter {
             }
         }
 
-        this.emit("update", this._state, true);
+        this.emit("update", this._state, [ true, ...mutArgs ]);    // @mutArgs passed in case <Observer> needs something (e.g. a React message type)
 
         return tests.some(t => t === true);
     }

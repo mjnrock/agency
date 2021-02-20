@@ -1,6 +1,5 @@
 import { validate, v4 as uuidv4 } from "uuid";
 import Context from "./Context";
-import Proposition from "./Proposition";
 
 export default class Registry extends Context {
     constructor() {
@@ -9,50 +8,108 @@ export default class Registry extends Context {
             synonyms: new Map(),
         });
 
-        this.attach((...args) => Registry.Register(this, ...args), Proposition.IsType("register"));
-        this.attach((...args) => Registry.Unregister(this, ...args), Proposition.IsType("unregister"));
-        this.attach((...args) => Registry.AddSynonym(this, ...args), Proposition.IsType("addSynonym"));
-        this.attach((...args) => Registry.RemoveSynonym(this, ...args), Proposition.IsType("removeSynonym"));
+        return new Proxy(this, {
+            get: function (target, prop, receiver) {
+                if(prop in target) {
+                    return target[ prop ];
+                } else if (target instanceof Registry) {
+                    let value = target.getBySynonym(prop);
+
+                    if(value === void 0) {
+                        value = target.get(prop);
+                    }
+
+                    if(value !== void 0) {
+                        return value;
+                    }
+                }
+
+                return Reflect.get(...arguments);
+            },
+            set(target, prop, value) {
+                if (target instanceof Registry) {
+                    const eid = target._state.synonyms.get(prop);
+
+                    if(validate(eid)) {
+                        target._state.entries.set(eid, value);
+                    
+                        target.emit("update", target._state, [ false, eid, value ]);
+                    }
+                }
+                
+                return Reflect.set(...arguments);
+            },
+        });
     }
 
-    // Convenience invocation methods
-    register(entry, ...synonyms) {
-        this.run([ "register" ], entry, ...synonyms);
-    }
-    unregister(...args) {
-        this.run([ "unregister" ], ...args);
-    }
-    addSynonym(...args) {
-        this.run([ "addSynonym" ], ...args);
-    }
-    removeSynonym(...args) {
-        this.run([ "removeSynonym" ], ...args);
-    }
+    get state() {
+        const state = {
+            ...Object.fromEntries(Array.from(this._state.entries.entries()).map(([ id, entry ]) => {
+                if(entry instanceof Context) {
+                    return [ id, entry.state ];
+                }
+                
+                return [ id, entry ];
+            })),
+        };
 
-    find(...args) {
-        return Registry.Find(this._state, ...args);
-    }
-    get(...args) {
-        return Registry.Get(this._state, ...args);
-    }
-    getBySynonym(...args) {
-        return Registry.GetBySynonym(this._state, ...args);
-    }
-
-    static Register(registry, state, entry, ...synonyms) {
-        const eid = (entry || {})._id || uuidv4();
-
-        state.entries.set(eid, entry);
-
-        for(let synonym of synonyms) {
-            state.synonyms.set(synonym, eid);
+        for(let [ syn, id ] of this._state.synonyms.entries()) {
+            state[ syn ] = state[ id ];
         }
-
-        registry.emit("addition", eid, entry, ...synonyms);
 
         return state;
     }
-    static Unregister(state, entry) {
+
+    /**
+     * Helper function to dive through nested <Registry>
+     */
+    _(nestedKey) {
+        let keys = nestedKey.split(".");
+        let entry = this.get(keys.shift());
+
+        if(entry !== void 0) {
+            if(entry instanceof Registry) {
+                return entry._(keys);
+            } else if(typeof entry === "object" && keys[ 0 ] in entry) {
+                return entry._(keys);
+            } else if(Array.isArray(entry)) {
+                return entry._(keys)[ +keys[ 0 ] ];
+            }
+
+            return entry;
+        }
+
+
+        // let keys = Array.isArray(nestedKey) ? nestedKey : nestedKey.split(".");
+        // let key = keys.shift();
+        // const entry = this._state.entries.getBySynonym(key);
+
+        // if(entry instanceof Registry) {
+        //     return entry._(keys);
+        // }
+
+        // return entry;
+    }
+
+    register(entry, ...synonyms) {
+        const eid = (entry || {})._id || uuidv4();
+
+        this._state.entries.set(eid, entry);
+
+        //TODO  Code a bubbling version of this
+        if(entry instanceof Context) {
+            entry.on("update", (...args) => this.emit("update", eid, entry, ...args));
+        }
+
+        for(let synonym of synonyms) {
+            this._state.synonyms.set(synonym, eid);
+        }
+
+        this.run("addition", eid, entry, ...synonyms);
+
+        return this._state;
+    }
+    unregister(entry) {
         let eid;
         if(validate(entry)) {
             eid = entry;
@@ -60,20 +117,20 @@ export default class Registry extends Context {
             eid = entry.id;
         }
 
-        state.entries.delete(eid);
+        this._state.entries.delete(eid);
 
-        for(let [ syn, id ] of state.synonyms.entries()) {
+        for(let [ syn, id ] of this._state.synonyms.entries()) {
             if(eid === id) {
-                state.synonyms.delete(syn);
+                this._state.synonyms.delete(syn);
             }
         }
 
-        registry.emit("removal", eid, entry);
+        this.run("removal", eid, entry);
 
         return state;
     }
 
-    static AddSynonym(state, entryOrId, ...synonyms) {
+    addSynonym(entryOrId, ...synonyms) {
         let eid;
         if(validate(entryOrId)) {
             eid = entryOrId;
@@ -82,32 +139,36 @@ export default class Registry extends Context {
         }
 
         for(let synonym of synonyms) {
-            state.synonyms.add(synonym, eid);
+            this._state.synonyms.add(synonym, eid);
         }
 
-        return state;
+        this.run("addition:synonym", eid, entry);
+
+        return this._state;
     }
-    static RemoveSynonym(state, ...synonyms) {
+    removeSynonym(...synonyms) {
         for(let synonym of synonyms) {
-            state.synonyms.delete(synonym);
+            this._state.synonyms.delete(synonym);
         }
 
-        return state;
+        this.run("removal:synonym", eid, entry);
+
+        return this._state;
     }
 
-    static Find(state, ...inputs) {
+    find(...inputs) {
         const entries = [];
 
         for(let input of inputs) {
-            let entry = state.entries.get(input);
+            let entry = this._state.entries.get(input);
 
             if(entry !== void 0) {
                 entries.push(entry);
             } else {
-                const eid = state.synonyms.get(input);
+                const eid = this._state.synonyms.get(input);
 
                 if(validate(eid)) {
-                    entry = state.entries.get(eid);
+                    entry = this._state.entries.get(eid);
 
                     if(entry !== void 0) {
                         entries.push(entry);
@@ -125,14 +186,23 @@ export default class Registry extends Context {
         return entries;
     }
 
-    static Get(state, id) {
-        return state.entries.get(id);
+    get(idOrSyn) {
+        let eid = this._state.synonyms.get(idOrSyn);
+        
+        if(validate(eid)) {
+            return this._state.entries.get(eid);
+        } else if(validate(idOrSyn)) {
+            return this._state.entries.get(idOrSyn);
+        }
     }
-    static GetBySynonym(state, synonym) {
-        const eid = state.synonyms.get(synonym);
+    getById(id) {
+        return this._state.entries.get(id);
+    }
+    getBySynonym(synonym) {
+        const eid = this._state.synonyms.get(synonym);
 
         if(validate(eid)) {
-            return Registry.Get(state, eid);
+            return this.get(eid);
         }
     }
 }
