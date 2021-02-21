@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import Context from "./Context";
 
 export default class Channel extends Context {
@@ -6,8 +5,6 @@ export default class Channel extends Context {
         super({
             subjects: new Map(),
         });
-        
-        this._id = uuidv4();
 
         this.add(...subjects);
     }
