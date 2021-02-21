@@ -1,6 +1,6 @@
 {
     "name": "@lespantsfancy/agency",
-    "version": "0.1.33",
+    "version": "0.1.34",
     "main": "lib/index.js",
     "author": "Matt Nawrocki <mjnrock@umich.edu>",
     "license": "None",
