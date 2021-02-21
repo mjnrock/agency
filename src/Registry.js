@@ -60,6 +60,13 @@ export default class Registry extends Context {
         return state;
     }
 
+    get entries() {
+        return [ ...this._state.entries.entries() ];
+    }
+    get values() {
+        return [ ...this._state.entries.values() ];
+    }
+
     /**
      * Helper function to dive through nested <Registry>
      */

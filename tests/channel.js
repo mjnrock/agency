@@ -1,21 +1,21 @@
-import Proposition from "../src/Proposition";
-import Context from "../src/Context";
-import Channel from "../src/Channel";
+import Context from "./../src/Context";
+import Channel from "./../src/Channel";
 
+const channel = new Channel();
 const ctx = new Context({
     cats: 2,
-}, [
-    [
-        state => ({
-            ...state,
-            _now: Date.now(),
-        }),
-        Proposition.IsType("cat"),
-    ]
-]);
+}, (state) => {
+    return {
+        ...state,
+        cats: state.cats + 1,
+    };
+});
 
-const channel = new Channel(ctx);
+channel.add(ctx);
+channel.watch("fish", ctx);
 
-channel.subscribe(([ state ]) => console.log(`CHANNEL`, state));
+channel.subscribe((ctx, type, ...args) => console.log(`CHANNEL`, type, ...args));
 
-ctx.run([ "cat" ]);
+ctx.emit("fish", 2345);
+
+ctx.run();
