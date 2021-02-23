@@ -85,8 +85,8 @@ export class Context extends Observable {
 };
 
 //? Use the .Factory method to create a <Context> with default state
-export function Factory(state = {}, opts = {}) {
-    const ctx = new Context(opts);
+export function Factory(state = {}, { rules = {}, refs = {}, deep } = {}) {
+    const ctx = new Context({ rules, refs, deep });
     
     if(state instanceof Context) {
         state = state.toData();

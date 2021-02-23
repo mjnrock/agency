@@ -84,6 +84,37 @@ export function IsBetween(min, max) {
     return Proposition.OR((no, ...args) => no >= min && no <= max);
 }
 
+export function IsPrimitiveType(type) {
+    return Proposition.OR((input, ...args) => typeof input === type);
+}
+export function IsString() {
+    return Proposition.OR((input, ...args) => typeof input === "string" || input instanceof String);
+}
+export function IsNumber() {
+    return Proposition.OR((input, ...args) => typeof input === "number");
+}
+export function IsBoolean() {
+    return Proposition.OR((input, ...args) => typeof input === "boolean");
+}
+export function IsTrue() {
+    return Proposition.OR((input, ...args) => input === true);
+}
+export function IsFalse() {
+    return Proposition.OR((input, ...args) => input === false);
+}
+export function IsFunction() {
+    return Proposition.OR((input, ...args) => typeof input === "function");
+}
+export function IsArray() {
+    return Proposition.OR((input, ...args) => Array.isArray(input));
+}
+export function IsObject() {
+    return Proposition.OR((input, ...args) => typeof input === "object");
+}
+export function HasProps(...props) {
+    return Proposition.OR((input, ...args) => typeof input === "object" && props.every(prop => prop in input));
+}
+
 Proposition.OR = OR;
 Proposition.AND = AND;
 Proposition.NOT = NOT;
@@ -95,5 +126,16 @@ Proposition.IsGTE = IsGTE;
 Proposition.IsLT = IsLT;
 Proposition.IsLTE = IsLTE;
 Proposition.IsBetween = IsBetween;
+
+Proposition.IsPrimitiveType = IsPrimitiveType;
+Proposition.IsString = IsString;
+Proposition.IsNumber = IsNumber;
+Proposition.IsBoolean = IsBoolean;
+Proposition.IsTrue = IsTrue;
+Proposition.IsFalse = IsFalse;
+Proposition.IsFunction = IsFunction;
+Proposition.IsArray = IsArray;
+Proposition.IsObject = IsObject;
+Proposition.HasProps = HasProps;
 
 export default Proposition;
