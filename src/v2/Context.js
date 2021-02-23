@@ -20,11 +20,11 @@ export class Context extends Observable {
 
                 const rule = target.__rules.get(prop);
                 if(typeof rule === "function") {
-                    if(rule(newValue, target[ prop ], prop) !== true) {
+                    if(rule(newValue, target[ prop ], { prop, target }) !== true) {
                         return target;
                     }
                 } else if(rule instanceof Proposition) {
-                    if(rule.test(newValue, target[ prop ], prop) !== true) {
+                    if(rule.test(newValue, target[ prop ], { prop, target }) !== true) {
                         return target;
                     }
                 }
