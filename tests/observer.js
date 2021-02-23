@@ -15,6 +15,4 @@ let ob = Observable.Create({
 const obs = new Observer(ob);
 obs.on("next", console.log);
 
-ob = Observable.Create(ob);
-
 ob.cats.qty = 14;

@@ -22,6 +22,7 @@ const ob = Observable.Create((prop, value) => console.log(prop.split("."), value
 });
 
 console.log("=====================");
+ob.next = (prop, value) => console.log(`DIFFERENT`, prop.split("."), value);
 
 ob.cats.qty = {
     many: "yes"

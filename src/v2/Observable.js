@@ -1,12 +1,15 @@
+/**
+ * The <Observable> is basically just a watchable <Object>
+ *      and should basically always be used with an <Observer>
+ * .next will provide direct access to updates, while an <Observer> will emit
+ *      each prop change as an eponymously named event, as well as a "next" event
+ *      as a catch-all
+ */
 //? Only watch events at the root <Observable>, to avoid losing <Observer> bindings
 //?     All updates will get bubbled into a .next(dot-notation-prop, value) invocation
 export class Observable {
     constructor(next, { deep = true } = {}) {
-        if(typeof next === "function") {
-            this.next = (...args) => new Promise((resolve, reject) => {
-                resolve(next(...args));
-            });
-        }
+        this.next = next;
 
         return new Proxy(this, {
             get(target, prop) {
