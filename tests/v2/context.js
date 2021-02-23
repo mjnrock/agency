@@ -7,7 +7,7 @@ const ctx = new Context();
 const obs = new Observer(ctx);
 obs.on("next", console.log);
 
-ctx.add("cats", Proposition.OR(
+ctx.__add("cats", Proposition.OR(
     IsBetween(2, 10),
     IsLTE(1),
 ));
@@ -15,4 +15,4 @@ ctx.add("cats", Proposition.OR(
 ctx.fish = 2;
 ctx.fish = 3;
 
-console.log(`RESULT`, ctx.fish);
+console.log(`RESULT`, ctx.toData());

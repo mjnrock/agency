@@ -2,7 +2,7 @@ import Observable from "./Observable";
 import Proposition from "./Proposition";
 
 export class Context extends Observable {
-    constructor(deep = true) {
+    constructor({ rules = {}, refs = {}, deep = true } = {}) {
         super(false);
         
         this.__rules = new Map();
@@ -42,11 +42,11 @@ export class Context extends Observable {
         });
     }
 
-    _(key) {
+    __(key) {
         return this.__references.get(key);
     }
 
-    add(dotKey, proposition) {
+    __add(dotKey, proposition) {
         if(typeof dotKey === "object") {
             for(let [ key, value ] of Object.entries(dotKey)) {
                 this.__rules.set(key, value);
@@ -57,13 +57,13 @@ export class Context extends Observable {
 
         return this;
     }
-    remove(dotKey) {
+    __remove(dotKey) {
         this.__rules.delete(dotKey);
 
         return this;
     }
 
-    include(name, variable) {
+    __include(name, variable) {
         if(typeof name === "object") {
             for(let [ key, value ] of Object.entries(name)) {
                 this.__references.set(key, value);
@@ -74,7 +74,7 @@ export class Context extends Observable {
 
         return this;
     }
-    exclude(name) {
+    __exclude(name) {
         this.__references.delete(name);
 
         return this;
@@ -95,10 +95,10 @@ export function Factory(state = {}, { rules = {}, refs = {}, isDeep = true } = {
     }
 
     for(let [ dotKey, proposition ] of Object.entries(rules)) {
-        ctx.add(dotKey, proposition);
+        ctx.__add(dotKey, proposition);
     }
     for(let [ name, variable ] of Object.entries(refs)) {
-        ctx.include(name, variable);
+        ctx.__include(name, variable);
     }
 
     return ctx;
