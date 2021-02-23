@@ -2,11 +2,12 @@ import { validate, v4 as uuidv4 } from "uuid";
 import Context from "./Context";
 
 export default class Registry extends Context {
-    constructor() {
+    constructor(state = {}, evaluators = []) {
         super({
             entries: new Map(),
             synonyms: new Map(),
-        });
+            ...state,
+        }, evaluators);
 
         return new Proxy(this, {
             get: function (target, prop, receiver) {
@@ -134,7 +135,7 @@ export default class Registry extends Context {
 
         this.run("removal", eid, entry);
 
-        return state;
+        return this._state;
     }
 
     addSynonym(entryOrId, ...synonyms) {
@@ -211,5 +212,36 @@ export default class Registry extends Context {
         if(validate(eid)) {
             return this.get(eid);
         }
+    }
+
+    toObject({ recursive = true, synonymsOnly = true } = {}) {
+        const obj = {};
+        for(let [ syn, id ] of this._state.synonyms.entries()) {
+            const entry = this._state.entries.get(id);
+            
+            if(recursive === true) {
+                if(entry instanceof Registry) {
+                    obj[ syn ] = entry.toObject();
+
+                    if(synonymsOnly === false) {
+                        obj[ id ] = entry.toObject();
+                    }
+                } else {
+                    obj[ syn ] = entry;
+    
+                    if(synonymsOnly === false) {
+                        obj[ id ] = entry.toObject();
+                    }
+                }
+            } else {
+                obj[ syn ] = entry;
+
+                if(synonymsOnly === false) {
+                    obj[ id ] = entry;
+                }
+            }
+        }
+
+        return obj;
     }
 }

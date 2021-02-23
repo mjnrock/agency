@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import Context from "./Context";
 
+//? <Observer> watches a <Context> and iteratively executes each @effect when <Context> emits "update"
 export default class Observer {
     constructor(ctx, ...effects) {        
         this._id = uuidv4();
