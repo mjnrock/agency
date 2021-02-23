@@ -65,6 +65,7 @@ export class Observable {
     };
 };
 
+//? Use the .Factory method to create a <Observable> with default state
 export function Factory(state = {}, isDeep = true) {
     const obs = new Observable(isDeep);
     

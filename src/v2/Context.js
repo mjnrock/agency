@@ -5,8 +5,11 @@ export class Context extends Observable {
     constructor({ rules = {}, refs = {}, deep = true } = {}) {
         super(false);
         
-        this.__rules = new Map(Object.entries(rules));
-        this.__references = new Map(Object.entries(refs));
+        this.__rules = new Map();
+        this.__references = new Map();
+
+        this.__add(rules);
+        this.__include(refs);
 
         return new Proxy(this, {
             get(target, prop) {
@@ -81,8 +84,9 @@ export class Context extends Observable {
     }
 };
 
-export function Factory(state = {}, { rules = {}, refs = {}, isDeep = true } = {}) {
-    const ctx = new Context(isDeep);
+//? Use the .Factory method to create a <Context> with default state
+export function Factory(state = {}, opts = {}) {
+    const ctx = new Context(opts);
     
     if(state instanceof Context) {
         state = state.toData();
