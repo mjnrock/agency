@@ -5,8 +5,8 @@ export class Context extends Observable {
     constructor({ rules = {}, refs = {}, deep = true } = {}) {
         super(false);
         
-        this.__rules = new Map();
-        this.__references = new Map();
+        this.__rules = new Map(Object.entries(rules));
+        this.__references = new Map(Object.entries(refs));
 
         return new Proxy(this, {
             get(target, prop) {
