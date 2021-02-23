@@ -1,12 +1,12 @@
+//? Only watch events at the root <Observable>, to avoid losing <Observer> bindings
+//?     All updates will get bubbled into a .next(dot-notation-prop, value) invocation
 export class Observable {
     constructor(next, { deep = true } = {}) {
-        if(typeof next !== "function") {
-            throw new Error("@next must be a function");
+        if(typeof next === "function") {
+            this.next = (...args) => new Promise((resolve, reject) => {
+                resolve(next(...args));
+            });
         }
-
-        this.next = (...args) => new Promise((resolve, reject) => {
-            resolve(next(...args));
-        });
 
         return new Proxy(this, {
             get(target, prop) {
@@ -31,11 +31,17 @@ export class Observable {
     }
 
     get next() {
-        return this.__next;
+        if(typeof this.__next === "function") {
+            return this.__next;
+        }
+
+        return () => {};
     }
     set next(fn) {
         if(typeof fn === "function") {
-            this.__next = fn;
+            this.__next = (...args) => new Promise((resolve, reject) => {
+                resolve(fn(...args));
+            });
         }
 
         return this;
@@ -58,7 +64,11 @@ export function ToData(observable, excluded = [ "__next" ]) {
     return obj;
 };
 
-export function Create(next, state = {}, isDeep = true) {
+export function Create(next, state = {}, isDeep = true) {    
+    if(arguments.length === 1 && typeof next === "object" || next instanceof Observable) {
+        state = ToData(next);
+    }
+
     const obs = new Observable(next, {
         deep: isDeep,
     });

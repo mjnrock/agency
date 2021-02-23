@@ -1,5 +1,4 @@
 import EventEmitter from "events";
-import { type } from "os";
 import { v4 as uuidv4 } from "uuid";
 import Mutator from "./Mutator";
 import Proposition from "./Proposition";

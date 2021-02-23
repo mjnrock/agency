@@ -1,3 +1,3 @@
 require = require("esm")(module/*, options*/)
 // module.exports = require("./src/index.js");
-module.exports = require("./tests/observable.js");
+module.exports = require("./tests/observer.js");
