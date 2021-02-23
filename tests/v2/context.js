@@ -27,3 +27,8 @@ obj.cats = 14;
 ctx.fish = 3;
 
 console.log(`RESULT`, ctx.toData());
+
+// console.log(Proposition.NAND(
+//     IsBetween(2, 10),
+//     IsLTE(1),
+// ).isNand)

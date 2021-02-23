@@ -13,8 +13,13 @@ export const Bitwise = {
 
         return base;
     },    
-    has(base, flag) {
-        return !!(base & flag);
+    has(base, ...flags) {
+        let result = true;
+        flags.forEach(flag => {
+            result = result && !!(base & flag);
+        });
+        
+        return result;
     }
 };
 

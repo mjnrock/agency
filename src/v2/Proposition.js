@@ -20,6 +20,12 @@ export class Proposition {
     get isNot() {
         return Bitwise.has(this.__type, EnumPropositionType.NOT);
     }
+    get isNor() {
+        return Bitwise.has(this.__type, EnumPropositionType.NOT, EnumPropositionType.OR);
+    }
+    get isNand() {
+        return Bitwise.has(this.__type, EnumPropositionType.NOT, EnumPropositionType.AND);
+    }
 
     test(...args) {
         const results = [];
