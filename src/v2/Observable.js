@@ -8,16 +8,14 @@
 //? Only watch events at the root <Observable>, to avoid losing <Observer> bindings
 //?     All updates will get bubbled into a .next(dot-notation-prop, value) invocation
 export class Observable {
-    constructor(next, { deep = true } = {}) {
-        this.next = next;
-
+    constructor(deep = true) {
         return new Proxy(this, {
             get(target, prop) {
                 return target[ prop ];
             },
             set(target, prop, value) {
                 if(deep && (typeof value === "object" || value instanceof Observable)) {
-                    target[ prop ] = Create((...args) => {
+                    target[ prop ] = Factory((...args) => {
                         const props = [ prop, ...args.slice(0, args.length - 1) ].join(".");
 
                         target.next(props, args.pop());
@@ -49,35 +47,29 @@ export class Observable {
 
         return this;
     }
-};
 
-export function ToData(observable, excluded = [ "__next" ]) {
-    const obj = {};
-
-    for(let [ key, value ] of Object.entries(observable)) {
-        if(!excluded.includes(key)) {
-            if(value instanceof Observable) {
-                obj[ key ] = ToData(value);
-            } else {
-                obj[ key ] = value;
+    toData() {
+        const obj = {};
+    
+        for(let [ key, value ] of Object.entries(this)) {
+            if(key[ 0 ] !== "_" && key[ 1 ] !== "_") {
+                if(value instanceof Observable) {
+                    obj[ key ] = value.toData();
+                } else {
+                    obj[ key ] = value;
+                }
             }
         }
-    }
-
-    return obj;
+    
+        return obj;
+    };
 };
 
-export function Create(next, state = {}, isDeep = true) {    
-    if(arguments.length === 1 && typeof next === "object" || next instanceof Observable) {
-        state = ToData(next);
-    }
-
-    const obs = new Observable(next, {
-        deep: isDeep,
-    });
+export function Factory(state = {}, isDeep = true) {
+    const obs = new Observable(isDeep);
     
     if(state instanceof Observable) {
-        state = ToData(state);
+        state = state.toData();
     }
 
     if(typeof state === "object") {
@@ -89,7 +81,6 @@ export function Create(next, state = {}, isDeep = true) {
     return obs;
 };
 
-Observable.ToData = ToData;
-Observable.Create = Create;
+Observable.Factory = Factory;
 
 export default Observable;

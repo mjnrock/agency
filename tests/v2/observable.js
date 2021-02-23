@@ -1,4 +1,4 @@
-import Observable from "../src/v2/Observable";
+import Observable from "../../src/v2/Observable";
 
 // const ob = Observable.Create(console.log);
 // ob.fish = 5;
@@ -29,4 +29,4 @@ ob.cats.qty = {
 };
 
 console.log(ob)
-console.log(Observable.ToData(ob))
+console.log(ob.toData())
