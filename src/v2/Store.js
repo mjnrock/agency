@@ -1,0 +1,85 @@
+import Observable from "./Observable";
+
+export class Store extends Observable {
+    constructor(state = {}, { reducers = [] } = {}) {
+        super(false, { noWrap: true });
+
+        this.__state = state;
+        this.__reducers = new Set(reducers);
+        
+        return new Proxy(this, {
+            get(target, prop) {
+                if(prop in target.__state) {
+                    return target.__state[ prop ];
+                }
+
+                return target[ prop ];
+            },
+            set(target, prop, value) {
+                if(prop === "next") {
+                    target.next = value;
+                } else if(prop === "state" || (prop[ 0 ] === "_" && prop[ 1 ] === "_" )) {
+                    target[ prop ] = value;
+                }
+
+                return this;
+            }
+        });
+    }
+
+    get state() {
+        return this.toData();
+    }
+    set state(state) {
+        if(this.__isProcessable !== true) {
+            return this;
+        }
+
+        if(typeof state === "object") {
+            const oldState = this.toData();
+            this.__state = state;
+
+            this.next("state", { current: this.state, previous: oldState });
+        }
+
+        return this;
+    }
+
+    process(...args) {
+        let state;
+        for(let reducer of this.__reducers.values()) {
+            state = reducer(state || this.__state, ...args);
+        }
+
+        this.__isProcessable = true;
+        this.state = state;
+        delete this.__isProcessable;
+        
+        return this;
+    }
+
+    toData() {
+        const obj = {};
+    
+        for(let [ key, value ] of Object.entries(this.__state)) {
+            if(key[ 0 ] !== "_" && key[ 1 ] !== "_") {
+                if(value instanceof Observable) {
+                    obj[ key ] = value.toData();
+                } else {
+                    obj[ key ] = value;
+                }
+            }
+        }
+    
+        return obj;
+    };
+};
+
+//? Use the .Factory method to create a <Store> with default state
+export function Factory(state = {}, { reducers } = {}) {
+    return new Store({ state, reducers });
+};
+
+Store.Factory = Factory;
+
+export default Store;
