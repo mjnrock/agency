@@ -1,6 +1,6 @@
 import EventEmitter from "events";
-import Observable from "./Observable";
 import Observer from "./Observer";
+import Proposition from "./Proposition";
 
 export class Channel extends EventEmitter {
     constructor() {
@@ -9,40 +9,60 @@ export class Channel extends EventEmitter {
         this.members = new Map();
     }
 
-    join(...members) {
-        for(let member of members) {
-            if(member instanceof Observable) {
-                member = new Observer(member);
+    join(observer, proposition) {
+        let fn;
+        if (proposition instanceof Proposition) {
+            fn = (props, value) => {
+                if (proposition.test(props, value, observer)) {
+                    this.emit(props, value, observer);
+                    this.emit("next", props, value, observer);
+                }
+            };
+        } else {
+            fn = (props, value) => {
+                this.emit(props, value, observer);
+                this.emit("next", props, value, observer);
             }
-            
-            if(member instanceof Observer) {
-                const fn = (props, value) => {
-                    this.emit(props, value, member);
-                    this.emit("next", props, value, member);
-                };
-                this.members.set(member.__id, { member, fn });
+        };
 
-                member.on("next", fn);
-            }
-        }
+        this.members.set(observer.__id, { member: observer, fn });
+
+        observer.on("next", fn);
 
         return this;
     }
-    leave(...members) {
-        for(let member of members) {
-            if(member instanceof Observer) {
-                const { fn } = this.members.get(member.__id) || {};
+    joinObservable(observable) {
+        const obs = new Observer(observable);
 
-                if(typeof fn === "function") {
-                    member.off("next", fn);
-                }
+        this.join(obs);
 
-                this.members.delete(member.__id);
-            }
-        }
+        return obs;
+    }
 
-        return this;
+    leave(observer) {
+        const { fn } = this.members.get(observer.__id);
+        observer.off("next", fn);
+
+        this.members.delete(observer.__id);
     }
 }
+
+export function PropType(prop) {
+    return Proposition.OR(
+        (props, value, observer) => {
+            return props === prop;
+        }
+    );
+}
+export function PropTypes(...props) {
+    return Proposition.OR(
+        (prop, value, observer) => {
+            return props.includes(prop);
+        }
+    );
+}
+
+Channel.PropType = PropType;
+Channel.PropTypes = PropTypes;
 
 export default Channel;

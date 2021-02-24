@@ -9,6 +9,7 @@ channel.on("next", (prop, key, observable) => console.log(prop, key));
 
 const ob = Context.Factory({
     test: 4,
+    cat: 2,
 }, {
     rules: {
         "test": Proposition.OR(
@@ -18,8 +19,11 @@ const ob = Context.Factory({
 });
 
 const obs = new Observer(ob);
-channel.join(obs);
+// channel.join(obs, Channel.PropType("test"));
+channel.join(obs, Channel.PropTypes("test", "cat"));
 
-ob.test = 140;
+ob.test = 14;
+ob.cat = {};
+ob.cat.cats = 5;
 
 console.log(ob.test)
