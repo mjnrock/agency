@@ -29,15 +29,19 @@ export class Context extends Observable {
                     }
                 }
 
-                if(deep && (typeof newValue === "object" || newValue instanceof Observable)) {
-                    target[ prop ] = Factory((...args) => {
+                if(deep && (typeof newValue === "object" || value instanceof Observable)) {
+                    const obs = Observable.Factory(newValue);
+                    obs.next = (...args) => {
                         const props = [ prop, ...args.slice(0, args.length - 1) ].join(".");
 
                         target.next(props, args.pop());
-                    }, newValue, deep);
+                    };
+
+                    target[ prop ] = obs;
+                } else {
+                    target[ prop ] = newValue;
                 }
 
-                target[ prop ] = newValue;
                 target.next(prop, target[ prop ]);
 
                 return target;

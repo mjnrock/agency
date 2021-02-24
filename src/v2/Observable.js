@@ -10,11 +10,11 @@ import { v4 as uuidv4 } from "uuid";
 //?     All updates will get bubbled into a .next(dot-notation-prop, value) invocation
 export class Observable {
     constructor(deep = true, { noWrap = false } = {}) {
+        this.__id = uuidv4();
+
         if(noWrap) {
             return this;
         }
-
-        this.__id = uuidv4();
         
         return new Proxy(this, {
             get(target, prop) {
@@ -22,11 +22,14 @@ export class Observable {
             },
             set(target, prop, value) {
                 if(deep && (typeof value === "object" || value instanceof Observable)) {
-                    target[ prop ] = Factory((...args) => {
+                    const obs = Factory(value);
+                    obs.next = (...args) => {
                         const props = [ prop, ...args.slice(0, args.length - 1) ].join(".");
 
                         target.next(props, args.pop());
-                    }, value, deep);
+                    };
+
+                    target[ prop ] = obs;
                 } else {
                     target[ prop ] = value;
                 }

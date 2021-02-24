@@ -48,6 +48,14 @@ export class Channel extends EventEmitter {
 }
 
 export function PropType(prop) {
+    if(prop instanceof RegExp) {
+        return Proposition.OR(
+            (props, value, observer) => {
+                return prop.test(props);
+            }
+        );
+    }
+
     return Proposition.OR(
         (props, value, observer) => {
             return props === prop;
@@ -62,7 +70,20 @@ export function PropTypes(...props) {
     );
 }
 
+export function IsObserver(observerOrId) {
+    return Proposition.OR(
+        (prop, value, observer) => {
+            if(observerOrId instanceof Observer) {
+                return observer === observerOrId;
+            }
+
+            return observer.__id === observerOrId;
+        }
+    );
+}
+
 Channel.PropType = PropType;
 Channel.PropTypes = PropTypes;
+Channel.IsObserver = IsObserver;
 
 export default Channel;
