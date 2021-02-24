@@ -3,7 +3,7 @@ import Proposition from "./Proposition";
 
 export class Context extends Observable {
     constructor({ rules = {}, refs = {}, deep = true } = {}) {
-        super(false);
+        super(false, { noWrap: true });
         
         this.__rules = new Map();
         this.__references = new Map();

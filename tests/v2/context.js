@@ -1,4 +1,4 @@
-import Proposition, { IsBetween, IsLTE, IsObject } from "../../src/v2/Proposition";
+import Proposition, { IsBetween, IsObject } from "../../src/v2/Proposition";
 import Context from "./../../src/v2/Context";
 import Observer from "./../../src/v2/Observer";
 
@@ -16,12 +16,11 @@ const ctx = new Context({
     refs: {
         "CATS": obj,
     },
-    parentRule: true,
 });
 
 const obs = new Observer(ctx);
-// obs.on("next", (...args) => console.log(`[:next] | `, ...args));
-// obs.on("fish", (...args) => console.log(`[:fish] | `, ...args));
+obs.on("next", (...args) => console.log(`[:next] | `, ...args));
+obs.on("fish", (...args) => console.log(`[:fish] | `, ...args));
 
 obj.cats = 14;
 ctx.fish = 3;

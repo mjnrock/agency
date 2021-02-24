@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 /**
  * The <Observable> is basically just a watchable <Object>
  *      and should basically always be used with an <Observer>
@@ -8,7 +9,13 @@
 //? Only watch events at the root <Observable>, to avoid losing <Observer> bindings
 //?     All updates will get bubbled into a .next(dot-notation-prop, value) invocation
 export class Observable {
-    constructor(deep = true) {
+    constructor(deep = true, { noWrap = false } = {}) {
+        if(noWrap) {
+            return this;
+        }
+
+        this.__id = uuidv4();
+        
         return new Proxy(this, {
             get(target, prop) {
                 return target[ prop ];

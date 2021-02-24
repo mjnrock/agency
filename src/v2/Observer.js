@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 import EventEmitter from "events";
 import Observable from "./Observable";
 
@@ -9,6 +10,7 @@ export class Observer extends EventEmitter {
             throw new Error("@observable must be an <Observable>");
         }
 
+        this.__id = uuidv4();
         this.subject = observable;
     }
 
