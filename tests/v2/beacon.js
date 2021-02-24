@@ -1,10 +1,10 @@
-import Proposition from "./../../src/v2/Proposition";
-import Context from "./../../src/v2/Context";
-import Observer from "./../../src/v2/Observer";
-import Channel from "./../../src/v2/Channel";
+import Proposition from "../../src/v2/Proposition";
+import Context from "../../src/v2/Context";
+import Observer from "../../src/v2/Observer";
+import Beacon from "../../src/v2/Beacon";
 
-const channel = new Channel();
-channel.on("next", (prop, value, observable) => console.log(prop, value));
+const beacon = new Beacon();
+beacon.on("next", (prop, value, observable) => console.log(prop, value));
 
 const ob = Context.Factory({
     test: 4,
@@ -21,9 +21,9 @@ const obs = new Observer(ob);
 // channel.join(obs, Channel.PropType("test"));
 // channel.join(obs, Channel.PropTypes("cat"));
 // channel.join(obs);
-channel.join(obs, Proposition.AND(
-    Channel.IsObserver(obs),
-    Proposition.NOT(Channel.PropType(/[a-zA-Z0-9]*\.next/i)),
+beacon.attach(obs, Proposition.AND(
+    Beacon.IsObserver(obs),
+    Proposition.NOT(Beacon.PropType(/[a-zA-Z0-9]*\.next/i)),
 ));
 
 // ob.test = 14;

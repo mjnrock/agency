@@ -1,15 +1,20 @@
 import EventEmitter from "events";
+import Observable from "./Observable";
 import Observer from "./Observer";
 import Proposition from "./Proposition";
 
-export class Channel extends EventEmitter {
+export class Beacon extends EventEmitter {
     constructor() {
         super();
 
         this.members = new Map();
     }
 
-    join(observer, proposition) {
+    attach(observer, proposition) {
+        if(observer instanceof Observable) {
+            observer = new Observer(observer);
+        }
+        
         let fn;
         if (proposition instanceof Proposition) {
             fn = (props, value) => {
@@ -29,17 +34,9 @@ export class Channel extends EventEmitter {
 
         observer.on("next", fn);
 
-        return this;
+        return observer;
     }
-    joinObservable(observable) {
-        const obs = new Observer(observable);
-
-        this.join(obs);
-
-        return obs;
-    }
-
-    leave(observer) {
+    detach(observer) {
         const { fn } = this.members.get(observer.__id);
         observer.off("next", fn);
 
@@ -82,8 +79,8 @@ export function IsObserver(observerOrId) {
     );
 }
 
-Channel.PropType = PropType;
-Channel.PropTypes = PropTypes;
-Channel.IsObserver = IsObserver;
+Beacon.PropType = PropType;
+Beacon.PropTypes = PropTypes;
+Beacon.IsObserver = IsObserver;
 
-export default Channel;
+export default Beacon;
