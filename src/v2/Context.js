@@ -108,6 +108,6 @@ export function Factory(state = {}, { rules = {}, refs = {}, deep } = {}) {
     return ctx;
 };
 
-Observable.Factory = Factory;
+Context.Factory = Factory;
 
 export default Context;
