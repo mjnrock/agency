@@ -45,10 +45,25 @@ export class Store extends Observable {
         return this;
     }
 
+    addReducer(...reducers) {
+        for(let reducer of reducers) {
+            this.__reducers.add(reducer);
+        }
+
+        return this;
+    }
+    removeReducer(...reducers) {
+        for(let reducer of reducers) {
+            this.__reducers.delete(reducer);
+        }
+
+        return this;
+    }
+
     process(...args) {
         let state;
         for(let reducer of this.__reducers.values()) {
-            state = reducer(state || this.__state, ...args);
+            state = reducer(state || this.__state, ...args) || state;
         }
 
         this.__isProcessable = true;
@@ -80,6 +95,15 @@ export function Factory(state = {}, { reducers } = {}) {
     return new Store({ state, reducers });
 };
 
+export function TypedReducer(type, fn) {
+    return (state, t, ...args) => {
+        if(type === t) {
+            return fn(state, ...args);
+        }
+    }
+};
+
 Store.Factory = Factory;
+Store.TypedReducer = TypedReducer;
 
 export default Store;
