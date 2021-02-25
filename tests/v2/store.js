@@ -4,14 +4,12 @@ import Observer from "../../src/v2/Observer";
 
 const store = new Store({
     cat: 4,
-}, {
-    reducers: [
-        (state, type, obj) => ({
-            type,
-            ...obj
-        })
-    ],
-});
+}, [
+    (state, type, obj) => ({
+        type,
+        ...obj
+    }),
+],);
 
 // console.log([ ...store.__reducers.values() ].map(fn => fn.toString()))
 

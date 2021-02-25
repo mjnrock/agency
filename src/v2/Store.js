@@ -2,7 +2,7 @@ import fetch from "node-fetch";
 import Observable from "./Observable";
 
 export class Store extends Observable {
-    constructor(state = {}, { reducers = [] } = {}) {
+    constructor(state = {}, reducers = []) {
         super(false, { noWrap: true });
 
         this.__state = state;
@@ -97,8 +97,8 @@ export class Store extends Observable {
 };
 
 //? Use the .Factory method to create a <Store> with default state
-export function Factory(state = {}, { reducers } = {}) {
-    return new Store({ state, reducers });
+export function Factory(state = {}, reducers = []) {
+    return new Store(state, reducers);
 };
 
 /**
