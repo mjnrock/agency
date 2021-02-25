@@ -19,11 +19,11 @@ obs.on("next", (state, { current }) => console.log(`OBSERVER`, current));
 // console.log(store.cat);
 // store.cat = 15;
 // // console.log(store.cat);
-// store.process(23138);
+// store.dispatch(23138);
 // console.log(store);
-// store.process("dog", 56);
-// store.process("cat", 99);
-// store.process("cas", 199);
+// store.dispatch("dog", 56);
+// store.dispatch("cat", 99);
+// store.dispatch("cas", 199);
 // console.log(store);
 
 // store.fetchDispatch("http://api.open-notify.org/iss-now.json", {}, "catsss");
