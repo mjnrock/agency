@@ -61,7 +61,7 @@ export class Store extends Observable {
         return this;
     }
 
-    process(...args) {
+    dispatch(...args) {
         let state;
         for(let reducer of this.__reducers.values()) {
             state = reducer(state || this.__state, ...args) || state;
@@ -73,16 +73,15 @@ export class Store extends Observable {
         
         return this;
     }
-    async fetchProcess(url, opts = {}, ...processArgs) {
-        return fetch(url, opts).then(resp => resp.json()).then(data => this.process(...processArgs, data)).catch(e => e);
+    async fetchDispatch(url, opts = {}, ...dispatchArgs) {
+        return fetch(url, opts).then(resp => resp.json()).then(data => this.dispatch(...dispatchArgs, data)).catch(e => e);
     }
-    async promiseProcess(promise, ...processArgs) {
-        return Promise.resolve(promise).then((...args) => this.process(...processArgs, ...args)).catch(e => e);
+    async promiseDispatch(promise, ...dispatchArgs) {
+        return Promise.resolve(promise).then((...args) => this.dispatch(...dispatchArgs, ...args)).catch(e => e);
     }
 
     toData() {
-        const obj = {};
-    
+        const obj = {};    
         for(let [ key, value ] of Object.entries(this.__state)) {
             if(key[ 0 ] !== "_" && key[ 1 ] !== "_") {
                 if(value instanceof Observable) {
