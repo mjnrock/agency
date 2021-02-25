@@ -64,7 +64,8 @@ export class Store extends Observable {
     dispatch(...args) {
         let state;
         for(let reducer of this.__reducers.values()) {
-            state = reducer(state || this.__state, ...args) || state;
+            const result = reducer(state !== void 0 ? state : this.__state, ...args);
+            state = result !== void 0 ? result : state;
         }
 
         this.__isProcessable = true;
