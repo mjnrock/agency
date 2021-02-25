@@ -1,3 +1,4 @@
+import fetch from "node-fetch";
 import Store from "../../src/v2/Store";
 import Observer from "../../src/v2/Observer";
 
@@ -27,4 +28,5 @@ obs.on("next", (state, { current }) => console.log(`OBSERVER`, current));
 // store.process("cas", 199);
 // console.log(store);
 
-store.fetchProcess("http://api.open-notify.org/iss-now.json", {}, "catsss");
+// store.fetchProcess("http://api.open-notify.org/iss-now.json", {}, "catsss");
+store.promiseProcess(fetch("http://api.open-notify.org/iss-now.json").then(resp => resp.json()));

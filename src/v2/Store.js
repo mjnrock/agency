@@ -73,8 +73,11 @@ export class Store extends Observable {
         
         return this;
     }
-    fetchProcess(url, opts = {}, ...args) {
-        return fetch(url, opts).then(resp => resp.json()).then(data => this.process(...args, data)).catch(e => e);
+    async fetchProcess(url, opts = {}, ...processArgs) {
+        return fetch(url, opts).then(resp => resp.json()).then(data => this.process(...processArgs, data)).catch(e => e);
+    }
+    async promiseProcess(promise, ...processArgs) {
+        return Promise.resolve(promise).then((...args) => this.process(...processArgs, ...args)).catch(e => e);
     }
 
     toData() {
