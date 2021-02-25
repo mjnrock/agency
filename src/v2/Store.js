@@ -1,3 +1,4 @@
+import fetch from "node-fetch";
 import Observable from "./Observable";
 
 export class Store extends Observable {
@@ -72,6 +73,9 @@ export class Store extends Observable {
         
         return this;
     }
+    fetchProcess(url, opts = {}, ...args) {
+        return fetch(url, opts).then(resp => resp.json()).then(data => this.process(...args, data)).catch(e => e);
+    }
 
     toData() {
         const obj = {};
@@ -95,6 +99,9 @@ export function Factory(state = {}, { reducers } = {}) {
     return new Store({ state, reducers });
 };
 
+/**
+ * The type variable should be the first argument passed to .process
+ */
 export function TypedReducer(type, fn) {
     return (state, t, ...args) => {
         if(type === t) {
