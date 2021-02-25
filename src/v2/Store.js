@@ -108,6 +108,8 @@ export function TypedReducer(type, fn) {
     return (state, t, ...args) => {
         if(type === t) {
             return fn(state, ...args);
+        } else if(typeof t === "object" && t.type === type) {   // "message object" that contains "type" key
+            return fn(state, t, ...args);
         }
     }
 };
