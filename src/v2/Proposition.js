@@ -1,4 +1,4 @@
-import Bitwise from "./../util/Bitwise";
+import Bitwise from "./util/Bitwise";
 
 export const EnumPropositionType = {
     OR: 2 << 0,

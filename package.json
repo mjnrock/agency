@@ -6,7 +6,7 @@
     "license": "None",
     "scripts": {
         "start": "node esm-index.js",
-        "prepublish": "babel --plugins transform-object-rest-spread,transform-class-properties src --out-dir lib",
+        "prepublish": "babel --plugins transform-object-rest-spread,transform-class-properties src/v2 --out-dir lib",
         "deploy": "yarn version --patch && yarn publish --access=public",
         "deploy-debug": "yarn version --patch && yarn publish --access=public && cd tests/_agency && yarn upgrade @lespantsfancy/agency && cd ../.."
     },
