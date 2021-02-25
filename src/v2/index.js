@@ -6,6 +6,7 @@ import Observer from "./Observer";
 import Context from "./Context";
 import Beacon from "./Beacon";
 import Store from "./Store";
+import Mutator from "./Mutator";
 
 export default {
     Util,
@@ -16,4 +17,5 @@ export default {
     Context,
     Beacon,
     Store,
+    Mutator,
 };
