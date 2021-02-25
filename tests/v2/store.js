@@ -2,14 +2,15 @@ import fetch from "node-fetch";
 import Store from "../../src/v2/Store";
 import Observer from "../../src/v2/Observer";
 
-const store = new Store({
-    cat: 4,
-}, [
+const store = new Store(
+    {
+        cat: 4,
+    },
     (state, type, obj) => ({
         type,
         ...obj
     }),
-],);
+);
 
 // console.log([ ...store.__reducers.values() ].map(fn => fn.toString()))
 
