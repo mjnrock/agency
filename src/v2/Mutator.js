@@ -64,4 +64,4 @@ export class Mutator {
     }
 }
 
-export default Beacon;
+export default Mutator;
