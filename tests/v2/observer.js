@@ -1,7 +1,7 @@
 import Observable from "../src/v2/Observable";
 import Observer from "../src/v2/Observer";
 
-let ob = Observable.Create({
+let ob = Observable.Factory({
     fish: 5,
     cats: {
         qty: 2,

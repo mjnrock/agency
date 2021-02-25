@@ -1,20 +1,30 @@
-import Observer from "./Observer";
+
 import { useState, useEffect, useContext } from "react";
 
+import Observer from "./Observer";
+import Observable from "./Observable";
+
 export function useObserver(context, prop) {
-    const observable = useContext(context);
-    const [ state, setState ] = useState({});
+    const ctx = useContext(context);
+    const [ observable, setObservable ] = useState(prop ? ctx[ prop ] : ctx);
+    const [ data, setData ] = useState({});
 
     useEffect(() => {
         const fn = function(prop, value) {
-            setState({
-                ...state,
-                [ prop ]: value,
-            });
+            if(observable) {
+                setData({
+                    ...observable.toData(),
+                    [ prop ]: value,
+                });
+            }
         };
 
-        const ob = prop ? observable[ prop ] : observable;
-        let obs = new Observer(ob);
+        let obs;
+        if(observable instanceof Observable) {
+            obs = new Observer(observable);
+        } else {
+            obs = Observer.Generate(observable);
+        }
         obs.on("next", fn);
 
         return () => {
@@ -22,8 +32,11 @@ export function useObserver(context, prop) {
             obs = null;
         }
     }, []);
+    useEffect(() => {
+        setData(observable.toData());
+    }, [ observable ]);
 
-    return state;
+    return [ data, observable ];
 };
 
 export default {
