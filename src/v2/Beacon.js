@@ -1,13 +1,20 @@
+import { v4 as uuidv4 } from "uuid";
 import EventEmitter from "events";
 import Observable from "./Observable";
 import Observer from "./Observer";
 import Proposition from "./Proposition";
 
+/**
+ * A special-case, <Observer>-like class that should
+ *      be used in cases where you would otherwise need
+ *      a dynamic <Observer>.subject
+ */
 export class Beacon extends EventEmitter {
     constructor() {
         super();
 
         this.members = new Map();
+        this.lookup = new Map();
     }
 
     attach(observer, proposition) {
@@ -41,6 +48,45 @@ export class Beacon extends EventEmitter {
         observer.off("next", fn);
 
         this.members.delete(observer.__id);
+    }
+
+    addAltListener(type = "prop", input, fn) {
+        const uuid = uuidv4();
+        
+        let wfn;
+        if(type === "prop") {
+            wfn = (p, v, ob, obs) => {
+                if(p === input) {
+                    fn(p, v, ob, obs);
+                }
+            };
+        } else if(type === "observable") {
+            wfn = (p, v, ob, obs) => {
+                if(ob === input || ob.__id === input) {
+                    fn(p, v, ob, obs);
+                }
+            };
+        } else if(type === "observer") {
+            wfn = (p, v, ob, obs) => {
+                if(obs === input || obs.__id === input) {
+                    fn(p, v, ob, obs);
+                }
+            };
+        }
+
+        this.lookup.set(uuid, wfn);
+        this.on("next", wfn);
+
+        return uuid;
+    }
+    addPropListener(property, fn) {
+        return this.addAltListener("prop", property, fn);
+    }
+    addObservableListener(observable, fn) {
+        return this.addAltListener("observable", observable, fn);
+    }
+    addObserverListener(observer, fn) {
+        return this.addAltListener("observer", observer, fn);
     }
 }
 

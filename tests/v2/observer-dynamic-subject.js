@@ -1,7 +1,10 @@
 import Observer from "../../src/v2/Observer";
 import Observable from "../../src/v2/Observable";
 
-//! The testing here reveals <Beacon> is viable, as <Observer> subjects require metadata
+//! This is sort of a proof-of-necessity by contradiction for <Beacon>
+//      Ultimately <Observer> would need to handle its fn's to be able to
+//      properly unsubscribe itself on changes, and would thus need extra
+//      metadata that an average-case <Observer> would never need
 
 const ob1 = Observable.Factory({
     cat: 3,
