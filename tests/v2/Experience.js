@@ -14,6 +14,17 @@ export default class Experience extends Value {
         return level * 1000;
     }
 
+    get onMax() {
+        return this._onmax;
+    }
+    set onMax(fn) {
+        if(typeof fn === "function") {
+            this._onmax = fn;
+        }
+
+        return this;
+    }
+
     get current() {
         return super.current;
     }
@@ -21,7 +32,7 @@ export default class Experience extends Value {
         super.current = value;
 
         if(!Number.isNaN(+this._max) && this._current >= this._max) {
-            this.onMax();
+            this._onmax();
         }
 
         return this;
@@ -54,10 +65,18 @@ export default class Experience extends Value {
     recalculate() {
         this.max = this.formula.call(this, this.level);
     }
+    alter({ level = 1, xp = 0 } = {}) {
+        this.level = level;
+        this.current = xp;
 
-    onMax() {
+        this.recalculate();
+    }
+
+    _onmax() {
         if(this.current >= this.max) {
             this._current -= this.max;
+        } else {
+            return;
         }
 
         this.level += 1;
@@ -65,7 +84,7 @@ export default class Experience extends Value {
         this.next("level", this.level);
 
         if(this.current >= this.max) {
-            this.onMax();
+            this._onmax();
         }
     }
 
