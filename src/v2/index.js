@@ -7,6 +7,8 @@ import Context from "./Context";
 import Beacon from "./Beacon";
 import Store from "./Store";
 import Mutator from "./Mutator";
+import EventObservable from "./EventObservable";
+import Pulse from "./Pulse";
 
 export default {
     Util,
@@ -18,4 +20,6 @@ export default {
     Beacon,
     Store,
     Mutator,
+    EventObservable,
+    Pulse,
 };
