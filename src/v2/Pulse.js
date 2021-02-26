@@ -9,6 +9,7 @@ export class Pulse extends Observable {
         super(false);
 
         this._bps = bps;
+        this.tick = {};
 
         this.loop = MainLoop.setBegin(this.pre.bind(this))
             .setUpdate(this.update.bind(this))
@@ -57,7 +58,10 @@ export class Pulse extends Observable {
      * @param {number} dt Frame delta in ms
      */
     update(dt) {
-        this.next("tick", [ dt, Date.now() ]);
+        this.tick = {
+            dt,
+            now: Date.now(),
+        };
     }
 
     /**
@@ -75,18 +79,18 @@ export class Pulse extends Observable {
     }
 }
 
-//  Create an <Observer> from an EXISTING <Observable>
+//  Create a new <Pulse>
 export function Factory(bps, opts = {}) {
     return new Pulse(bps, opts);
 };
 
 //  Create an <Observer> from an NON-EXISTING <Pulse> via Pulse.Factory(...args)
-export function Generate(bps, opts = {}, next) {
+export function Generate(bps, opts = {}, ontick) {
     const obs = new Observer(Pulse.Factory(bps, opts));
 
-    //  Attach an optional "next" listener
-    if(typeof next === "function") {
-        obs.on("next", next);
+    //  Attach an optional "tick" listener
+    if(typeof ontick === "function") {
+        obs.on("tick", ontick);
     }
 
     return obs;
