@@ -2,9 +2,10 @@
 import MainLoop from "mainloop.js";
 
 import Observable from "./Observable";
+import Observer from "./Observer";
 
-export default class Pulse extends Observable {
-    constructor(bps = 30) {
+export class Pulse extends Observable {
+    constructor(bps = 30, { autostart = true } = {}) {
         super(false);
 
         this._bps = bps;
@@ -15,7 +16,9 @@ export default class Pulse extends Observable {
             .setEnd(this.post.bind(this))
             .setSimulationTimestep(this.spb);
 
-        this.start();
+        if(autostart) {
+            this.start();
+        }
     }
 
     get bps() {
@@ -71,3 +74,25 @@ export default class Pulse extends Observable {
         }
     }
 }
+
+//  Create an <Observer> from an EXISTING <Observable>
+export function Factory(bps, opts = {}) {
+    return new Pulse(bps, opts);
+};
+
+//  Create an <Observer> from an NON-EXISTING <Pulse> via Pulse.Factory(...args)
+export function Generate(bps, opts = {}, next) {
+    const obs = new Observer(Pulse.Factory(bps, opts));
+
+    //  Attach an optional "next" listener
+    if(typeof next === "function") {
+        obs.on("next", next);
+    }
+
+    return obs;
+};
+
+Pulse.Factory = Factory;
+Pulse.Generate = Generate;
+
+export default Pulse;

@@ -49,7 +49,7 @@ export function Factory(observable) {
     return new Observer(observable);
 };
 
-//  Create an <Observer> from an NON-EXISTING <Observable> via Observable.Create(...args)
+//  Create an <Observer> from an NON-EXISTING <Observable> via Observable.Factory(...args)
 export function Generate(state = {}, isDeep = true) {
     return new Observer(Observable.Factory(state, isDeep));
 };
