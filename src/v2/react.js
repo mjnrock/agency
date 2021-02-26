@@ -39,8 +39,38 @@ export function useObserver(context, prop) {
     return [ data, observable ];
 };
 
+export function useBeacon(context, prop) {
+    const ctx = useContext(context);
+    const [ beacon, setBeacon ] = useState(prop ? ctx[ prop ] : ctx);
+    const [ data, setData ] = useState({});
+
+    useEffect(() => {
+        const fn = function(prop, value) {
+            if(beacon) {
+                setData({
+                    ...data,
+                    [ prop ]: value,
+                });
+            }
+        };        
+        beacon.on("next", fn);
+    
+        return () => {
+            beacon.off("next", fn);
+            setBeacon(null);
+        }
+    }, []);
+    
+    useEffect(() => {
+        setData({});
+    }, [ beacon ]);
+
+    return { data, beacon };
+};
+
 export default {
     useObserver,
+    useBeacon,
 };
 
 
