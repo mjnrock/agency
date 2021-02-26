@@ -22,14 +22,14 @@ export class Observable {
             },
             set(target, prop, value) {
                 if(deep && (typeof value === "object" || value instanceof Observable)) {
-                    const obs = Factory(value);
-                    obs.next = (...args) => {
+                    const ob = value instanceof Observable ? value : Factory(value);
+                    ob.next = (...args) => {
                         const props = [ prop, ...args.slice(0, args.length - 1) ].join(".");
 
                         target.next(props, args.pop());
                     };
 
-                    target[ prop ] = obs;
+                    target[ prop ] = ob;
                 } else {
                     target[ prop ] = value;
                 }

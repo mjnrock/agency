@@ -1,4 +1,5 @@
 import Observable from "../../src/v2/Observable";
+import Value from "./Value";
 
 // const ob = Observable.Create(console.log);
 // ob.fish = 5;
@@ -10,7 +11,7 @@ import Observable from "../../src/v2/Observable";
 //     }
 // };
 
-const ob = Observable.Create((prop, value) => console.log(prop.split("."), value), {
+const ob = Observable.Factory({
     fish: 5,
     cats: {
         qty: 2,
