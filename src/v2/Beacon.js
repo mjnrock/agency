@@ -19,14 +19,14 @@ export class Beacon extends EventEmitter {
         if (proposition instanceof Proposition) {
             fn = (props, value) => {
                 if (proposition.test(props, value, observer)) {
-                    this.emit(props, value, observer);
-                    this.emit("next", props, value, observer);
+                    this.emit(props, value, observer.subject, observer);
+                    this.emit("next", props, value, observer.subject, observer);
                 }
             };
         } else {
             fn = (props, value) => {
-                this.emit(props, value, observer);
-                this.emit("next", props, value, observer);
+                this.emit(props, value, observer.subject, observer);
+                this.emit("next", props, value, observer.subject, observer);
             }
         };
 
