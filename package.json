@@ -12,6 +12,7 @@
     },
     "dependencies": {
         "esm": "^3.2.25",
+        "mainloop.js": "^1.0.4",
         "node-fetch": "^2.6.1",
         "object-hash": "^2.1.1",
         "uuid": "^8.3.2"
