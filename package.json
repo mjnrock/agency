@@ -1,12 +1,12 @@
 {
     "name": "@lespantsfancy/agency",
-    "version": "0.2.30",
+    "version": "0.3.1",
     "main": "lib/index.js",
     "author": "Matt Nawrocki <mjnrock@umich.edu>",
     "license": "None",
     "scripts": {
         "start": "node esm-index.js",
-        "prepublish": "babel --plugins transform-object-rest-spread,transform-class-properties src/v2 --out-dir lib",
+        "prepublish": "babel --plugins transform-object-rest-spread,transform-class-properties,babel-plugin-transform-react-jsx src/v2 --out-dir lib",
         "deploy": "yarn version --patch && yarn publish --access=public",
         "deploy-debug": "yarn version --patch && yarn publish --access=public && cd tests/_agency && yarn upgrade @lespantsfancy/agency && cd ../.."
     },
@@ -28,6 +28,7 @@
         "babel-loader": "^8.1.0",
         "babel-plugin-transform-class-properties": "^6.24.1",
         "babel-plugin-transform-object-rest-spread": "^6.26.0",
+        "babel-plugin-transform-react-jsx": "^6.24.1",
         "babel-preset-es2015": "^6.24.1",
         "esm": "^3.2.25",
         "express": "^4.17.1",
