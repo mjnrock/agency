@@ -1,5 +1,6 @@
 import { v4 as uuidv4, validate } from "uuid";
 import Observable from "./Observable";
+import Observer from "./Observer";
 
 export class Registry extends Observable {
     constructor(deep = true) {
@@ -71,5 +72,16 @@ export class Registry extends Observable {
         return this;
     }
 };
+
+export function Factory(deep) {
+    return new Registry(deep);
+};
+
+export function Generate(deep = true) {
+    return new Observer(Registry.Factory(deep));
+};
+
+Registry.Factory = Factory;
+Registry.Generate = Generate;
 
 export default Registry;

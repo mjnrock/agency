@@ -1,5 +1,14 @@
 import { v4 as uuidv4 } from "uuid";
 import Mutator from "./Mutator";
+
+//TODO Consider merging to a scheme with syntactic naming
+/**
+ * These would all affect how .toData() and .next() process them
+ * `${ var }`    | public variable: [ next, toData, toDetail ]
+ * `$${ var }`   | meta variable: [ next, toDetail ]
+ * `__${ var }`  | private variable: [ toDetail ]
+ */
+
 /**
  * The <Observable> is basically just a watchable <Object>
  *      and should basically always be used with an <Observer>

@@ -1,6 +1,10 @@
 import Observable from "./Observable";
 import Proposition from "./Proposition";
 
+//TODO  Consider expanding the rules to allow something similar to a CSS Selector/DB Query system for props
+/**
+ *  "*" can be used to assign the "default rule", which must be true for ALL assignments, if present
+ */
 export class Context extends Observable {
     constructor({ rules = {}, refs = {}, deep = true } = {}) {
         super(false, { noWrap: true });
@@ -17,6 +21,10 @@ export class Context extends Observable {
             },
             set(target, prop, value) {
                 let newValue = value;
+
+                if(target.__defaultRule(newValue, target[ prop ], { prop, target }) !== true) {
+                    return target;
+                }
 
                 const rule = target.__rules.get(prop);
                 if(typeof rule === "function") {
@@ -47,6 +55,17 @@ export class Context extends Observable {
                 return target;
             }
         });
+    }
+
+    __defaultRule(...args) {
+        const rule = this.__rules.get("*");
+        if(typeof rule === "function") {
+            return rule(...args);
+        } else if(rule instanceof Proposition) {
+            return rule.test(...args);
+        }
+
+        return true;
     }
 
     __(key) {

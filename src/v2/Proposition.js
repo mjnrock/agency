@@ -121,6 +121,9 @@ export function IsObject() {
 export function HasProps(...props) {
     return Proposition.OR((input, ...args) => typeof input === "object" && props.every(prop => prop in input));
 }
+export function Match(regexp) {
+    return Proposition.OR((input, ...args) => regexp.test(input));
+}
 
 export function InstanceOf(clazz) {
     return Proposition.OR((input, ...args) => input instanceof clazz);
@@ -163,6 +166,7 @@ Proposition.IsFunction = IsFunction;
 Proposition.IsArray = IsArray;
 Proposition.IsObject = IsObject;
 Proposition.HasProps = HasProps;
+Proposition.Match = Match;
 
 Proposition.InstanceOf = InstanceOf;
 Proposition.IsObservable = IsObservable;

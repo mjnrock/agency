@@ -64,6 +64,34 @@ export class Mutator {
 
         return obj;
     }
+
+    //? .select|apply|change allow the <Mutator> to filter entries-as-kvp-objects
+    //?     via @__proposition and change each remaining { key: value } by iterative
+    //?     assignment via @this.__methods (obj[ key ] = ...fns(...))
+    select(obj = {}) {
+        const res = {};
+        if(this.__proposition) {
+            for(let [ key, value ] of Object.entries(obj)) {
+                if(this.__proposition.test(key, value) === true) {
+                    res[ key ] = value;
+                }
+            }
+        }
+
+        return res;
+    }
+    apply(obj = {}, ...args) {
+        for(let [ key, value ] of Object.entries(obj)) {
+            for(let fn of this.__methods) {
+                obj[ key ] = fn(obj[ key ], key, ...args);
+            }
+        }
+
+        return obj;
+    }
+    change(obj, ...args) {
+        return this.apply(this.select(obj), ...args);
+    }
 }
 
 export default Mutator;
