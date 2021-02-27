@@ -9,6 +9,7 @@ import Store from "./Store";
 import Mutator from "./Mutator";
 import EventObservable from "./EventObservable";
 import Pulse from "./Pulse";
+import Registry from "./Registry";
 
 export default {
     Util,
@@ -22,4 +23,5 @@ export default {
     Mutator,
     EventObservable,
     Pulse,
+    Registry,
 };

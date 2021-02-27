@@ -1,6 +1,3 @@
-import Observable, { Wrap } from "../../src/v2/Observable";
-import Observer from "../../src/v2/Observer";
-
 class Value {
     constructor(current) {
         this.current = current;

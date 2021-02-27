@@ -25,7 +25,9 @@ export class Observable {
                 return target[ prop ];
             },
             set(target, prop, value) {
-                if(deep && (typeof value === "object" || value instanceof Observable)) {
+                if(Array.isArray(value)) {
+                    target[ prop ] = value;
+                } else if(deep && (typeof value === "object" || value instanceof Observable)) {
                     const ob = value instanceof Observable ? value : Factory(value);
                     ob.next = (...args) => {
                         const props = [ prop, ...args.slice(0, args.length - 1) ].join(".");
@@ -66,6 +68,10 @@ export class Observable {
         return this;
     }
 
+    /**
+     * For the most part, this is sufficient for only grabbing custom functions and ignoring property methods
+     *      That being said, override in ancestor if issues arise
+     */
     toData() {
         const obj = {};
     
