@@ -11,8 +11,8 @@ export class Observer extends EventEmitter {
     constructor(observable) {
         super();
 
-        if(!(observable instanceof Observable || observable instanceof Observer)) {
-            throw new Error("@observable must be an <Observable>");
+        if(!(observable instanceof Observable || observable instanceof Observer || observable instanceof Beacon)) {
+            throw new Error("@observable must be a: <Observable>, <Observer>, or <Beacon>");
         }
 
         this.__id = uuidv4();
@@ -33,7 +33,7 @@ export class Observer extends EventEmitter {
                 this.emit(props, value, observable, this);
                 this.emit("next", props, value, observable, this);
             };
-        } else if(observable instanceof Observer) {
+        } else if(observable instanceof Observer || observable instanceof Beacon) {
             this.__subject = observable;
             this.__subject.on("next", (props, value, subject, observer) => {
                 this.emit("next", props, value, subject, observer);
