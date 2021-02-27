@@ -122,6 +122,9 @@ export function HasProps(...props) {
     return Proposition.OR((input, ...args) => typeof input === "object" && props.every(prop => prop in input));
 }
 
+export function InstanceOf(clazz) {
+    return Proposition.OR((input, ...args) => input instanceof clazz);
+}
 export function IsObservable() {
     return Proposition.OR((input, ...args) => input instanceof Observable);
 }
@@ -161,6 +164,7 @@ Proposition.IsArray = IsArray;
 Proposition.IsObject = IsObject;
 Proposition.HasProps = HasProps;
 
+Proposition.InstanceOf = InstanceOf;
 Proposition.IsObservable = IsObservable;
 Proposition.IsObserver = IsObserver;
 Proposition.IsBeacon = IsBeacon;
