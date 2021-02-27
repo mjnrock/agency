@@ -1,5 +1,6 @@
 import fetch from "node-fetch";
 import Observable from "./Observable";
+import Mutator from "./Mutator";
 
 export class Store extends Observable {
     constructor(state = {}, ...reducers) {
@@ -64,7 +65,12 @@ export class Store extends Observable {
     dispatch(...args) {
         let state;
         for(let reducer of this.__reducers.values()) {
-            const result = reducer(state !== void 0 ? state : this.__state, ...args);
+            let result;
+            if(typeof result === "function") {
+                result = reducer(state !== void 0 ? state : this.__state, ...args);
+            } else if(result instanceof Mutator) {
+                result = reducer.mutate(state !== void 0 ? state : this.__state, ...args);
+            }
             state = result !== void 0 ? result : state;
         }
 

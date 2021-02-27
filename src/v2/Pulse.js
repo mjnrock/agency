@@ -1,5 +1,6 @@
 /* eslint-disable */
 import MainLoop from "mainloop.js";
+import Mutator from "./Mutator";
 
 import Observable from "./Observable";
 import Observer from "./Observer";
@@ -91,6 +92,8 @@ export function Generate(bps, opts = {}, ontick) {
     //  Attach an optional "tick" listener
     if(typeof ontick === "function") {
         obs.on("tick", ontick);
+    } else if(ontick instanceof Mutator) {
+        obs.on("tick", ontick.process);
     }
 
     return obs;

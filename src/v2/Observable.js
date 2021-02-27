@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import Mutator from "./Mutator";
 /**
  * The <Observable> is basically just a watchable <Object>
  *      and should basically always be used with an <Observer>
@@ -45,7 +46,7 @@ export class Observable {
     }
 
     get next() {
-        if(typeof this.__next === "function") {
+        if(typeof this.__next === "function" || this.__next instanceof Mutator) {
             return this.__next;
         }
 
@@ -55,6 +56,10 @@ export class Observable {
         if(typeof fn === "function") {
             this.__next = (...args) => new Promise((resolve, reject) => {
                 resolve(fn(...args));
+            });
+        } else if(fn instanceof Mutator) {
+            this.__next = (...args) => new Promise((resolve, reject) => {
+                resolve(fn.process(...args));
             });
         }
 
@@ -106,6 +111,8 @@ export function Wrap(obj = {}) {
 
             if(typeof target.next === "function") {
                 target.next(prop, target[ prop ]);
+            } else if(target.next instanceof Mutator) {
+                target.next.process(prop, target[ prop ]);
             }
 
             return target;

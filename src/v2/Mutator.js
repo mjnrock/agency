@@ -33,16 +33,18 @@ export class Mutator {
                 for(let fn of this.__methods) {
                     fn(...args);
                 }
+
+                return true;
             }
 
-            return this;
-        } else {
-            for(let fn of this.__methods) {
-                fn(...args);
-            }
-
-            return this;
+            return false;
         }
+        
+        for(let fn of this.__methods) {
+            fn(...args);
+        }
+
+        return true;
     }
     /**
      * Take @obj and reassign each subsequent reducer execution result, iteratively mutating @obj

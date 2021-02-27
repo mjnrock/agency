@@ -1,3 +1,8 @@
+import Mutator from "./Mutator";
+import Observable from "./Observable";
+import Observer from "./Observer";
+import Beacon from "./Beacon";
+
 import Bitwise from "./util/Bitwise";
 
 export const EnumPropositionType = {
@@ -34,6 +39,8 @@ export class Proposition {
                 results.push(evaluator(...args));
             } else if(evaluator instanceof Proposition) {
                 results.push(evaluator.test(...args));
+            } else if(evaluator instanceof Mutator) {
+                results.push(evaluator.process(...args));
             }
         }
 
@@ -115,6 +122,22 @@ export function HasProps(...props) {
     return Proposition.OR((input, ...args) => typeof input === "object" && props.every(prop => prop in input));
 }
 
+export function IsObservable() {
+    return Proposition.OR((input, ...args) => input instanceof Observable);
+}
+export function IsObserver() {
+    return Proposition.OR((input, ...args) => input instanceof Observer);
+}
+export function IsBeacon() {
+    return Proposition.OR((input, ...args) => input instanceof Beacon);
+}
+export function IsProposition() {
+    return Proposition.OR((input, ...args) => input instanceof Proposition);
+}
+export function IsMutator() {
+    return Proposition.OR((input, ...args) => input instanceof Mutator);
+}
+
 Proposition.OR = OR;
 Proposition.AND = AND;
 Proposition.NOT = NOT;
@@ -137,5 +160,11 @@ Proposition.IsFunction = IsFunction;
 Proposition.IsArray = IsArray;
 Proposition.IsObject = IsObject;
 Proposition.HasProps = HasProps;
+
+Proposition.IsObservable = IsObservable;
+Proposition.IsObserver = IsObserver;
+Proposition.IsBeacon = IsBeacon;
+Proposition.IsProposition = IsProposition;
+Proposition.IsMutator = IsMutator;
 
 export default Proposition;
