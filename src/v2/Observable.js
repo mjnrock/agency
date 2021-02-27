@@ -65,7 +65,7 @@ export class Observable {
         const obj = {};
     
         for(let [ key, value ] of Object.entries(this)) {
-            if(key[ 0 ] !== "_" && key[ 1 ] !== "_") {
+            if(key[ 0 ] !== "_" || (key[ 0 ] === "_" && key[ 1 ] !== "_")) {
                 if(value instanceof Observable) {
                     obj[ key ] = value.toData();
                 } else {

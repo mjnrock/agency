@@ -29,7 +29,7 @@ export const StandardLibrary = {
     // ],
 };
 
-export default class EventObservable extends Observable {
+export class EventObservable extends Observable {
     constructor(eventEmitter, events = [], { windowDefault = true } = {}) {
         super(false);
 
@@ -71,3 +71,12 @@ export default class EventObservable extends Observable {
         }
     }
 }
+
+//? Use the .Factory method to create a <Observable> with default state
+export function Factory(eventEmitter, events, opts = {}) {
+    return new EventObservable(eventEmitter, events, opts);
+};
+
+EventObservable.Factory = Factory;
+
+export default EventObservable;

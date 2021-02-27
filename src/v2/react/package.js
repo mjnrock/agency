@@ -1,8 +1,11 @@
-
 import { useState, useEffect, useContext } from "react";
 
-import Observer from "./Observer";
-import Observable from "./Observable";
+import AgencyObserver from "./../Observer";
+import AgencyObservable from "./../Observable";
+
+import JSXComponents from "./components/package";
+
+export const Components = JSXComponents;
 
 export function useObserver(context, prop) {
     const ctx = useContext(context);
@@ -20,10 +23,10 @@ export function useObserver(context, prop) {
         };
 
         let obs;
-        if(observable instanceof Observable) {
-            obs = new Observer(observable);
+        if(observable instanceof AgencyObservable) {
+            obs = new AgencyObserver(observable);
         } else {
-            obs = Observer.Generate(observable);
+            obs = AgencyObserver.Generate(observable);
         }
         obs.on("next", fn);
 
@@ -52,26 +55,29 @@ export function useBeacon(context, prop) {
                     [ prop ]: value,
                 });
             }
-        };        
+        };
         beacon.on("next", fn);
-    
+
         return () => {
             beacon.off("next", fn);
             setBeacon(null);
         }
     }, []);
-    
-    useEffect(() => {
-        setData({});
-    }, [ beacon ]);
 
     return { data, beacon };
 };
 
 export default {
+    Components: JSXComponents,
+
     useObserver,
     useBeacon,
 };
+
+
+
+
+
 
 
 
