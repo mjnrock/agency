@@ -95,6 +95,25 @@ export function Factory(state = {}, isDeep = true) {
     return obs;
 };
 
+//FIXME This is still mostly a work in progress, as it doesn't yet do what it's meant to
+export function Wrap(obj = {}) {
+    return new Proxy(obj, {
+        get(target, prop) {
+            return target[ prop ];
+        },
+        set(target, prop, value) {
+            target[ prop ] = value;
+
+            if(typeof target.next === "function") {
+                target.next(prop, target[ prop ]);
+            }
+
+            return target;
+        }
+    });
+};
+
 Observable.Factory = Factory;
+// Observable.Wrap = Wrap;
 
 export default Observable;

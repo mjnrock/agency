@@ -1,3 +1,4 @@
+import util from "util";
 import { v4 as uuidv4 } from "uuid";
 import EventEmitter from "events";
 import Observable from "./Observable";
@@ -11,10 +12,6 @@ export class Observer extends EventEmitter {
     constructor(observable) {
         super();
 
-        if(!(observable instanceof Observable || observable instanceof Observer || observable instanceof Beacon)) {
-            throw new Error("@observable must be a: <Observable>, <Observer>, or <Beacon>");
-        }
-
         this.__id = uuidv4();
         this.subject = observable;
     }
@@ -27,7 +24,7 @@ export class Observer extends EventEmitter {
         return this.__subject;
     }
     set subject(observable) {
-        if(observable instanceof Observable) {
+        if(observable instanceof Observable || util.types.isProxy(observable)) {
             this.__subject = observable;
             this.__subject.next = (props, value) => {
                 this.emit(props, value, observable, this);
