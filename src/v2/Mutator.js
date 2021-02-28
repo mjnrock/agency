@@ -31,7 +31,11 @@ export class Mutator {
         if(this.__proposition) {
             if(this.__proposition.test(...args) === true) {
                 for(let fn of this.__methods) {
-                    fn(...args);
+                    if(typeof fn === "function") {
+                        fn(...args);
+                    } else if(fn instanceof Mutator) {
+                        fn.process(...args);
+                    }
                 }
 
                 return true;
@@ -41,7 +45,11 @@ export class Mutator {
         }
         
         for(let fn of this.__methods) {
-            fn(...args);
+            if(typeof fn === "function") {
+                fn(...args);
+            } else if(fn instanceof Mutator) {
+                fn.process(...args);
+            }
         }
 
         return true;
@@ -53,12 +61,20 @@ export class Mutator {
         if(this.__proposition) {
             if(this.__proposition.test(...args) === true) {
                 for(let fn of this.__methods) {
-                    obj = fn(obj, ...args);
+                    if(typeof fn === "function") {
+                        obj = fn(obj, ...args);
+                    } else if(fn instanceof Mutator) {
+                        obj = fn.mutate(obj, ...args);
+                    }
                 }
             }
         } else {
             for(let fn of this.__methods) {
-                obj = fn(obj, ...args);
+                if(typeof fn === "function") {
+                    obj = fn(obj, ...args);
+                } else if(fn instanceof Mutator) {
+                    obj = fn.mutate(obj, ...args);
+                }
             }
         }
 
@@ -68,11 +84,14 @@ export class Mutator {
     //? .select|apply|change allow the <Mutator> to filter entries-as-kvp-objects
     //?     via @__proposition and change each remaining { key: value } by iterative
     //?     assignment via @this.__methods (obj[ key ] = ...fns(...))
-    select(obj = {}) {
+    /**
+     * A qualifier-filter function designed to test whether object values would activate the <Mutator>
+     */
+    qualify(obj = {}, ...args) {
         const res = {};
         if(this.__proposition) {
             for(let [ key, value ] of Object.entries(obj)) {
-                if(this.__proposition.test(key, value) === true) {
+                if(this.__proposition.test(key, value, ...args) === true) {
                     res[ key ] = value;
                 }
             }
@@ -83,14 +102,20 @@ export class Mutator {
     apply(obj = {}, ...args) {
         for(let [ key, value ] of Object.entries(obj)) {
             for(let fn of this.__methods) {
-                obj[ key ] = fn(obj[ key ], key, ...args);
+                if(typeof fn === "function") {
+                    obj[ key ] = fn(key, obj[ key ], ...args);
+                } else if(fn instanceof Mutator) {
+                    obj[ key ] = fn.mutate(obj[ key ], key, obj[ key ], ...args);
+                }
             }
         }
 
         return obj;
     }
-    change(obj, ...args) {
-        return this.apply(this.select(obj), ...args);
+    perform(obj = {}, qualifyArgs = [], applyArgs = []) {
+        const selected = this.qualify(obj, ...qualifyArgs);
+        
+        return this.apply(selected, ...applyArgs);
     }
 }
 

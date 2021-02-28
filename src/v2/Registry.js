@@ -5,6 +5,10 @@ import Observer from "./Observer";
 export class Registry extends Observable {
     constructor(deep = true) {
         super(false, { noWrap: true });
+
+        this.__props = {
+            size: 0,
+        };
             
         return new Proxy(this, {
             get(target, prop) {
@@ -19,7 +23,6 @@ export class Registry extends Observable {
                 return target[ prop ];
             },
             set(target, prop, value) {
-                console.log(prop, value)
                 if(validate(prop) || validate(value)) {
                     if(deep && value instanceof Observable) {
                         const ob = value;
@@ -44,10 +47,62 @@ export class Registry extends Observable {
         });
     }
 
+    get size() {
+        return this.__props.size;
+    }
+
+    get entries() {
+        return Object.entries(this).reduce((a, [ k, v ]) => {
+            if(validate(k)) {
+                return [ ...a, [ k, v ] ];
+            }
+
+            return a;
+        }, []);
+    }
+    get values() {
+        return Object.entries(this).reduce((a, [ k, v ]) => {
+            if(validate(k)) {
+                return [ ...a, v ];
+            }
+
+            return a;
+        }, []);
+    }
+    get keys() {
+        return Object.keys(this).reduce((a, key) => {
+            if(key[ 0 ] !== "_" || (key[ 0 ] === "_" && key[ 1 ] !== "_")) {
+                return [ ...a, key ];
+            }
+
+            return a;
+        }, []);
+    }
+    
+    get ids() {
+        return Object.keys(this).reduce((a, v) => {
+            if(validate(v)) {
+                return [ ...a, v ];
+            }
+
+            return a;
+        }, []);
+    }
+    get synonyms() {
+        return Object.entries(this).reduce((a, [ k, v ]) => {
+            if((k[ 0 ] !== "_" || (k[ 0 ] === "_" && k[ 1 ] !== "_")) && validate(v)) {
+                return [ ...a, k ];
+            }
+
+            return a;
+        }, []);
+    }
+
     register(entry, ...synonyms) {
         let uuid = (entry || {}).__id || uuidv4();
         
         this[ uuid ] = entry;
+        this.__props.size += 1;
 
         for(let synonym of synonyms) {
             this[ synonym ] = uuid;
@@ -67,6 +122,7 @@ export class Registry extends Observable {
             }
 
             delete this[ uuid ];
+            this.__props.size -= 1;
         }
 
         return this;
