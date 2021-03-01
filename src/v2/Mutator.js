@@ -88,6 +88,20 @@ export class Mutator {
      * A qualifier-filter function designed to test whether object values would activate the <Mutator>
      */
     qualify(obj = {}, ...args) {
+        if(Array.isArray(obj)) {
+            const res = [];
+            if(this.__proposition) {
+                for(let i = 0; i < obj.length; i++) {
+                    const value = obj[ i ];
+                    if(this.__proposition.test(i, value, ...args) === true) {
+                        res.push(value);
+                    }
+                }
+            }
+
+            return res;
+        }
+
         const res = {};
         if(this.__proposition) {
             for(let [ key, value ] of Object.entries(obj)) {
@@ -100,6 +114,22 @@ export class Mutator {
         return res;
     }
     apply(obj = {}, ...args) {
+        if(Array.isArray(obj)) {            
+            const res = [];
+            for(let i = 0; i < obj.length; i++) {
+                const value = obj[ i ];
+                for(let fn of this.__methods) {
+                    if(typeof fn === "function") {
+                        res.push(fn(i, value, ...args));
+                    } else if(fn instanceof Mutator) {
+                        res.push(fn.mutate(value, i, value, ...args));
+                    }
+                }
+            }
+
+            return res;
+        }
+
         for(let [ key, value ] of Object.entries(obj)) {
             for(let fn of this.__methods) {
                 if(typeof fn === "function") {
