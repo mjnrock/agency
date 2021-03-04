@@ -1,6 +1,6 @@
 {
     "name": "@lespantsfancy/agency",
-    "version": "0.3.14",
+    "version": "0.3.15",
     "main": "lib/index.js",
     "author": "Matt Nawrocki <mjnrock@umich.edu>",
     "license": "None",
@@ -12,10 +12,22 @@
     },
     "dependencies": {
         "esm": "^3.2.25",
+        "is-base64": "^1.1.0",
         "mainloop.js": "^1.0.4",
         "node-fetch": "^2.6.1",
         "object-hash": "^2.1.1",
         "uuid": "^8.3.2"
+    },
+    "eslintConfig": {
+        "extends": [
+            "react-app",
+            "react-app/jest"
+        ],
+        "rules": {
+            "import/no-anonymous-default-export": "off",
+            "no-useless-constructor": "off",
+            "no-unused-vars": "off"
+        }
     },
     "peerDependencies": {
         "react": "^17.0.1",
