@@ -6,6 +6,17 @@
     "scripts": {
         "start": "node esm-index.js"
     },
+    "eslintConfig": {
+        "extends": [
+            "react-app",
+            "react-app/jest"
+        ],
+        "rules": {
+            "import/no-anonymous-default-export": "off",
+            "no-useless-constructor": "off",
+            "no-unused-vars": "off"
+        }
+    },
     "dependencies": {
         "@lespantsfancy/agency": "^0.1.3",
         "esm": "^3.2.25"

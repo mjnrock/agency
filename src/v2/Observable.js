@@ -31,9 +31,49 @@ export class Observable {
         
         return new Proxy(this, {
             get(target, prop) {
+                if(prop.includes(".")) {
+                    let props = prop.split(".");
+
+                    if(props[ 0 ] === "$") {
+                        props = props.slice(1);
+                    }
+
+                    let result = target;
+                    for(let p of props) {
+                        if(result[ p ] !== void 0) {
+                            result = result[ p ];
+                        }
+                    }
+
+                    return result;
+                }
+
                 return target[ prop ];
             },
             set(target, prop, value) {
+                if(prop.includes(".")) {
+                    let props = prop.split(".");
+
+                    if(props[ 0 ] === "$") {
+                        props = props.slice(1);
+                    }
+
+                    let result = target;
+                    for(let i = 0; i < props.length; i++) {
+                        const p = props[ i ];
+                        
+                        if(i < props.length - 1) {
+                            result = result[ p ];
+                        } else {
+                            result[ p ] = value;
+
+                            target.next(prop, result[ p ]);
+                        }
+                    }
+
+                    return this;
+                }
+
                 if(Array.isArray(value)) {
                     target[ prop ] = value;
                 } else if(deep && (typeof value === "object" || value instanceof Observable)) {
@@ -102,11 +142,11 @@ export class Observable {
 export function Factory(state = {}, isDeep = true) {
     const obs = new Observable(isDeep);
     
-    if(state instanceof Observable) {
-        state = state.toData();
-    }
+    // if(state instanceof Observable) {
+    //     state = state.toData();
+    // }
 
-    if(typeof state === "object") {
+    if(typeof state === "object" || state instanceof Observable) {
         for(let [ key, value ] of Object.entries(state)) {
             obs[ key ] = value;
         }

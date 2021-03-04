@@ -17,6 +17,23 @@ export class Context extends Observable {
 
         return new Proxy(this, {
             get(target, prop) {
+                if(prop.includes(".")) {
+                    let props = prop.split(".");
+
+                    if(props[ 0 ] === "$") {
+                        props = props.slice(1);
+                    }
+
+                    let result = target;
+                    for(let p of props) {
+                        if(result[ p ] !== void 0) {
+                            result = result[ p ];
+                        }
+                    }
+
+                    return result;
+                }
+
                 return target[ prop ];
             },
             set(target, prop, value) {
@@ -35,6 +52,29 @@ export class Context extends Observable {
                     if(rule.test(newValue, target[ prop ], { prop, target }) !== true) {
                         return target;
                     }
+                }
+
+                if(prop.includes(".")) {
+                    let props = prop.split(".");
+
+                    if(props[ 0 ] === "$") {
+                        props = props.slice(1);
+                    }
+
+                    let result = target;
+                    for(let i = 0; i < props.length; i++) {
+                        const p = props[ i ];
+                        
+                        if(i < props.length - 1) {
+                            result = result[ p ];
+                        } else {
+                            result[ p ] = newValue;
+
+                            target.next(prop, result[ p ]);
+                        }
+                    }
+
+                    return target;
                 }
 
                 if(deep && (typeof newValue === "object" || value instanceof Observable)) {
