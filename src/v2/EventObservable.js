@@ -1,5 +1,5 @@
-/* eslint-disable */
 import Observable from "./Observable";
+import Observer from "./Observer";
 
 export const StandardLibrary = {
     Keyboard: [
@@ -33,24 +33,38 @@ export const StandardLibrary = {
  * This class wraps an <EventEmitter> and watches
  *      for @events.  Each invocation will store
  *      all arguments present in the event into a
- *      local this[ type ] object, thus triggering
+ *      local this[ eventName ] object, thus triggering
  *      any attached <Observer> to broadcast the data.
  *      
  * The <EventObservable> will cache the previous (n-1)
  *      data so that comparative analysis can be performed.
+ * 
+ * ! Because of the getter/setters on <Observable>, you
+ * !    cannot follow a "next" event; you must specify
+ * !    the specific properties, if wrapping an "nextable".
  */
 export class EventObservable extends Observable {
-    constructor(eventEmitter, events = [], { windowDefault = false } = {}) {
-        super(false);
-
-        if(windowDefault) {
-            eventEmitter = eventEmitter || window;
-        }
+    constructor(eventEmitter, events = []) {
+        super(false, { noWrap: true });
 
         this.__emitter = eventEmitter;
         this.__handlers = {};
 
-        this.add(...events);
+        const _this = new Proxy(this, {
+            get(target, prop) {
+                return target[ prop ];
+            },
+            set(target, prop, value) {
+                target[ prop ] = value;
+                target.next(prop, target[ prop ]);
+
+                return target;
+            }
+        });
+
+        _this.add(...events);
+
+        return _this;
     }
 
     __updateFn(type, ...args) {
@@ -72,11 +86,13 @@ export class EventObservable extends Observable {
         }
 
         for(let eventName of eventNames) {
-            this[ eventName ] = {};     
-            this.__handlers[ eventName ] = (...args) => this.__updateFn.call(this, eventName, ...args);       
+            this[ eventName ] = {};
+            this.__handlers[ eventName ] = (...args) => this.__updateFn(eventName, ...args);
 
             this.__emitter.on(eventName, this.__handlers[ eventName ]);
         }
+
+        return this;
     }
     remove(...eventNames) {
         if(Array.isArray(eventNames[ 0 ])) {    // "Single argument" assumption, overload
@@ -89,12 +105,14 @@ export class EventObservable extends Observable {
             delete this[ eventName ];
             delete this.__handlers[ eventName ];
         }
+
+        return this;
     }
 }
 
 //? Use the .Factory method to create a <Observable> with default state
-export function Factory(eventEmitter, events, opts = {}) {
-    return new EventObservable(eventEmitter, events, opts);
+export function Factory(eventEmitter, events) {
+    return new EventObservable(eventEmitter, events);
 };
 
 export function SubjectFactory(eventEmitter, events, opts = {}) {
