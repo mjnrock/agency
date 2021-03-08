@@ -29,9 +29,10 @@ export class Observable {
             return this;
         }
         
+        //TODO  Object.getOwnPropertyDescriptor(object1, 'property1').get/.set to check if is a getter/setter and thus ignore
         return new Proxy(this, {
             get(target, prop) {
-                if(prop.includes(".")) {
+                if((typeof prop === "string" || prop instanceof String) && prop.includes(".")) {
                     let props = prop.split(".");
 
                     if(props[ 0 ] === "$") {
@@ -51,7 +52,7 @@ export class Observable {
                 return target[ prop ];
             },
             set(target, prop, value) {
-                if(prop.includes(".")) {
+                if((typeof prop === "string" || prop instanceof String) && prop.includes(".")) {
                     let props = prop.split(".");
 
                     if(props[ 0 ] === "$") {

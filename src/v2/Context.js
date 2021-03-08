@@ -17,7 +17,7 @@ export class Context extends Observable {
 
         return new Proxy(this, {
             get(target, prop) {
-                if(prop.includes(".")) {
+                if((typeof prop === "string" || prop instanceof String) && prop.includes(".")) {
                     let props = prop.split(".");
 
                     if(props[ 0 ] === "$") {
@@ -54,7 +54,7 @@ export class Context extends Observable {
                     }
                 }
 
-                if(prop.includes(".")) {
+                if((typeof prop === "string" || prop instanceof String) && prop.includes(".")) {
                     let props = prop.split(".");
 
                     if(props[ 0 ] === "$") {

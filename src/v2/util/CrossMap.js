@@ -167,4 +167,12 @@ export class CrossMap {
     }
 }
 
+export function CreateGrid(dimLengths = [], opts = {}) {
+    const dims = dimLengths.map(v => [ ...Array(v) ].map((v, i) => i));
+    
+    return new CrossMap(dims, opts);
+}
+
+CrossMap.CreateGrid = CreateGrid;
+
 export default CrossMap;

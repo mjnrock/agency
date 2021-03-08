@@ -4,6 +4,8 @@ import nodeFetch from "node-fetch";
 const envFetch = fetch || nodeFetch;
 
 export const Base64 = {
+    test: input => isBase64(input, { mimeRequired: true }),
+
     // If successful, will return a base64 string with mime, else false
     Encode: (input, quality = 1.0) => {
         return new Promise((resolve, reject) => {

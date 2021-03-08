@@ -8,7 +8,7 @@ import Beacon from "../../src/v2/Beacon";
 
 
 const beacon = new Beacon();
-const pulse = Pulse.Generate(1);
+const pulse = Pulse.SubjectFactory(1);
 
 beacon.attach(pulse);
 beacon.on("tick", (value, ob, obs) => console.log(`TICK`, value));

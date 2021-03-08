@@ -5,9 +5,7 @@ import Observer from "./Observer";
 import Proposition from "./Proposition";
 
 /**
- * A special-case, <Observer>-like class that should
- *      be used in cases where you would otherwise need
- *      a dynamic <Observer>.subject
+ * A "multi-subject" <Observer>
  */
 export class Beacon extends EventEmitter {
     constructor() {

@@ -29,24 +29,40 @@ export const StandardLibrary = {
     // ],
 };
 
+/**
+ * This class wraps an <EventEmitter> and watches
+ *      for @events.  Each invocation will store
+ *      all arguments present in the event into a
+ *      local this[ type ] object, thus triggering
+ *      any attached <Observer> to broadcast the data.
+ *      
+ * The <EventObservable> will cache the previous (n-1)
+ *      data so that comparative analysis can be performed.
+ */
 export class EventObservable extends Observable {
-    constructor(eventEmitter, events = [], { windowDefault = true } = {}) {
+    constructor(eventEmitter, events = [], { windowDefault = false } = {}) {
         super(false);
 
         if(windowDefault) {
             eventEmitter = eventEmitter || window;
         }
 
-        this.subject = eventEmitter;
+        this.__emitter = eventEmitter;
+        this.__handlers = {};
 
         this.add(...events);
     }
 
-    __updateFn(e) {
-        this[ e.type ] = {
-            e,
+    __updateFn(type, ...args) {
+        this[ type ] = {
+            previous: {
+                data: this[ type ].data,
+                dt: this[ type ].dt,
+                n: this[ type ].n,
+            },
+            data: args,
             dt: Date.now(),
-            n: ((this[ e.type ] || {}).n || 0) + 1
+            n: (this[ type ].n || 0) + 1,
         };
     }
 
@@ -56,7 +72,10 @@ export class EventObservable extends Observable {
         }
 
         for(let eventName of eventNames) {
-            this.subject.on(eventName, this.__updateFn.bind(this));
+            this[ eventName ] = {};     
+            this.__handlers[ eventName ] = (...args) => this.__updateFn.call(this, eventName, ...args);       
+
+            this.__emitter.on(eventName, this.__handlers[ eventName ]);
         }
     }
     remove(...eventNames) {
@@ -65,9 +84,10 @@ export class EventObservable extends Observable {
         }
 
         for(let eventName of eventNames) {
+            this.__emitter.off(eventName, this.__handlers[ eventName ]);
+            
             delete this[ eventName ];
-
-            this.subject.off(eventName, this.__updateFn.bind(this));
+            delete this.__handlers[ eventName ];
         }
     }
 }
@@ -77,6 +97,11 @@ export function Factory(eventEmitter, events, opts = {}) {
     return new EventObservable(eventEmitter, events, opts);
 };
 
+export function SubjectFactory(eventEmitter, events, opts = {}) {
+    return new Observer(EventObservable.Factory(eventEmitter, events, opts));
+};
+
 EventObservable.Factory = Factory;
+EventObservable.SubjectFactory = SubjectFactory;
 
 export default EventObservable;

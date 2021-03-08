@@ -26,7 +26,7 @@ export function useObserver(context, prop) {
         if(observable instanceof AgencyObservable) {
             obs = new AgencyObserver(observable);
         } else {
-            obs = AgencyObserver.Generate(observable);
+            obs = AgencyObserver.SubjectFactory(observable);
         }
         obs.on("next", fn);
 

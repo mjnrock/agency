@@ -86,7 +86,7 @@ export function Factory(bps, opts = {}) {
 };
 
 //  Create an <Observer> from an NON-EXISTING <Pulse> via Pulse.Factory(...args)
-export function Generate(bps, opts = {}, ontick) {
+export function SubjectFactory(bps, opts = {}, ontick) {
     const obs = new Observer(Pulse.Factory(bps, opts));
 
     //  Attach an optional "tick" listener
@@ -100,6 +100,6 @@ export function Generate(bps, opts = {}, ontick) {
 };
 
 Pulse.Factory = Factory;
-Pulse.Generate = Generate;
+Pulse.SubjectFactory = SubjectFactory;
 
 export default Pulse;
