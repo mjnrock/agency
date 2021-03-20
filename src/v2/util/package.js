@@ -1,9 +1,10 @@
-/* eslint-disable */
 import Dice from "./Dice";
 import WeightedPool from "./WeightedPool";
 import Bitwise from "./Bitwise";
 import Base64 from "./Base64";
 import CrossMap from "./CrossMap";
+import Enumerator from "./Enumerator";
+import LinkedList from "./LinkedList";
 
 export default {
     Dice,
@@ -11,4 +12,6 @@ export default {
     Bitwise,
     Base64,
     CrossMap,
+    Enumerator,
+    LinkedList,
 };

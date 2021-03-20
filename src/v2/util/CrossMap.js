@@ -28,6 +28,12 @@ export class CrossMap {
         return this;
     }
 
+    replaceLookups(...fns) {
+        this.__lookups = fns;
+
+        return this;
+    }
+
     __dive(...args) {
         if(args.length === 1 && typeof args[ 0 ] === "object") { // Assume "lookup" utilization
             let coords = [];

@@ -39,16 +39,28 @@ export const StandardLibrary = {
  * The <EventObservable> will cache the previous (n-1)
  *      data so that comparative analysis can be performed.
  * 
+ * ? Middleware can be added to any given event listener
+ * ?    to use <EventObservable> as a mediation center, too.
+ * ?    If the middleware fn --> false, then the handler
+ * ?     will not fire.
+ * ? @useExistingFnAsMiddleware=true will use any existing function
+ * ?    present on an `on${ eventName }` assignment as the middleware.
+ * 
  * ! Because of the getter/setters on <Observable>, you
  * !    cannot follow a "next" event; you must specify
- * !    the specific properties, if wrapping an "nextable".
+ * !    the specific properties, if wrapping a "nextable".
  */
 export class EventObservable extends Observable {
-    constructor(eventEmitter, events = []) {
+    constructor(eventEmitter, events = [], { middleware = {}, useExistingFnAsMiddleware = false } = {}) {
         super(false, { noWrap: true });
 
         this.__emitter = eventEmitter;
         this.__handlers = {};
+        this.__middleware = middleware;
+
+        this.__config = {
+            useExistingFnAsMiddleware,
+        };
 
         const _this = new Proxy(this, {
             get(target, prop) {
@@ -87,9 +99,29 @@ export class EventObservable extends Observable {
 
         for(let eventName of eventNames) {
             this[ eventName ] = {};
-            this.__handlers[ eventName ] = (...args) => this.__updateFn(eventName, ...args);
+            this.__handlers[ eventName ] = (...args) => {
+                if(typeof this.__middleware[ eventName ] === "function") {
+                    const result = this.__middleware[ eventName ](...args);
 
-            this.__emitter.on(eventName, this.__handlers[ eventName ]);
+                    if(result === false) {
+                        return false;
+                    }
+                }
+
+                this.__updateFn(eventName, ...args);
+
+                return true;
+            }
+
+            if(typeof this.__emitter.on === "function") {
+                this.__emitter.on(eventName, this.__handlers[ eventName ]);
+            } else if(`on${ eventName }` in this.__emitter) {
+                if(this.__config.useExistingFnAsMiddleware && typeof this.__emitter[ `on${ eventName }` ] === "function") {
+                    this.__middleware[ eventName ] = this.__emitter[ `on${ eventName }` ];
+                }
+
+                this.__emitter[ `on${ eventName }` ] = this.__handlers[ eventName ];
+            }
         }
 
         return this;
@@ -103,6 +135,7 @@ export class EventObservable extends Observable {
             this.__emitter.off(eventName, this.__handlers[ eventName ]);
             
             delete this[ eventName ];
+            delete this.__middleware[ eventName ];
             delete this.__handlers[ eventName ];
         }
 
@@ -111,14 +144,34 @@ export class EventObservable extends Observable {
 }
 
 //? Use the .Factory method to create a <Observable> with default state
-export function Factory(eventEmitter, events) {
-    return new EventObservable(eventEmitter, events);
+export function Factory(eventEmitter, events, opts = {}) {
+    return new EventObservable(eventEmitter, events, opts);
 };
 
 export function SubjectFactory(eventEmitter, events, opts = {}) {
-    return new Observer(EventObservable.Factory(eventEmitter, events, opts));
+    const obs = new Observer(EventObservable.Factory(eventEmitter, events, opts));
+
+    for(let [ key, value ] of Object.entries(opts)) {
+        if(events.includes(key) || key === "next") {
+            if(typeof opts[ key ] === "function") {
+                obs.on(key, opts[ key ]);
+            }
+        }
+    }
+    
+    if(opts.insertRef) {
+        eventEmitter.__agencyEObs = obs;
+    }
+
+    return obs;
 };
 
+
+export function GetRef(eventEmitter) {
+    return eventEmitter.__agencyEObs;
+};
+
+EventObservable.GetRef = GetRef;
 EventObservable.Factory = Factory;
 EventObservable.SubjectFactory = SubjectFactory;
 
