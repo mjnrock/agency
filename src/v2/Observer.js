@@ -2,6 +2,7 @@ import util from "util";
 import { v4 as uuidv4 } from "uuid";
 import EventEmitter from "events";
 import Observable from "./Observable";
+import Beacon from "./Beacon";
 
 /**
  * <Observer> will bubble up the original <Observable> and
@@ -26,9 +27,9 @@ export class Observer extends EventEmitter {
     set subject(observable) {
         if(observable instanceof Observable || util.types.isProxy(observable)) {
             this.__subject = observable;
-            this.__subject.next = (props, value) => {
-                this.emit(props, value, observable, this);
-                this.emit("next", props, value, observable, this);
+            this.__subject.next = (props, value, ob) => {
+                this.emit(props, value, ob || observable, this);
+                this.emit("next", props, value, ob || observable, this);
             };
         } else if(observable instanceof Observer || observable instanceof Beacon) {
             this.__subject = observable;
