@@ -19,6 +19,12 @@ export const wrapNested = (root, prop, input) => {
             return t[ p ];
         },
         set(t, p, v) {
+            if(p.startsWith("_")) {      // Don't broadcast any _Private/__Internal variables
+                t[ p ] = v;
+
+                return t;
+            }
+            
             if(typeof v === "object") {
                 let ob = wrapNested(root, `${ prop }.${ p }`, v);
 
@@ -61,18 +67,10 @@ export class Watchable {
                     return target;
                 }
 
-                if(deep) {
-                    if(typeof value === "object") {
-                        let ob = wrapNested(target, prop, value);
+                if(deep && typeof value === "object") {
+                    target[ prop ] = wrapNested(target, prop, value);
 
-                        target[ prop ] = ob;
-
-                        target.broadcast(prop, ob);
-                    } else {
-                        target[ prop ] = value;
-
-                        target.broadcast(prop, value);
-                    }
+                    target.broadcast(prop, target[ prop ]);
                 } else {
                     target[ prop ] = value;
 
