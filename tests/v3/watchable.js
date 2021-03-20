@@ -27,18 +27,21 @@ ob.watch((...args) => console.log(this, ...args))
 
 // ob.watch(function(...args) { console.log(this, ...args) })
 
-ob.cat = 15;
-ob.fish.a = 7;
-ob.fish.blah.cheese = 9;
-ob.hat.push(328495)
+// ob.cat = 15;
+// ob.fish.a = 7;
+// ob.fish.blah.cheese = 9;
+// ob.fish.blah = { cheese: 999 };
+// ob.fish.blah.cheese = 9;
+// ob.hat.push(328495)
 
-ob.test.inside = false;
-ob.test.nested.layer1.layer2.sup = "YES";
-ob.test.nested.layer1 = 25223;
+// ob.test.inside = false;
+// ob.test.nested.layer1.layer2.sup = "YES";
+ob.test.nested.layer1 = [ 1, 2, 3 ];
+ob.test.nested.layer1.push(6)
 
 // ob.purge(true)
 // console.log(ob.toData({ includePrivateKeys: true }));
 
 // console.log(ob)
-console.log(ob.toData())
-// console.log(JSON.stringify(ob))
+// console.log(ob.toData())
+console.log(JSON.stringify(ob))

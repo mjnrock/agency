@@ -6,7 +6,7 @@ export const wrapNested = (root, prop, input) => {
     if(input instanceof ProxyPrototype) {
         return input;
     } else if(input instanceof Watchable) {
-        input.watch((p, v) => root.broadcast(p, v));
+        input.watch((p, v) => root.broadcast(`${ prop }.${ p }`, v));
 
         return input;
     }
@@ -19,7 +19,13 @@ export const wrapNested = (root, prop, input) => {
             return t[ p ];
         },
         set(t, p, v) {
-            t[ p ] = v;
+            if(typeof v === "object") {
+                let ob = wrapNested(root, `${ prop }.${ p }`, v);
+
+                t[ p ] = ob;
+            } else {
+                t[ p ] = v;
+            }
             
             if(!(Array.isArray(input) && p in Array.prototype)) {   // Don't broadcast native <Array> keys (i.e. .push returns .length)
                 root.broadcast(`${ prop }.${ p }`, v);
