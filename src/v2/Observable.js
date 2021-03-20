@@ -25,8 +25,6 @@ export class Observable {
     constructor(deep = true, { noWrap = false } = {}) {
         this.__id = uuidv4();
 
-        this.__subscribors = new Set();
-
         if(noWrap) {
             return this;
         }
@@ -34,10 +32,65 @@ export class Observable {
         //TODO  Object.getOwnPropertyDescriptor(object1, 'property1').get/.set to check if is a getter/setter and thus ignore
         return new Proxy(this, {
             get(target, prop) {
+                if((typeof prop === "string" || prop instanceof String) && prop.includes(".")) {
+                    let props = prop.split(".");
+
+                    if(props[ 0 ] === "$") {
+                        props = props.slice(1);
+                    }
+
+                    let result = target;
+                    for(let p of props) {
+                        if(result[ p ] !== void 0) {
+                            result = result[ p ];
+                        }
+                    }
+
+                    return result;
+                }
+
                 return target[ prop ];
             },
             set(target, prop, value) {
-                target[ prop ] = value;
+                if((typeof prop === "string" || prop instanceof String) && prop.includes(".")) {
+                    let props = prop.split(".");
+
+                    if(props[ 0 ] === "$") {
+                        props = props.slice(1);
+                    }
+
+                    let result = target;
+                    for(let i = 0; i < props.length; i++) {
+                        const p = props[ i ];
+                        
+                        if(i < props.length - 1) {
+                            result = result[ p ];
+                        } else {
+                            result[ p ] = value;
+
+                            target.next(prop, result[ p ]);
+                        }
+                    }
+
+                    return this;
+                }
+
+                if(Array.isArray(value)) {
+                    target[ prop ] = value;
+                } else if(deep && (typeof value === "object" || value instanceof Observable)) {
+                    const ob = value instanceof Observable ? value : Factory(value);
+                    ob.next = (...args) => {
+                        const props = [ prop, ...args.slice(0, args.length - 1) ].join(".");
+
+                        target.next(props, args.pop());
+                    };
+
+                    target[ prop ] = ob;
+                } else {
+                    target[ prop ] = value;
+                }
+
+                target.next(prop, target[ prop ]);
 
                 return target;
             }
@@ -89,6 +142,10 @@ export class Observable {
 //? Use the .Factory method to create a <Observable> with default state
 export function Factory(state = {}, isDeep = true) {
     const obs = new Observable(isDeep);
+    
+    // if(state instanceof Observable) {
+    //     state = state.toData();
+    // }
 
     if(typeof state === "object" || state instanceof Observable) {
         for(let [ key, value ] of Object.entries(state)) {
@@ -120,5 +177,6 @@ export function Wrap(obj = {}) {
 };
 
 Observable.Factory = Factory;
+// Observable.Wrap = Wrap;
 
 export default Observable;
