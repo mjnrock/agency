@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 
 export const ProxyPrototype = class {};
 
-export const proxyWrap = (root, prop, input) => {
+export const wrapNested = (root, prop, input) => {
     if(input instanceof ProxyPrototype) {
         return input;
     } else if(input instanceof Watchable) {
@@ -31,7 +31,7 @@ export const proxyWrap = (root, prop, input) => {
 
     for(let [ key, value ] of Object.entries(input)) {
         if(typeof value === "object") {
-            proxy[ key ] = proxyWrap(root, `${ prop }.${ key }`, value);
+            proxy[ key ] = wrapNested(root, `${ prop }.${ key }`, value);
         }
     }
 
@@ -49,7 +49,7 @@ export class Watchable {
                 return target[ prop ];
             },
             set(target, prop, value) {
-                if(prop.startsWith("_")) {
+                if(prop.startsWith("_")) {      // Don't broadcast any _Private/__Internal variables
                     target[ prop ] = value;
 
                     return target;
@@ -57,7 +57,7 @@ export class Watchable {
 
                 if(deep) {
                     if(typeof value === "object") {
-                        let ob = proxyWrap(target, prop, value);
+                        let ob = wrapNested(target, prop, value);
 
                         target[ prop ] = ob;
 
