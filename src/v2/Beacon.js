@@ -22,16 +22,16 @@ export class Beacon extends EventEmitter {
         
         let fn;
         if (proposition instanceof Proposition) {
-            fn = (props, value) => {
+            fn = (props, value, ob, obs) => {
                 if (proposition.test(props, value, observer)) {
-                    this.emit(props, value, observer.subject, observer);
-                    this.emit("next", props, value, observer.subject, observer);
+                    this.emit(props, value, ob || observer.subject, obs || observer);
+                    this.emit("next", props, value, ob || observer.subject, obs || observer);
                 }
             };
         } else {
-            fn = (props, value) => {
-                this.emit(props, value, observer.subject, observer);
-                this.emit("next", props, value, observer.subject, observer);
+            fn = (props, value, ob, obs) => {
+                this.emit(props, value, ob || observer.subject, obs || observer);
+                this.emit("next", props, value, ob || observer.subject, obs || observer);
             }
         };
 

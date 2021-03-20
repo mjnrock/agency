@@ -1,4 +1,5 @@
 import { v4 as uuidv4, validate } from "uuid";
+
 import Observable from "./Observable";
 import Observer from "./Observer";
 
@@ -27,9 +28,9 @@ export class Registry extends Observable {
                     if(deep && value instanceof Observable) {
                         const ob = value;
                         ob.next = (...args) => {
-                            const props = [ prop, ...args.slice(0, args.length - 1) ].join(".");
+                            const props = target[ prop ] !== void 0 ? [ ...args.slice(0, args.length - 1) ].join(".") : [ prop, ...args.slice(0, args.length - 1) ].join(".");
         
-                            target.next(props, args.pop());
+                            target.next(props, args.pop(), ob);
                         };
         
                         target[ prop ] = ob;
