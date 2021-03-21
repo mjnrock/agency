@@ -1,6 +1,6 @@
 import EventEmitter from "events";
 
-import EventWatchable from "../../src/v3/EventWatchable";
+import EventWatchable from "../../src/v4/EventWatchable";
 
 const ee = new EventEmitter();
 const ew = new EventWatchable(ee, [ "test1", "test2" ]);

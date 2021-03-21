@@ -1,5 +1,5 @@
-import Watchable from "../../src/v3/Watchable";
-import Watcher from "../../src/v3/Watcher";
+import Watchable from "../../src/v4/Watchable";
+import Watcher from "../../src/v4/Watcher";
 
 const ob1 = new Watchable({
     cat: 5,
