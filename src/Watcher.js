@@ -20,7 +20,7 @@ export class Watcher extends Watchable {
                     /**
                      * @prop | The chain-prop from the original emission
                      * @value | The chain-prop's value from the original emission
-                     * @subject | The original <Watchable>
+                     * @subject | The original .emit <Watchable>
                      * @observer | The original subscriber (fn|Watcher) -- The original <Watcher> in a chain emission
                      * @emitter | The emitting <Watchable> -- The final <Watcher> in a chain emission
                      * @subscriber | The subscription fn|Watcher receiving the invocation
