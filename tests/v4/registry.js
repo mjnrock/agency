@@ -17,4 +17,5 @@ reg.unregister(reg.ids[ 0 ]);
 console.log(reg);
 
 reg.register({ cat: 2 }, "kiszka", "buddha");
-console.log(reg);
+reg.catssss = 435;
+console.log(reg.$.toData());
