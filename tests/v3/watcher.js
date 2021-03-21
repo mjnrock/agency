@@ -24,7 +24,8 @@ const obs4 = new Watcher([
 
 // obs.$.subscribe((...args) => { console.log(this, ...args); });
 // obs1.$.subscribe(function(...args) { console.log(this, ...args); });
-obs4.$.subscribe(function(...args) { console.log(this, ...args); });
+obs4.$.subscribe((...args) => { console.log(this, ...args); });
+// obs4.$.subscribe(function(...args) { console.log(this, ...args); });
 
 // ob1.cat = 10;
 // ob2.cat = 15;

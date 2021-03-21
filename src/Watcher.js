@@ -35,9 +35,9 @@ export class Watcher extends Watchable {
                     };
         
                     if(typeof subscriber === "function") {
-                        subscriber.call(payload, prop, value);
+                        subscriber.call(payload, prop, value, payload.subject.$.id);
                     } else if(subscriber instanceof Watchable) {
-                        subscriber.$.emit.call(payload, prop, value);
+                        subscriber.$.emit.call(payload, prop, value, payload.subject.$.id);
                     }
                 }
         
