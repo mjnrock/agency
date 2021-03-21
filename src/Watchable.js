@@ -6,7 +6,7 @@ export const wrapNested = (root, prop, input) => {
     if(input instanceof ProxyPrototype) {
         return input;
     } else if(input instanceof Watchable) {
-        input.watch((p, v) => root.broadcast(`${ prop }.${ p }`, v));
+        input.$.subscribe((p, v) => root.$.emit(`${ prop }.${ p }`, v));
 
         return input;
     }
@@ -19,7 +19,7 @@ export const wrapNested = (root, prop, input) => {
             return t[ p ];
         },
         set(t, p, v) {
-            if(p.startsWith("_")) {      // Don't broadcast any _Private/__Internal variables
+            if(p.startsWith("_")) {      // Don't emit any _Private/__Internal variables
                 t[ p ] = v;
 
                 return t;
@@ -33,8 +33,8 @@ export const wrapNested = (root, prop, input) => {
                 t[ p ] = v;
             }
             
-            if(!(Array.isArray(input) && p in Array.prototype)) {   // Don't broadcast native <Array> keys (i.e. .push returns .length)
-                root.broadcast(`${ prop }.${ p }`, v);
+            if(!(Array.isArray(input) && p in Array.prototype)) {   // Don't emit native <Array> keys (i.e. .push returns .length)
+                root.$.emit(`${ prop }.${ p }`, v);
             }
 
             return t;
@@ -54,14 +54,18 @@ export class Watchable {
     constructor(state = {}, { deep = true } = {}) {
         this.__id = uuidv4();
 
-        this.__watchers = new Map();
+        this.__subscribers = new Map();
         
         const _this = new Proxy(this, {
             get(target, prop) {
                 return target[ prop ];
             },
             set(target, prop, value) {
-                if(prop.startsWith("_")) {      // Don't broadcast any _Private/__Internal variables
+                if(target[ prop ] === value || prop === "$") {
+                    return target;
+                }
+                
+                if(prop.startsWith("_") || (Object.getOwnPropertyDescriptor(target, prop) || {}).set !== void 0) {      // Don't emit any _Private/__Internal variables
                     target[ prop ] = value;
 
                     return target;
@@ -70,11 +74,11 @@ export class Watchable {
                 if(deep && typeof value === "object") {
                     target[ prop ] = wrapNested(target, prop, value);
 
-                    target.broadcast(prop, target[ prop ]);
+                    target.$.emit(prop, target[ prop ]);
                 } else {
                     target[ prop ] = value;
 
-                    target.broadcast(prop, value);
+                    target.$.emit(prop, value);
                 }
 
                 return target;
@@ -90,104 +94,112 @@ export class Watchable {
         return _this;
     }
 
-    async broadcast(prop, value) {
-        for(let watcher of this.__watchers.values()) {
-            const payload = {
-                prop,
-                value,
-                target: this,
-                watcher,
-            };
+    // Method wrapper to easily prevent { key : value } collisions
+    get $() {
+        const _this = this;
 
-            if(typeof watcher === "function") {
-                watcher.call(payload, prop, value);
-            } else if(watcher instanceof Watchable) {
-                watcher.next.call(payload, prop, value);
-            }
-        }
+        return {
+            get id() {
+                return _this.__id;
+            },
 
-        return this;
-    }
-
-    get id() {
-        return this.__id;
-    }
-
-    purge(deep = false) {
-        this.__watchers.clear();
-
-        if(deep) {
-            for(let [ key, value ] of Object.entries(this)) {
-                if(value instanceof Watchable) {
-                    value.purge(true);
-                }
-            }
-        }
-
-        return this;
-    }
-
-    watch(input) {
-        if(typeof input === "function") {
-            const uuid = uuidv4();
-            this.__watchers.set(uuid, input);
-
-            return uuid;
-        } else if(input instanceof Watchable) {
-            this.__watchers.set(input.id, input);
-
-            return input.id;
-        }
-
-        return false;
-    }
-    unwatch(nextableOrFn) {
-        return this.__watchers.delete(nextableOrFn);
-    }
-
-    toData({ includePrivateKeys = false } = {}) {
-        const obj = {};
-    
-        if("__arrayLength" in this) {
-            const arr = [];
-            for(let i = 0; i < this.__arrayLength; i++) {
-                const entry = this[ i ];
-
-                if(entry instanceof Watchable) {
-                    arr.push(entry.toData());
-                } else {
-                    arr.push(entry);
-                }
-            }
-
-            return arr;
-        }
-
-        if(includePrivateKeys) {
-            for(let [ key, value ] of Object.entries(this)) {
-                if(!key.startsWith("__")) {
-                    if(value instanceof Watchable) {
-                        obj[ key ] = value.toData();
-                    } else {
-                        obj[ key ] = value;
+            async emit(prop, value) {
+                for(let subscriber of _this.__subscribers.values()) {
+                    const payload = {
+                        prop,
+                        value,
+                        subject: _this,
+                        emitter: _this,
+                        subscriber,
+                    };
+        
+                    if(typeof subscriber === "function") {
+                        subscriber.call(payload, prop, value);
+                    } else if(subscriber instanceof Watchable) {
+                        subscriber.$.emit.call(payload, prop, value);
                     }
                 }
-            }
-    
-            return obj;
-        }
+        
+                return _this;
+            },
 
-        for(let [ key, value ] of Object.entries(this)) {
-            if(!key.startsWith("_")) {
-                if(value instanceof Watchable) {
-                    obj[ key ] = value.toData();
-                } else {
-                    obj[ key ] = value;
+            purge(deep = false) {
+                _this.__subscribers.clear();
+        
+                if(deep) {
+                    for(let [ key, value ] of Object.entries(_this)) {
+                        if(value instanceof Watchable) {
+                            value.$.purge(true);
+                        }
+                    }
                 }
-            }
+        
+                return _this;
+            },
+        
+            subscribe(input) {
+                if(typeof input === "function") {
+                    const uuid = uuidv4();
+                    _this.__subscribers.set(uuid, input);
+        
+                    return uuid;
+                } else if(input instanceof Watchable) {
+                    _this.__subscribers.set(input.$.id, input);
+        
+                    return input.$.id;
+                }
+        
+                return false;
+            },
+            unsubscribe(nextableOrFn) {
+                return _this.__subscribers.delete(nextableOrFn);
+            },
+        
+            toData({ includePrivateKeys = false } = {}) {
+                const obj = {};
+            
+                if("__arrayLength" in _this) {
+                    const arr = [];
+                    for(let i = 0; i < _this.__arrayLength; i++) {
+                        const entry = _this[ i ];
+        
+                        if(entry instanceof Watchable) {
+                            arr.push(entry.$.toData());
+                        } else {
+                            arr.push(entry);
+                        }
+                    }
+        
+                    return arr;
+                }
+        
+                if(includePrivateKeys) {
+                    for(let [ key, value ] of Object.entries(_this)) {
+                        if(!key.startsWith("__")) {
+                            if(value instanceof Watchable) {
+                                obj[ key ] = value.$.toData();
+                            } else {
+                                obj[ key ] = value;
+                            }
+                        }
+                    }
+            
+                    return obj;
+                }
+        
+                for(let [ key, value ] of Object.entries(_this)) {
+                    if(!key.startsWith("_")) {
+                        if(value instanceof Watchable) {
+                            obj[ key ] = value.$.toData();
+                        } else {
+                            obj[ key ] = value;
+                        }
+                    }
+                }
+            
+                return obj;
+            },
         }
-    
-        return obj;
     }
 };
 

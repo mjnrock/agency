@@ -10,22 +10,13 @@ const ob = new Watchable({
     },
     hat: [ 1, 2, 3, {cat: 1}],
     _fish: 4512,
-    test: new Watchable({
-        inside: true,
-        nested: {
-            layer1: {
-                layer2: {
-                    sup: 0
-                }
-            }
-        }
-    })
 });
-ob.watch((...args) => console.log(this, ...args))
+ob.$.subscribe((...args) => { console.log(this, ...args); });
+// ob.$.subscribe(function(...args) { console.log(this, ...args); });
 
 // ob.next = (...args) => console.log(this, ...args); 
 
-// ob.watch(function(...args) { console.log(this, ...args) })
+// ob.$.subscribe(function(...args) { console.log(this, ...args) })
 
 // ob.cat = 15;
 // ob.fish.a = 7;
@@ -36,6 +27,16 @@ ob.watch((...args) => console.log(this, ...args))
 
 // ob.test.inside = false;
 // ob.test.nested.layer1.layer2.sup = "YES";
+ob.test = new Watchable({
+    inside: true,
+    nested: {
+        layer1: {
+            layer2: {
+                sup: 0
+            }
+        }
+    }
+});
 ob.test.nested.layer1 = [ 1, 2, 3 ];
 ob.test.nested.layer1.push(6)
 
