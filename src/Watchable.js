@@ -203,4 +203,10 @@ export class Watchable {
     }
 };
 
+export function Factory(state, opts = {}) {
+    return new Watchable(state, opts);
+};
+
+Watchable.Factory = Factory;
+
 export default Watchable;

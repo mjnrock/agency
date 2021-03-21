@@ -47,4 +47,14 @@ export class Watcher extends Watchable {
     }
 };
 
+export function Factory(watchables, state, opts = {}) {
+    return new Watcher(watchables, state, opts);
+};
+export function SubjectFactory(state, opts = {}) {
+    return new Watcher(Watchable.Factory(state, opts));
+};
+
+Watcher.Factory = Factory;
+Watcher.SubjectFactory = SubjectFactory;
+
 export default Watcher;
