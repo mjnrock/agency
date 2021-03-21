@@ -17,11 +17,19 @@ export class Watcher extends Watchable {
 
             async emit(prop, value) {
                 for(let subscriber of _this.__subscribers.values()) {
+                    /**
+                     * @prop | The chain-prop from the original emission
+                     * @value | The chain-prop's value from the original emission
+                     * @subject | The original <Watchable>
+                     * @observer | The original subscriber (fn|Watcher) -- The original <Watcher> in a chain emission
+                     * @emitter | The emitting <Watchable> -- The final <Watcher> in a chain emission
+                     * @subscriber | The subscription fn|Watcher receiving the invocation
+                     */
                     const payload = {
                         prop,
                         value,
-                        subject: this.subject,
-                        observer: this.observer || this.subscriber,
+                        subject: this.subject || _this,
+                        observer: this.observer || this.subscriber || subscriber,
                         emitter: _this,
                         subscriber,
                     };
