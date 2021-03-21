@@ -20,14 +20,16 @@ const obs3 = new Watcher([
 ]);
 const obs4 = new Watcher([
     obs3,
+    ob1,
+    ob2,
 ]);
 
 // obs.$.subscribe((...args) => { console.log(this, ...args); });
 // obs1.$.subscribe(function(...args) { console.log(this, ...args); });
-obs4.$.subscribe(function(...args) { console.log(this.subject.__subscribers, ...args); });
+obs4.$.subscribe(function(...args) { console.log(this, ...args); });
 
 ob1.cat = 10;
-ob2.cat = 15;
+// ob2.cat = 15;
 
 // ob1.cat = 10;   // Should Fire
 // ob1.cat = 10;   // Should NOT fire because same value
