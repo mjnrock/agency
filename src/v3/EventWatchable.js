@@ -1,5 +1,4 @@
 import Watchable from "./Watchable";
-import Watcher from "./Watcher";
 
 export const StandardLibrary = {
     Keyboard: [
