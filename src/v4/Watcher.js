@@ -4,8 +4,12 @@ export class Watcher extends Watchable {
     constructor(watchables = [], state = {}, opts = {}) {
         super(state, opts);
 
-        for(let watchable of watchables) {
-            watchable.$.subscribe(this);
+        if(watchables instanceof Watchable) {
+            watchables.$.subscribe(this);
+        } else if(Array.isArray(watchables)) {
+            for(let watchable of watchables) {
+                watchable.$.subscribe(this);
+            }
         }
     }
 
