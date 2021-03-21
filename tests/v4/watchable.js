@@ -40,6 +40,10 @@ ob.test = new Watchable({
 ob.test.nested.layer1 = [ 1, 2, 3 ];
 ob.test.nested.layer1.push(6)
 
+console.log(999991, ob[ "$.test.nested.layer1" ]);
+console.log(999992, ob[ "test.nested.layer1" ]);
+console.log(999993, ob[ "nested.layer1" ]);
+
 // ob.purge(true)
 // console.log(ob.toData({ includePrivateKeys: true }));
 

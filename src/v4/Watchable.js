@@ -58,6 +58,27 @@ export class Watchable {
         
         const _this = new Proxy(this, {
             get(target, prop) {
+                if((typeof prop === "string" || prop instanceof String) && prop.includes(".")) {
+                    let props = prop.split(".");
+
+                    if(props[ 0 ] === "$") {
+                        props = props.slice(1);
+                    }
+
+                    let result = target;
+                    for(let p of props) {
+                        if(result[ p ] !== void 0) {
+                            result = result[ p ];
+                        }
+                    }
+
+                    if(result !== target) {
+                        return result;
+                    } else {
+                        return;
+                    }
+                }
+
                 return target[ prop ];
             },
             set(target, prop, value) {
