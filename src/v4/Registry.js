@@ -1,10 +1,19 @@
 import { v4 as uuidv4, validate } from "uuid";
 
-import Watchable, { wrapNested } from "./Watchable";
+import Watchable from "./Watchable";
+import Watcher from "./Watcher";
 
-export class Registry extends Watchable {
-    constructor(state = {}, { deep = false } = {}) {
-        super(state, { deep });
+export class Registry extends Watcher {
+    constructor(entries = [], state = {}, { deep = true } = {}) {
+        super([], state, { deep });
+
+        for(let entry of entries) {
+            if(Array.isArray(entry)) {
+                this.register(...entry);
+            } else {
+                this.register(entry);
+            }
+        }
 
         this.__props = {
             size: 0,
@@ -24,22 +33,31 @@ export class Registry extends Watchable {
             },
             set(target, prop, value) {
                 if(validate(prop) || validate(value)) {
-                    if(deep && typeof value === "object") {
-                        target[ prop ] = wrapNested(target, prop, value);
-    
-                        target.$.emit(prop, target[ prop ]);
-                    } else {
-                        target[ prop ] = value;
-    
-                        target.$.emit(prop, value);
-                    }
-        
-                    target.$.emit(prop, target[ prop ]);
+                    target[ prop ] = value;
                 }
     
                 return target;
             }
         });
+    }
+
+    get $() {
+        const _this = this;
+        const _emit = super.$.emit;
+
+        return {
+            ...super.$,
+
+            async emit(prop, value) {
+                if(validate(prop.substring(0, 36))) {
+                    prop = prop.slice(37);
+                }
+
+                _emit.call("emitter" in this ? this : _this, prop, value);
+        
+                return _this;
+            },
+        };
     }
 
     get size() {

@@ -8,7 +8,7 @@ export function useWatchable(context, prop) {
     const subject = prop ? ctx[ prop ] : ctx;
     
     const [ watcher, setWatcher ] = useState(new Watcher([ subject ]));
-    const [ data, setData ] = useState(subject instanceof Watchable ? subject.toData() : {});
+    const [ data, setData ] = useState(subject instanceof Watchable ? subject.$.toData() : {});
 
     useEffect(() => {
         const fn = function(prop, value) {
