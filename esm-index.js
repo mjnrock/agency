@@ -1,3 +1,7 @@
 require = require("esm")(module/*, options*/)
-// module.exports = require("./src/index.js");
-module.exports = require("./tests/v2/event-observable-v2.js");
+// module.exports = require("./tests/v4/watchable.js");
+// module.exports = require("./tests/v4/watcher.js");
+// module.exports = require("./tests/v4/event-watchable.js");
+// module.exports = require("./tests/v4/pulse.js");
+// module.exports = require("./tests/v4/registry.js");
+module.exports = require("./tests/v4/watchable-2.js");
