@@ -52,7 +52,7 @@ export class Registry extends Watcher {
                     prop = prop.slice(37);
                 }
 
-                _emit.call("emitter" in this ? this : _this, prop, value);
+                _emit.call("emitter" in this ? this : _this.$.proxy, prop, value);
         
                 return _this;
             },
