@@ -27,8 +27,10 @@ const watcher2 = new Watcher(emitter2);
 watcher2.$.subscribe((...args) => { console.log(...args); });
 // watcher.$.subscribe(function(...args) { console.log(this, ...args); });
 
+emitter2.$.handle("cats")
 emitter2.$.emit("test2", 2, 3);
 emitter2.$test2(2, 3);
+emitter2.$cats("Kiszka", "Buddha");
 try {
     emitter2.$test2222(2, 3);   // Should fail with an error
 } catch(e) {

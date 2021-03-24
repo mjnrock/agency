@@ -1,6 +1,8 @@
 import Watchable from "./Watchable";
 
 export class Emitter extends Watchable {
+    static Handler = (...args) => args;
+
     constructor(events = {}, { failSilently = true } = {}) {
         super();
 
@@ -38,6 +40,10 @@ export class Emitter extends Watchable {
             },
             remove(event) {
                 delete _this[ event ];
+            },
+
+            handle(event) {
+                _this.__events[ event ] = Emitter.Handler;
             },
 
             async emit(event, ...args) {
