@@ -11,7 +11,9 @@ export class Emitter extends Watchable {
                 if(prop.startsWith("$") && prop.length > 1) {
                     const key = prop.slice(1);
 
-                    return (...args) => target.$.broadcast(key, target.__events[ key ](...args))
+                    if(key in this.__events) {
+                        return (...args) => target.$.broadcast(key, target.__events[ key ](...args))
+                    }
                 }
 
                 return target[ prop ];
