@@ -8,11 +8,11 @@ export class Emitter extends Watchable {
 
         return new Proxy(this, {
             get(target, prop) {
-                if(prop.startsWith("$") && prop.length > 1) {
+                if(prop[ 0 ] === "$" && prop.length > 1) {
                     const key = prop.slice(1);
 
                     if(key in this.__events) {
-                        return (...args) => target.$.broadcast(key, target.__events[ key ](...args))
+                        return async (...args) => target.$.broadcast(key, target.__events[ key ](...args));
                     }
                 }
 

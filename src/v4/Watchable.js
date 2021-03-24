@@ -33,7 +33,7 @@ export const wrapNested = (root, prop, input) => {
                 return t;
             }
 
-            if(v === null || p.startsWith("_") || (Object.getOwnPropertyDescriptor(t, p) || {}).set) {      // Don't broadcast any _Private/__Internal variables
+            if(v === null || p[ 0 ] === "_" || (Object.getOwnPropertyDescriptor(t, p) || {}).set) {      // Don't broadcast any _Private/__Internal variables
                 t[ p ] = v;
 
                 return t;
@@ -114,7 +114,7 @@ export class Watchable {
                     return target;
                 }
                 
-                if(value === null || prop.startsWith("_") || (Object.getOwnPropertyDescriptor(target, prop) || {}).set) {      // Don't broadcast any _Private/__Internal variables
+                if(value === null || prop[ 0 ] === "_" || (Object.getOwnPropertyDescriptor(target, prop) || {}).set) {      // Don't broadcast any _Private/__Internal variables
                     target[ prop ] = value;
 
                     return target;
@@ -260,7 +260,7 @@ export class Watchable {
         
                 if(includePrivateKeys) {
                     for(let [ key, value ] of Object.entries(_this)) {
-                        if(!key.startsWith("__")) {
+                        if(!(key[ 0 ] === "_" && key[ 1 ] === "_")) {
                             if(value instanceof Watchable) {
                                 obj[ key ] = value.$.toData();
                             } else {
@@ -273,7 +273,7 @@ export class Watchable {
                 }
         
                 for(let [ key, value ] of Object.entries(_this)) {
-                    if(!key.startsWith("_")) {
+                    if(key[ 0 ] !== "_") {
                         if(value instanceof Watchable) {
                             obj[ key ] = value.$.toData();
                         } else {
