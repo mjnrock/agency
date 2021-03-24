@@ -1,6 +1,9 @@
 import Emitter from "../../src/v4/Emitter";
 import Watcher from "../../src/v4/Watcher";
 
+
+
+
 const emitter = new Emitter({
     test: (a, b) => +a + +b,
 });
@@ -12,6 +15,9 @@ watcher.$.subscribe((...args) => { console.log(...args); });
 emitter.$.emit("test", 2, 3);
 emitter.$test(2, 3);
 emitter.$testsss(2, 3);     // Fails silently
+
+
+
 
 const emitter2 = new Emitter({
     test2: (a, b) => +a + +b,
