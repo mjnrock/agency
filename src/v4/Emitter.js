@@ -1,7 +1,7 @@
 import Watchable from "./Watchable";
 
 export class Emitter extends Watchable {
-    constructor(events = {}) {
+    constructor(events = {}, { failSilently = true } = {}) {
         super();
 
         this.__events = events;
@@ -11,8 +11,12 @@ export class Emitter extends Watchable {
                 if(prop[ 0 ] === "$" && prop.length > 1) {
                     const key = prop.slice(1);
 
-                    if(key in this.__events) {
+                    if(key in target.__events) {
                         return async (...args) => target.$.broadcast(key, target.__events[ key ](...args));
+                    }
+
+                    if(failSilently) {
+                        return () => void 0;
                     }
                 }
 
