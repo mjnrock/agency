@@ -15,4 +15,4 @@ emitter.$.emit("test", 2, 3);       // Standard .emit
 emitter.$test(2, 3);                // Trapped .emit, bound to "test"
 emitter.$cats("Kiszka", "Buddha");  // Should be the result of Emitter.Handler
 
-emitter.$testsss(2, 3);             // Fails silently
+emitter.$testsss(2, 3);             // Key not present, should return: undefined
