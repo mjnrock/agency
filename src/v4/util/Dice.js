@@ -1,62 +1,101 @@
-const Dice = {
+export const Dice = {
 	random: (min, max) => {
 		return Math.floor(Math.random() * (max - min + 1)) + min;
 	},
-	roll: (x, y, z = 0) => {
+    /**
+     * This is a normal XdY+Z setup.
+     */
+	roll: (number, sided, bonus = 0) => {
 		let value = 0;
-		for(let i = 0; i < x; i++) {
-			value += Dice.random(1, y);
+		for(let i = 0; i < number; i++) {
+			value += Dice.random(1, sided);
 		}
 		
-		return value + z;
+		return value + bonus;
+	},
+    /**
+     * This applies the @perRollBonus to each drop,
+     * instead of once after all rolls have been made.
+     */
+	roll2: (number, sided, perRollBonus = 0) => {
+		let value = 0;
+		for(let i = 0; i < number; i++) {
+			value += Dice.random(1, sided) + perRollBonus;
+		}
+		
+		return value;
 	},
 
+    /**
+     * 1/1000 roller with @threshold as a decimal [0.000, 1.000]
+     */
     permille: (threshold = 0.500) => {
-        return (Dice.random(1, 1000) / 1000) >= threshold;
+        return (Dice.random(1, 1000) / 1000) <= threshold;
     },
+    /**
+     * 1/100 roller with @threshold as a decimal [0.00, 1.00]
+     */
     percento: (threshold = 0.50) => {
-        return (Dice.random(1, 100) / 100) >= threshold;
+        return (Dice.random(1, 100) / 100) <= threshold;
     },
-    chance: (min, max, threshold = 0.5, scalar = 1000) => {
+    /**
+     * A convenience function to calculate irregular chances.
+     * @scalar truncates the precision of the randomization.
+     */
+    chance: (min, max, threshold = 0.5, scalar = 10000) => {
         return Math.round((Dice.random(min, max) / max) * scalar) / scalar >= threshold;
     },
+    /**
+     * 50/50 chance, returning true or false
+     */
 	coin: () => {
 		return Dice.roll(1, 2) === 1 ? true : false;
 	},
-
-	d2: (x = 1, z = 0) => {
-		return Dice.roll(x, 2) + z;
-	},
-	d3: (x = 1, z = 0) => {
-		return Dice.roll(x, 3) + z;
-	},
-	d4: (x = 1, z = 0) => {
-		return Dice.roll(x, 4) + z;
-	},
-	d6: (x = 1, z = 0) => {
-		return Dice.roll(x, 6) + z;
-	},
-	d10: (x = 1, z = 0) => {
-		return Dice.roll(x, 10) + z;
-	},
-	d12: (x = 1, z = 0) => {
-		return Dice.roll(x, 12) + z;
-	},
-	d20: (x = 1, z = 0) => {
-		return Dice.roll(x, 20) + z;
-	},
-	d25: (x = 1, z = 0) => {
-		return Dice.roll(x, 25) + z;
-	},
-	d50: (x = 1, z = 0) => {
-		return Dice.roll(x, 50) + z;
-	},
-	d100: (x = 1, z = 0) => {
-		return Dice.roll(x, 100) + z;
+    /**
+     * 50/50 chance, returning 1 or 0
+     */
+	coin2: () => {
+		return Dice.roll(1, 2) === 1 ? 1 : 0
 	},
 
-	weighted: (weights, values) => {                
-		const total = weights.agg((a, v) => a + v, 0);		
+    //NOTE  Common dice configuration convenience methods
+	d2: (number = 1, bonus = 0) => {
+		return Dice.roll(number, 2, bonus);
+	},
+	d3: (number = 1, bonus = 0) => {
+		return Dice.roll(number, 3, bonus);
+	},
+	d4: (number = 1, bonus = 0) => {
+		return Dice.roll(number, 4, bonus);
+	},
+	d6: (number = 1, bonus = 0) => {
+		return Dice.roll(number, 6, bonus);
+	},
+	d10: (number = 1, bonus = 0) => {
+		return Dice.roll(number, 10, bonus);
+	},
+	d12: (number = 1, bonus = 0) => {
+		return Dice.roll(number, 12, bonus);
+	},
+	d20: (number = 1, bonus = 0) => {
+		return Dice.roll(number, 20, bonus);
+	},
+	d25: (number = 1, bonus = 0) => {
+		return Dice.roll(number, 25, bonus);
+	},
+	d50: (number = 1, bonus = 0) => {
+		return Dice.roll(number, 50, bonus);
+	},
+	d100: (number = 1, bonus = 0) => {
+		return Dice.roll(number, 100, bonus);
+	},
+
+    /**
+     * A weighted pool, where @weights.length === @values.length
+     * e.g. weights = [ 1, 2, 1 ], values = [ "a", "b", "c" ]
+     */
+	weighted: (weights = [], values = []) => {
+		const total = weights.reduce((a, v) => a + v, 0);
 		const roll = Dice.random(1, total);
 		
 		let count = 0;
@@ -69,7 +108,26 @@ const Dice = {
 		}
 		
 		return values[ values.length - 1 ];
-	}
+	},
+    /**
+     * A weighted pool using pairs, instead
+     * e.g. weightValuePairs = [ [ 1, "a" ], ..., [ 26, "z" ] ]
+     */
+	weighted2: (weightValuePairs = []) => {
+		const total = weightValuePairs.reduce((a, v) => a + v[ 0 ], 0);
+		const roll = Dice.random(1, total);
+		
+		let count = 0;
+		for(let i = 0; i < weightValuePairs.length; i++) {
+			count += weightValuePairs[ i ][ 0 ];
+			
+			if(roll <= count) {
+				return weightValuePairs[ i ][ 1 ];
+			}
+		}
+		
+		return weightValuePairs[ weightValuePairs.length - 1 ][ 1 ];
+	},
 }
 
 export default Dice;

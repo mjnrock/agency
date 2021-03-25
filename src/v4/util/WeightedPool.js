@@ -1,7 +1,8 @@
 import Dice from "./Dice.js";
 
-class WeightedPool {
-    //@param weights = [...<int>], values = [...<any>]
+export class WeightedPool {
+    //#base @weights = [...<int>], @values = [...<any>]
+    //#overload1 @weights = [...[<int>,<any>]]
     constructor(weights, values) {
         this.reweigh(weights, values);
     }
@@ -10,15 +11,18 @@ class WeightedPool {
         return Dice.weighted(this.weights, this.values);
     }
 
-    chance(index) {
-        var sum = 0;
-        for(var i in this.weights) {
-            sum += this.weights[ i ];
-        }
+    /**
+     * @scalar = 1000 allows #.### precision
+     */
+    chance(index, scalar = 1000) {
+		const sum = this.weights.reduce((a, v) => a + v, 0);
 
-        return Math.round((this.weights[ index ] / sum * 100.0) * Math.round(10, 2)) / Math.round(10, 2);
+        return Math.round((this.weights[ index ] / sum) * scalar) / scalar;
     }
 
+    /**
+     * Smart getter/setter
+     */
     weight(index, value) {
         if(value === void 0) {
             return this.weights[ index ];
@@ -30,9 +34,12 @@ class WeightedPool {
 
         return this;
     }
+    /**
+     * Smart getter/setter
+     */
     value(index, value) {
         if(value === void 0) {
-            return this.weights[ index ];
+            return this.values[ index ];
         }
 
         this.values[ index ] = value;
@@ -41,7 +48,7 @@ class WeightedPool {
     }
 
     reweigh(weights, values) {
-        if(Array.isArray(weights[ 0 ]) && weights[ 0 ].length === 2) {
+        if(Array.isArray(weights[ 0 ]) && weights[ 0 ].length === 2) {  //  ([ [ weight, value ], ... ])
             this.weights = [];
             this.values = [];
 
@@ -49,7 +56,7 @@ class WeightedPool {
                 this.weights.push(weight);
                 this.values.push(value);
             }
-        } else {
+        } else {    // ([ weight, ... ], [ value, ... ])
             this.weights = weights;
             this.values = values;
         }

@@ -1,7 +1,7 @@
 import isBase64 from "is-base64";
 import nodeFetch from "node-fetch";
 
-const envFetch = fetch || nodeFetch;
+const envFetch = nodeFetch || fetch;
 
 export const Base64 = {
     test: input => isBase64(input, { mimeRequired: true }),

@@ -5,4 +5,6 @@ require = require("esm")(module/*, options*/)
 // module.exports = require("./tests/v4/pulse.js");
 // module.exports = require("./tests/v4/registry.js");
 // module.exports = require("./tests/v4/watchable-2.js");
-module.exports = require("./tests/v4/emitter.js");
+// module.exports = require("./tests/v4/emitter.js");
+// module.exports = require("./tests/v4/util.weighted-pool.js");
+module.exports = require("./tests/v4/util.dice.js");
