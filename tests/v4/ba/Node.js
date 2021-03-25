@@ -8,6 +8,11 @@ export class Node extends Emitter {
             "leave",
             "portal",
         ]);
+        // super({
+        //     join: Emitter.Handler,
+        //     leave: Emitter.Handler,
+        //     portal: Emitter.Handler,
+        // });
 
         this._x = x;
         this._y = y;
@@ -64,7 +69,6 @@ export class Node extends Emitter {
     }
     leave(entity) {
         if(this._occupants.delete(entity)) {
-
             this.$leave(entity);
         }
 

@@ -6,10 +6,12 @@ export class Emitter extends Watchable {
     constructor(events = {}, state = {}, { deep = false, ...rest } = {}) {
         super(state, { deep, ...rest });
 
-        this.__events = {};
         if(Array.isArray(events)) {
+            this.__events = {};
+
             for(let event of events) {
                 this.$.handle(event);
+                // this.__events[ event ] = (...args) => args;
             }
         } else {
             this.__events = events;
@@ -21,7 +23,7 @@ export class Emitter extends Watchable {
                     const key = prop.slice(1);
 
                     if(key in target.__events) {
-                        return async (...args) => target.$.broadcast(key, target.__events[ key ](...args));
+                        return (...args) => target.$.broadcast(key, target.__events[ key ](...args));
                     }
 
                     return () => void 0;
@@ -29,7 +31,7 @@ export class Emitter extends Watchable {
 
                 return target[ prop ];
             }
-        })
+        });
     }
 
     get $() {
