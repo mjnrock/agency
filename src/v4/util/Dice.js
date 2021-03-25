@@ -11,6 +11,15 @@ const Dice = {
 		return value + z;
 	},
 
+    permille: (threshold = 0.500) => {
+        return (Dice.random(1, 1000) / 1000) >= threshold;
+    },
+    percento: (threshold = 0.50) => {
+        return (Dice.random(1, 100) / 100) >= threshold;
+    },
+    chance: (min, max, threshold = 0.5, scalar = 1000) => {
+        return Math.round((Dice.random(min, max) / max) * scalar) / scalar >= threshold;
+    },
 	coin: () => {
 		return Dice.roll(1, 2) === 1 ? true : false;
 	},
