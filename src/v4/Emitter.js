@@ -3,10 +3,17 @@ import Watchable from "./Watchable";
 export class Emitter extends Watchable {
     static Handler = (...args) => args;
 
-    constructor(events = {}) {
-        super();
+    constructor(events = {}, state = {}, { deep = false, ...rest } = {}) {
+        super(state, { deep, ...rest });
 
-        this.__events = events;
+        this.__events = {};
+        if(Array.isArray(events)) {
+            for(let event of events) {
+                this.$.handle(event);
+            }
+        } else {
+            this.__events = events;
+        }
 
         return new Proxy(this, {
             get(target, prop) {

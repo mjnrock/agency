@@ -129,7 +129,7 @@ export class CrossMap {
                 }));
             } else {
                 if(typeof seedFn === "function" && !saveFnInstead) {
-                    root.set(value, seedFn(...chain, value));
+                    root.set(value, seedFn(...[ ...chain, value ]));
                 } else {
                     root.set(value, seedFn);
                 }
