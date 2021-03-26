@@ -9,21 +9,19 @@ export class NodeManager extends Watcher {
         super();
 
         this._cache = new WeakMap();
+        
         //FIXME
-        // this._nodes = Agency.Util.CrossMap.CreateGrid([ ...size ], { seedFn: (x, y) => new Node(x, y, {}) });
+        // this._nodes = Agency.Util.CrossMap.CreateGrid
         this._nodes = Util.CrossMap.CreateGrid([ ...size ], {
             seedFn: (x, y) => {
-                const node = new Node(x, y, {});
+                const node = new Node([ x, y ], {});
 
-                node.$.subscribe((event, [ entity ]) => {
-                    if(event === "join") {
-                        this.cache.set(entity, { x: entity.position.x, y: entity.position.y });
-                    }
-                });
+                this.$.watch(node);
 
                 return node;
             },
         });
+        this.$.on("join", ([ entity ]) => this.cache.set(entity, { x: entity.position.x, y: entity.position.y }));
 
         this.__extractor = extractor;
     }
@@ -52,7 +50,7 @@ export class NodeManager extends Watcher {
     move(entity) {
         const { x, y } = this.cached(entity) || {};
         const leaveNode = this.node(x, y);
-        const joinNode = this.extract(entity)
+        const joinNode = this.extract(entity);
 
         if(leaveNode !== joinNode) {
             if(leaveNode instanceof Node) {

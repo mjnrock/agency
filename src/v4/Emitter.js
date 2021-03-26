@@ -11,7 +11,6 @@ export class Emitter extends Watchable {
 
             for(let event of events) {
                 this.$.handle(event);
-                // this.__events[ event ] = (...args) => args;
             }
         } else {
             this.__events = events;
@@ -23,7 +22,7 @@ export class Emitter extends Watchable {
                     const key = prop.slice(1);
 
                     if(key in target.__events) {
-                        return (...args) => target.$.broadcast(key, target.__events[ key ](...args));
+                        return async (...args) => target.$.broadcast(key, target.__events[ key ](...args));
                     }
 
                     return () => void 0;

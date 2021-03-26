@@ -2,7 +2,7 @@
 import Emitter from "../../../src/v4/Emitter";
 
 export class Node extends Emitter {
-    constructor(x, y, terrain, { portals = [], occupants = [], frequency = 0, value = 0 } = {}) {
+    constructor(coords = [], terrain, { portals = [], occupants = [], frequency = 0, value = 0, clearance = Infinity } = {}) {
         super([
             "join",
             "leave",
@@ -14,8 +14,7 @@ export class Node extends Emitter {
         //     portal: Emitter.Handler,
         // });
 
-        this._x = x;
-        this._y = y;
+        this._coords = coords;
         this._terrain = terrain;
         
         this._portals = new Set(portals);
@@ -23,13 +22,23 @@ export class Node extends Emitter {
 
         this._frequency = frequency;
         this._value = value;
+        this._clearance = clearance;
     }
 
+    get coords() {
+        this._coords;
+    }
     get x() {
-        return this._x;
+        return this._coords[ 0 ];
     }
     get y() {
-        return this._y;
+        return this._coords [ 1 ];
+    }
+    get z() {
+        return this._coords [ 2 ];
+    }
+    get w() {
+        return this._coords [ 3 ];
     }
     
     get terrain() {
@@ -60,10 +69,15 @@ export class Node extends Emitter {
     }
 
     join(entity) {
+        const size = this._occupants.size;
+        
         this._occupants.add(entity);
-        ++this._frequency;
 
-        this.$join(entity);
+        if(this._occupants.size >= size) {
+            ++this._frequency;
+
+            this.$join(entity);
+        }
 
         return this;
     }

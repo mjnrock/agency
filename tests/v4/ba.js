@@ -27,12 +27,26 @@ const entity2 = new Watchable({
 
 const loop = new Pulse(1, { autostart: true });
 loop.$.subscribe((prop, { dt, now }) => {
-    entity1.position.x = Util.Dice.roll(1, 5, -1);
-    entity1.position.y = Util.Dice.roll(1, 5, -1);
-    entity2.position.x = Util.Dice.roll(1, 5, -1);
-    entity2.position.y = Util.Dice.roll(1, 5, -1);
+    entity1.position = {
+        ...entity1.position,
+        x: Util.Dice.roll(1, 5, -1),
+        y: Util.Dice.roll(1, 5, -1),
+    }
+    entity2.position = {
+        ...entity2.position,
+        x: Util.Dice.roll(1, 5, -1),
+        y: Util.Dice.roll(1, 5, -1),
+    }
+    // [ entity1.position.x, entity1.position.y ] = [ Util.Dice.roll(1, 5, -1), Util.Dice.roll(1, 5, -1) ];
+    // [ entity2.position.x, entity2.position.y ] = [ Util.Dice.roll(1, 5, -1), Util.Dice.roll(1, 5, -1) ];
+    // entity1.position.x = Util.Dice.roll(1, 5, -1);
+    // entity1.position.y = Util.Dice.roll(1, 5, -1);
+    // entity2.position.x = Util.Dice.roll(1, 5, -1);
+    // entity2.position.y = Util.Dice.roll(1, 5, -1);
 
     console.clear()
+    // console.log(nm.range(0, 0, 5, 5).map(n => [ n._occupants.size, n._frequency ].toString()))
+    console.log(nm.range(0, 0, 5, 5).map(n => n._frequency))
     console.log(nm.range(0, 0, 5, 5).map(n => n._occupants.size))
 });
 
