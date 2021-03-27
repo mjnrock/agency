@@ -64,7 +64,7 @@ export const wrapNested = (root, prop, input, nestedProps) => {
 
     for(let [ key, value ] of Object.entries(input)) {
         if(typeof value === "object") {
-            proxy[ key ] = wrapNested(root, nestedProps ? `${ prop }.${ p }` : p, value, nestedProps);
+            proxy[ key ] = wrapNested(root, prop, value, nestedProps);
         }
     }
 

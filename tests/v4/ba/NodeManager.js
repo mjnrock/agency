@@ -5,8 +5,24 @@ import Node from "./Node";
 export class NodeManager extends Watcher {
     static Extractor = function(entity) { return [ entity.position.x, entity.position.y ] };
     static Cacher = function([ entity ]) { this.cache.set(entity,  [ entity.position.x, entity.position.y ]); };
-    static Teleporter = function([ portal, entity ]) { entity.position = { ...entity.position, x: portal.x, y: portal.y, }; };
-    static Teleporter2 = function([ portal, entity ]) { entity.position.x = portal.x; entity.position.y = portal.y; };
+    static Teleporter = function([ portal, entity ]) { entity.position = { ...entity.position, world: portal.world, x: portal.x, y: portal.y, }; };
+    static Teleporter2 = function([ portal, entity ]) {
+        if(entity.position.world) {
+            entity.position.world.leave(entity);
+        }
+
+        portal.world.join(entity);
+
+        entity.position = {
+            ...entity.position,
+            world: portal.world,
+            x: portal.x,
+            y: portal.y,
+        };
+        // entity.position.world = portal.world;
+        // entity.position.x = portal.x;
+        // entity.position.y = portal.y;
+    };
 
     constructor(size = [ 1, 1 ], { extractor, cacher, teleporter, namespace, ...opts } = {}) {
         super([], [], {}, { nestedProps: false, ...opts });
@@ -28,7 +44,6 @@ export class NodeManager extends Watcher {
             namespace ? `${ namespace }.join` : `join`,
             typeof cacher === "function" ? cacher.bind(this) : NodeManager.Cacher.bind(this),
         );
-
         this.$.on(
             namespace ? `${ namespace }.portal` : `portal`,
             typeof teleporter === "function" ? teleporter.bind(this) : NodeManager.Teleporter2.bind(this),
@@ -86,7 +101,7 @@ export class NodeManager extends Watcher {
             if(cacheNode.leave(entity)) {
                 return true;
             } else if(posNode instanceof Node) {
-                if(pos.leave(entity)) {
+                if(posNode.leave(entity)) {
 
                 }
             }

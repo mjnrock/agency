@@ -7,51 +7,63 @@ import Portal from "./ba/Portal";
 
 console.log("------------ NEW EXECUTION CONTEXT ------------");
 
-const entity1 = new Watchable({
-    name: "Kiszka",
+const player = new Watchable({
+    name: "Bob",
     position: {
-        x: 0,
-        y: 0,
-    }
-});
-const entity2 = new Watchable({
-    name: "Buddha",
-    position: {
+        world: null,
         x: 0,
         y: 0,
     }
 });
 
-const world = new World([ 5, 5 ]);
+const Game = {
+    loop: new Pulse(1, { autostart: true }),
+    entities: [
+        player,
+    ],
+};
 
-world.open(0, 0, new Portal(world, world.width - 1, world.height - 1));
-world.open(~~(world.width / 2), ~~(world.height / 2), new Portal(world, world.width - 1, world.height - 1));
+const zone = new World([ 2, 2 ], {
+    config: { spawn: [ 0, 0 ] },
+});
+const overworld = new World([ 2, 2 ], {
+    entities: Game.entities,
+    config: { spawn: [ 0, 0 ] },
+});
 
-const loop = new Pulse(1, { autostart: true });
-loop.$.subscribe((prop, { dt, now }) => {
-    entity1.position = {
-        ...entity1.position,
-        x: Util.Dice.roll(1, world.width, -1),
-        y: Util.Dice.roll(1, world.height, -1),
-    }
-    entity2.position = {
-        ...entity2.position,
-        x: Util.Dice.roll(1, world.width, -1),
-        y: Util.Dice.roll(1, world.height, -1),
-    }
+overworld.open(0, 1, new Portal(zone));
+zone.open(1, 0, new Portal(overworld));
+
+Game.world = overworld;
+Game.world.LAST_MESSAGE = "";
+
+Game.loop.$.subscribe((prop, { dt, now }) => {
+    Game.world = player.position.world || Game.world;
+
+    player.position.x = Util.Dice.roll(1, Game.world.width, -1),
+    player.position.y = Util.Dice.roll(1, Game.world.height, -1),
+    
+    // Game.entities.forEach(entity => {
+    //     entity.position = {
+    //         ...entity.position,
+    //         // x: Util.Dice.roll(1, Game.world.width, -1),
+    //         // y: Util.Dice.roll(1, Game.world.height, -1),
+    //         x: Util.Dice.roll(1, 2, -1),
+    //         y: Util.Dice.roll(1, 2, -1),
+    //     };
+
+    //     Game.world.nodes.move(entity, entity.position.x, entity.position.y);
+    // });
+
+    Game.world.nodes.move(player, player.position.x, player.position.y);
+    Game.world.LAST_MESSAGE = [ player.position.x, player.position.y ].toString();
 
     console.clear();
-    console.log(world._nodes.range(0, 0, world.width, world.height, { asGrid: true }).map(r => r.map(n => n._frequency)));
-    console.log(world._nodes.range(0, 0, world.width, world.height, { asGrid: true }).map(r => r.map(n => n._occupants.size ? `X` : (n._portals.size ? `O` : `-`))));
-});
-
-entity1.$.subscribe((prop, value) => {
-    if(prop.includes("position")) {
-        world._nodes.move(entity1, entity1.position.x, entity1.position.y);
-    }
-});
-entity2.$.subscribe((prop, value) => {
-    if(prop.includes("position")) {
-        world._nodes.move(entity2, entity2.position.x, entity2.position.y);
-    }
+    console.log(Game.world.nodes.range(0, 0, Game.world.width, Game.world.height, { asGrid: true }).map(r => r.map(n => n._frequency)));
+    console.log(Game.world.nodes.range(0, 0, Game.world.width, Game.world.height, { asGrid: true }).map(r => r.map(n => n._occupants.size ? `x` : (n._portals.size ? `O` : `-`))));
+    console.log(`[World]:`, Game.world.id)
+    console.log(`[Message]: `, Game.world.LAST_MESSAGE);
+    // console.log(`----------------`);
+    // console.log(Game.world.__subscribers);
+    // console.log(`----------------`);
 });
