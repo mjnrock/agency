@@ -3,35 +3,47 @@ import Util from "./../../../src/v4/util/package";
 import Node from "./Node";
 
 export class NodeManager extends Watcher {
-    static Extractor = entity => [ entity.position.x, entity.position.y ];
+    static Extractor = function(entity) { return [ entity.position.x, entity.position.y ] };
+    static Cacher = function([ entity ]) { this.cache.set(entity,  [ entity.position.x, entity.position.y ]); };
+    static Teleporter = function([ portal, entity ]) { entity.position = { ...entity.position, x: portal.x, y: portal.y, }; };
+    static Teleporter2 = function([ portal, entity ]) { entity.position.x = portal.x; entity.position.y = portal.y; };
 
-    constructor(size = [ 1, 1 ], { extractor } = {}) {
-        super();
+    constructor(size = [ 1, 1 ], { extractor, cacher, teleporter, namespace, ...opts } = {}) {
+        super([], [], {}, { nestedProps: false, ...opts });
 
         this._cache = new WeakMap();
         
         //FIXME
         // this._nodes = Agency.Util.CrossMap.CreateGrid
         this._nodes = Util.CrossMap.CreateGrid([ ...size ], {
-            seedFn: (x, y) => {
-                const node = new Node([ x, y ], {});
+            seedFn: (...coords) => {
+                const node = new Node(coords, {}, { namespace });
 
                 this.$.watch(node);
 
                 return node;
             },
         });
-        this.$.on("join", ([ entity ]) => this.cache.set(entity, { x: entity.position.x, y: entity.position.y }));
+        this.$.on(
+            namespace ? `${ namespace }.join` : `join`,
+            typeof cacher === "function" ? cacher.bind(this) : NodeManager.Cacher.bind(this),
+        );
+
+        this.$.on(
+            namespace ? `${ namespace }.portal` : `portal`,
+            typeof teleporter === "function" ? teleporter.bind(this) : NodeManager.Teleporter2.bind(this),
+
+        );
 
         this.__extractor = extractor;
     }
 
     get extractor() {
         if(typeof this.__extractor === "function") {
-            return this.__extractor;
+            return this.__extractor.bind(this);
         }
         
-        return NodeManager.Extractor;
+        return NodeManager.Extractor.bind(this);
     }
     get nodes() {
         return this._nodes;
@@ -48,8 +60,8 @@ export class NodeManager extends Watcher {
     }
 
     move(entity) {
-        const { x, y } = this.cached(entity) || {};
-        const leaveNode = this.node(x, y);
+        const pos = this.cached(entity) || [];
+        const leaveNode = this.node(...pos);
         const joinNode = this.extract(entity);
 
         if(leaveNode !== joinNode) {
@@ -63,11 +75,44 @@ export class NodeManager extends Watcher {
 
         return this;
     }
+    remove(entity) {
+        const pos = this.cached(entity) || [];
+        const cacheNode = this.node(...pos);
+        const posNode = this.extract(entity);
 
-    node(x, y) {
+        const leaver = node => node instanceof Node && node.leave(entity);
+
+        if(cacheNode instanceof Node) {
+            if(cacheNode.leave(entity)) {
+                return true;
+            } else if(posNode instanceof Node) {
+                if(pos.leave(entity)) {
+
+                }
+            }
+        }
+
+        if(leaver(cacheNode)) {
+            return true;
+        } else if(leaver(posNode)) {
+            return true;
+        } else {
+            const nodes = this.nodes.toLeaf({ flatten: true });
+            for(let node of nodes) {
+                if(node.leave(entity)) {
+                    return true;
+                }
+            }
+        }
+        
+
+        return false;
+    }
+
+    node(...pos) {
         //FIXME
         // return this._nodes.get(Helper.round(x, 1), Helper.round(y, 1));
-        return this.nodes.get(x, y);
+        return this.nodes.get(...pos);
     }
 
     /**

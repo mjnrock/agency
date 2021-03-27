@@ -2,17 +2,12 @@
 import Emitter from "../../../src/v4/Emitter";
 
 export class Node extends Emitter {
-    constructor(coords = [], terrain, { portals = [], occupants = [], frequency = 0, value = 0, clearance = Infinity } = {}) {
+    constructor(coords = [], terrain, { portals = [], occupants = [], frequency = 0, value = 0, clearance = Infinity, ...rest } = {}) {
         super([
             "join",
             "leave",
             "portal",
-        ]);
-        // super({
-        //     join: Emitter.Handler,
-        //     leave: Emitter.Handler,
-        //     portal: Emitter.Handler,
-        // });
+        ], {}, { nestedProps: false, ...rest });
 
         this._coords = coords;
         this._terrain = terrain;
@@ -44,6 +39,12 @@ export class Node extends Emitter {
     get terrain() {
         return this._terrain;
     }
+    get portals() {
+        return this._portals;
+    }
+    get occupants() {
+        return this._occupants;
+    }
 
     get cost() {
         return this._terrain.terrain.cost;
@@ -68,6 +69,16 @@ export class Node extends Emitter {
         return [ this.x, this.y ];
     }
 
+    portal(entity) {
+        for(let portal of this.portals) {
+            if(portal.activate(entity)) {
+                this.$portal(portal, entity);
+            }
+        }
+
+        return this;
+    }
+
     join(entity) {
         const size = this._occupants.size;
         
@@ -77,16 +88,22 @@ export class Node extends Emitter {
             ++this._frequency;
 
             this.$join(entity);
+
+            this.portal(entity);
+
+            return true;
         }
 
-        return this;
+        return false;
     }
     leave(entity) {
         if(this._occupants.delete(entity)) {
             this.$leave(entity);
+
+            return true;
         }
 
-        return this;
+        return false;
     }
 };
 

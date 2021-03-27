@@ -3,7 +3,7 @@ import Watchable from "./Watchable";
 export class Emitter extends Watchable {
     static Handler = (...args) => args;
 
-    constructor(events = {}, state = {}, { deep = false, ...rest } = {}) {
+    constructor(events = {}, state = {}, { deep = false, namespace = "", ...rest } = {}) {
         super(state, { deep, ...rest });
 
         if(Array.isArray(events)) {
@@ -19,10 +19,10 @@ export class Emitter extends Watchable {
         return new Proxy(this, {
             get(target, prop) {
                 if(prop[ 0 ] === "$" && prop.length > 1) {
-                    const key = prop.slice(1);
+                    let key = prop.slice(1);
 
                     if(key in target.__events) {
-                        return async (...args) => target.$.broadcast(key, target.__events[ key ](...args));
+                        return async (...args) => target.$.broadcast(namespace ?  `${ namespace }.${ key }` : key, target.__events[ key ](...args));
                     }
 
                     return () => void 0;

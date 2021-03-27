@@ -139,7 +139,7 @@ export class CrossMap {
         return root;
     }
 
-    toLeaf(asObject = false, rootMap) {        
+    toLeaf({ asObject = false, flatten = false, rootMap } = {}) {
         if(rootMap === void 0) {
             rootMap = this.__entries;
         } else if(typeof rootMap === "boolean") {
@@ -151,7 +151,7 @@ export class CrossMap {
             let obj = {};
             for(let [ key, value ] of rootMap.entries()) {
                 if(value instanceof Map) {
-                    obj[ key ] = this.toLeaf(true, value);
+                    obj[ key ] = this.toLeaf({ asObject: true, rootMap: value });
                 } else {
                     obj[ key ] = value;
                 }
@@ -163,7 +163,13 @@ export class CrossMap {
         let arr = [];
         for(let [ key, value ] of rootMap.entries()) {
             if(value instanceof Map) {
-                arr.push(this.toLeaf(false, value));
+                const results = this.toLeaf({ asObject: false, rootMap: value });
+
+                if(flatten) {
+                    arr.push(...results);
+                } else {
+                    arr.push(results);
+                }
             } else {
                 arr.push(value);
             }

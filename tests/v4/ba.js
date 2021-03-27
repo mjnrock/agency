@@ -2,12 +2,10 @@ import Pulse from "./../../src/v4/Pulse";
 import Watchable from "./../../src/v4/Watchable";
 import Util from "./../../src/v4/util/package";
 
-import Node from "./ba/Node";
-import NodeManager from "./ba/NodeManager";
+import World from "./ba/World";
+import Portal from "./ba/Portal";
 
 console.log("------------ NEW EXECUTION CONTEXT ------------");
-
-const nm = new NodeManager([ 5, 5 ]);
 
 const entity1 = new Watchable({
     name: "Kiszka",
@@ -24,39 +22,35 @@ const entity2 = new Watchable({
     }
 });
 
+const world = new World([ 5, 5 ]);
+
+world.open(0, 0, new Portal(world, world.width - 1, world.height - 1));
 
 const loop = new Pulse(1, { autostart: true });
 loop.$.subscribe((prop, { dt, now }) => {
     entity1.position = {
         ...entity1.position,
-        x: Util.Dice.roll(1, 5, -1),
-        y: Util.Dice.roll(1, 5, -1),
+        x: Util.Dice.roll(1, world.width, -1),
+        y: Util.Dice.roll(1, world.height, -1),
     }
     entity2.position = {
         ...entity2.position,
-        x: Util.Dice.roll(1, 5, -1),
-        y: Util.Dice.roll(1, 5, -1),
+        x: Util.Dice.roll(1, world.width, -1),
+        y: Util.Dice.roll(1, world.height, -1),
     }
-    // [ entity1.position.x, entity1.position.y ] = [ Util.Dice.roll(1, 5, -1), Util.Dice.roll(1, 5, -1) ];
-    // [ entity2.position.x, entity2.position.y ] = [ Util.Dice.roll(1, 5, -1), Util.Dice.roll(1, 5, -1) ];
-    // entity1.position.x = Util.Dice.roll(1, 5, -1);
-    // entity1.position.y = Util.Dice.roll(1, 5, -1);
-    // entity2.position.x = Util.Dice.roll(1, 5, -1);
-    // entity2.position.y = Util.Dice.roll(1, 5, -1);
 
     console.clear()
-    // console.log(nm.range(0, 0, 5, 5).map(n => [ n._occupants.size, n._frequency ].toString()))
-    console.log(nm.range(0, 0, 5, 5).map(n => n._frequency))
-    console.log(nm.range(0, 0, 5, 5).map(n => n._occupants.size))
+    console.log(world._nodes.range(0, 0, ...world.size).map(n => n._frequency))
+    console.log(world._nodes.range(0, 0, ...world.size).map(n => n._occupants.size ? `X` : `-`))
 });
 
 entity1.$.subscribe((prop, value) => {
     if(prop.includes("position")) {
-        nm.move(entity1, entity1.position.x, entity1.position.y);
+        world._nodes.move(entity1, entity1.position.x, entity1.position.y);
     }
 });
 entity2.$.subscribe((prop, value) => {
     if(prop.includes("position")) {
-        nm.move(entity2, entity2.position.x, entity2.position.y);
+        world._nodes.move(entity2, entity2.position.x, entity2.position.y);
     }
 });

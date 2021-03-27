@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 
 export const WatchableArchetype = class {};
 
-export const wrapNested = (root, prop, input) => {
+export const wrapNested = (root, prop, input, nestedProps) => {
     if(input === null || prop.includes("__")) {
         return input;
     }
@@ -12,7 +12,7 @@ export const wrapNested = (root, prop, input) => {
     } else if(root instanceof Watchable && input instanceof Watchable) {
         if(root.$.proxy !== input.$.proxy) {    // Don't broadcast if the input is also the root (e.g. circular references)
             input.$.subscribe(function(p, v) {
-                root.$.broadcast.call(this, `${ prop }.${ p }`, v);
+                root.$.broadcast.call(this, nestedProps ? `${ prop }.${ p }` : p, v);
             });
         }
 
@@ -40,7 +40,7 @@ export const wrapNested = (root, prop, input) => {
             }
             
             if(typeof v === "object") {
-                let ob = wrapNested(root, `${ prop }.${ p }`, v);
+                let ob = wrapNested(root, nestedProps ? `${ prop }.${ p }` : p, v, nestedProps);
 
                 t[ p ] = ob;
             } else {
@@ -48,7 +48,7 @@ export const wrapNested = (root, prop, input) => {
             }
             
             if(!(Array.isArray(input) && p in Array.prototype)) {   // Don't broadcast native <Array> keys (i.e. .push returns .length)
-                root.$.broadcast(`${ prop }.${ p }`, v);
+                root.$.broadcast(nestedProps ? `${ prop }.${ p }` : p, v);
             }
 
             return t;
@@ -64,7 +64,7 @@ export const wrapNested = (root, prop, input) => {
 
     for(let [ key, value ] of Object.entries(input)) {
         if(typeof value === "object") {
-            proxy[ key ] = wrapNested(root, `${ prop }.${ key }`, value);
+            proxy[ key ] = wrapNested(root, nestedProps ? `${ prop }.${ p }` : p, value, nestedProps);
         }
     }
 
@@ -72,7 +72,7 @@ export const wrapNested = (root, prop, input) => {
 };
 
 export class Watchable {
-    constructor(state = {}, { deep = true, only = [], ignore = [] } = {}) {
+    constructor(state = {}, { deep = true, only = [], ignore = [], nestedProps = true } = {}) {
         this.__id = uuidv4();
 
         this.__subscribers = new Map();
@@ -121,7 +121,7 @@ export class Watchable {
                 }
 
                 if(deep && typeof value === "object") {
-                    target[ prop ] = wrapNested(target, prop, value);
+                    target[ prop ] = wrapNested(target, prop, value, nestedProps);
 
                     target.$.broadcast(prop, target[ prop ]);
                 } else {
