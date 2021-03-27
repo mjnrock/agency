@@ -33,6 +33,9 @@ export class World extends Emitter {
     get height() {
         return this.size[ 1 ];
     }
+    get dim() {
+        return dim => this.size[ dim ];
+    }
 
     join(entity) {
         this._nodes.move(entity);

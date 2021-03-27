@@ -25,6 +25,7 @@ const entity2 = new Watchable({
 const world = new World([ 5, 5 ]);
 
 world.open(0, 0, new Portal(world, world.width - 1, world.height - 1));
+world.open(~~(world.width / 2), ~~(world.height / 2), new Portal(world, world.width - 1, world.height - 1));
 
 const loop = new Pulse(1, { autostart: true });
 loop.$.subscribe((prop, { dt, now }) => {
@@ -39,9 +40,9 @@ loop.$.subscribe((prop, { dt, now }) => {
         y: Util.Dice.roll(1, world.height, -1),
     }
 
-    console.clear()
-    console.log(world._nodes.range(0, 0, ...world.size).map(n => n._frequency))
-    console.log(world._nodes.range(0, 0, ...world.size).map(n => n._occupants.size ? `X` : `-`))
+    console.clear();
+    console.log(world._nodes.range(0, 0, world.width, world.height, { asGrid: true }).map(r => r.map(n => n._frequency)));
+    console.log(world._nodes.range(0, 0, world.width, world.height, { asGrid: true }).map(r => r.map(n => n._occupants.size ? `X` : (n._portals.size ? `O` : `-`))));
 });
 
 entity1.$.subscribe((prop, value) => {
