@@ -23,18 +23,18 @@ const Game = {
     ],
 };
 
-const zone = new World([ 2, 2 ], {
-    config: { spawn: [ 0, 0 ] },
-});
-const overworld = new World([ 2, 2 ], {
+const world1 = new World([ 2, 2 ], {
     entities: Game.entities,
     config: { spawn: [ 0, 0 ] },
 });
+const world2 = new World([ 2, 2 ], {
+    config: { spawn: [ 0, 0 ] },
+});
 
-overworld.open(0, 1, new Portal(zone));
-zone.open(1, 0, new Portal(overworld));
+world1.open(0, 1, new Portal(world2));
+world2.open(1, 0, new Portal(world1));
 
-Game.world = overworld;
+Game.world = world1;
 Game.world.LAST_MESSAGE = "";
 
 Game.loop.$.subscribe((prop, { dt, now }) => {
