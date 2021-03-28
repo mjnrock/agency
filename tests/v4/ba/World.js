@@ -19,6 +19,8 @@ export class World {
         this.size = size;
         this._nodes = new NodeManager(this.size);
 
+        this._entities = new Set();
+
         this._config = {
             ...config,
 
@@ -35,6 +37,9 @@ export class World {
 
     get nodes() {
         return this._nodes;
+    }
+    get entities() {
+        return this._entities;
     }
     get subnodes() {
         return this._nodes.nodes;
@@ -57,11 +62,14 @@ export class World {
     }
 
     join(entity) {
+        this._entities.add(entity);
         this._nodes.move(entity);
         
         return this;
     }
     leave(entity) {
+        this._entities.delete(entity);
+
         return this._nodes.remove(entity);
     }
 

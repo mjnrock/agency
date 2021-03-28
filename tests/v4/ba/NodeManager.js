@@ -11,17 +11,17 @@ export class NodeManager extends Watcher {
             entity.position.world.leave(entity);
         }
 
-        portal.world.join(entity);
+        // entity.position = {
+        //     ...entity.position,
+        //     world: portal.world,
+        //     x: portal.x,
+        //     y: portal.y,
+        // };
+        entity.position.world = portal.world;
+        entity.position.x = portal.x;
+        entity.position.y = portal.y;
 
-        entity.position = {
-            ...entity.position,
-            world: portal.world,
-            x: portal.x,
-            y: portal.y,
-        };
-        // entity.position.world = portal.world;
-        // entity.position.x = portal.x;
-        // entity.position.y = portal.y;
+        portal.world.join(entity);
     };
 
     constructor(size = [ 1, 1 ], { extractor, cacher, teleporter, namespace, ...opts } = {}) {

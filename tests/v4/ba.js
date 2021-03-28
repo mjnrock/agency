@@ -16,6 +16,27 @@ const player = new Watchable({
     }
 });
 
+function createEntities(world, count = 1) {
+    const entities = [];
+    for(let i = 0; i < count; i++) {
+        entities.push(createEntity(world));
+    }
+
+    return entities;
+}
+function createEntity(world) {
+    const entity = new Watchable({
+        name: Math.random(),
+        position: {
+            world: world,
+            x: 0,
+            y: 0,
+        }
+    });
+
+    world.join(entity);
+}
+
 const Game = {
     loop: new Pulse(1, { autostart: true }),
     entities: [
@@ -23,13 +44,16 @@ const Game = {
     ],
 };
 
-const world1 = new World([ 2, 2 ], {
+const world1 = new World([ 6, 6 ], {
     entities: Game.entities,
     config: { spawn: [ 0, 0 ] },
 });
-const world2 = new World([ 2, 2 ], {
+const world2 = new World([ 5, 5 ], {
     config: { spawn: [ 0, 0 ] },
 });
+
+createEntities(world1, 20);
+// createEntities(world2, 10);
 
 world1.open(0, 1, new Portal(world2));
 world2.open(1, 0, new Portal(world1));
@@ -40,29 +64,49 @@ Game.world.LAST_MESSAGE = "";
 Game.loop.$.subscribe((prop, { dt, now }) => {
     Game.world = player.position.world || Game.world;
 
-    player.position.x = Util.Dice.roll(1, Game.world.width, -1),
-    player.position.y = Util.Dice.roll(1, Game.world.height, -1),
+    // player.position.x = Util.Dice.roll(1, Game.world.width, -1),
+    // player.position.y = Util.Dice.roll(1, Game.world.height, -1),
     
-    // Game.entities.forEach(entity => {
-    //     entity.position = {
-    //         ...entity.position,
-    //         // x: Util.Dice.roll(1, Game.world.width, -1),
-    //         // y: Util.Dice.roll(1, Game.world.height, -1),
-    //         x: Util.Dice.roll(1, 2, -1),
-    //         y: Util.Dice.roll(1, 2, -1),
-    //     };
+    Game.world.entities.forEach(entity => {
+        if(entity === player) {
+            entity.position.x = Util.Dice.roll(1, 2, -1);
+            entity.position.y = Util.Dice.roll(1, 2, -1);
+        } else {
+            entity.position.x = Util.Dice.roll(1, Game.world.width, -1);
+            entity.position.y = Util.Dice.roll(1, Game.world.height, -1);
+        }
 
-    //     Game.world.nodes.move(entity, entity.position.x, entity.position.y);
-    // });
+        Game.world.nodes.move(entity, entity.position.x, entity.position.y);
+    });
 
     Game.world.nodes.move(player, player.position.x, player.position.y);
     Game.world.LAST_MESSAGE = [ player.position.x, player.position.y ].toString();
 
     console.clear();
     console.log(Game.world.nodes.range(0, 0, Game.world.width, Game.world.height, { asGrid: true }).map(r => r.map(n => n._frequency)));
-    console.log(Game.world.nodes.range(0, 0, Game.world.width, Game.world.height, { asGrid: true }).map(r => r.map(n => n._occupants.size ? `x` : (n._portals.size ? `O` : `-`))));
+    console.log(Game.world.nodes.range(0, 0, Game.world.width, Game.world.height, { asGrid: true }).map(r => r.map(n => {
+        const icons = [];
+        for(let e of n.occupants) {
+            if(e === player) {
+                icons.push(`P`);
+            } else {
+                icons.push(`E`);
+            }
+        }
+
+        if(n._portals.size) {
+            icons.push(`O`);
+        }
+
+        if(icons.length) {
+            return icons.join(`,`);
+        }
+
+        return `-`;
+    })));
     console.log(`[World]:`, Game.world.id)
-    console.log(`[Message]: `, Game.world.LAST_MESSAGE);
+    console.log(`[Entities]:`, Game.world.entities.size)
+    console.log(`[Player]: `, Game.world.LAST_MESSAGE);
     // console.log(`----------------`);
     // console.log(Game.world.__subscribers);
     // console.log(`----------------`);
