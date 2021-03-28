@@ -7,11 +7,6 @@ import Portal from "./ba/Portal";
 
 console.log("------------ NEW EXECUTION CONTEXT ------------");
 
-const player = new Watchable({
-    name: "Bob",
-    position: Util.Helper.seedObject([ "world", "x", "y" ]),
-});
-
 function createEntities(world, count = 1) {
     const entities = [];
     for(let i = 0; i < count; i++) {
@@ -37,7 +32,7 @@ function createWorld(size = [], opts = {}) {
             entity.position.x = world.config.spawn[ 0 ];
             entity.position.y = world.config.spawn[ 1 ];
         }
-    })
+    });
 
     const nodeManager = world.nodes;
     nodeManager.$.on(
@@ -66,36 +61,41 @@ function createWorld(size = [], opts = {}) {
 
 const Game = {
     loop: new Pulse(1, { autostart: true }),
-    entities: [
-        player,
-    ],
+    player: new Watchable({
+        name: "Bob",
+        position: Util.Helper.seedObject([ "world", "x", "y" ]),
+    }),
 };
 
 const world1 = createWorld([ 6, 6 ], {
-    entities: Game.entities,
     config: { spawn: [ 4, 4 ] },
 });
 const world2 = createWorld([ 5, 5 ], {
     config: { spawn: [ 3, 3 ] },
 });
 
-createEntities(world1, 5);
-createEntities(world2, 2);
-
 world1.open(0, 1, new Portal(world2));
 world2.open(1, 0, new Portal(world1));
 
+createEntities(world1, 5);
+createEntities(world2, 2);
+
 Game.world = world1;
 Game.world.LAST_MESSAGE = "";
+Game.world.join(Game.player);
+
+Game.player.$.subscribe((prop, value) => {
+    if(prop.includes("world")) {
+        Game.world = Game.player.position.world || Game.world;
+    }
+});
 
 Game.loop.$.subscribe((prop, { dt, now }) => {
-    Game.world = player.position.world || Game.world;
-
-    // player.position.x = Util.Dice.roll(1, Game.world.width, -1),
-    // player.position.y = Util.Dice.roll(1, Game.world.height, -1),
+    // Game.player.position.x = Util.Dice.roll(1, Game.world.width, -1),
+    // Game.player.position.y = Util.Dice.roll(1, Game.world.height, -1),
     
     Game.world.entities.values.forEach(entity => {
-        if(entity === player) {
+        if(entity === Game.player) {
             entity.position.x = Util.Dice.roll(1, 2, -1);
             entity.position.y = Util.Dice.roll(1, 2, -1);
         } else {
@@ -106,15 +106,15 @@ Game.loop.$.subscribe((prop, { dt, now }) => {
         Game.world.nodes.move(entity, entity.position.x, entity.position.y);
     });
 
-    Game.world.nodes.move(player, player.position.x, player.position.y);
-    Game.world.LAST_MESSAGE = [ player.position.x, player.position.y ].toString();
+    Game.world.nodes.move(Game.player, Game.player.position.x, Game.player.position.y);
+    Game.world.LAST_MESSAGE = [ Game.player.position.x, Game.player.position.y ].toString();
 
     console.clear();
     console.log(Game.world.nodes.range(0, 0, Game.world.width, Game.world.height, { asGrid: true }).map(r => r.map(n => n._frequency)));
     console.log(Game.world.nodes.range(0, 0, Game.world.width, Game.world.height, { asGrid: true }).map(r => r.map(n => {
         const icons = [];
         for(let e of n.occupants) {
-            if(e === player) {
+            if(e === Game.player) {
                 icons.push(`P`);
             } else {
                 icons.push(`E`);
