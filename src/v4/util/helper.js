@@ -23,7 +23,7 @@ export function seedObject(keys = [], fn = () => null) {
  * ! This may produce shallowly-unantipicated rounding calculations.  (cf. Math.round for nuances)
  */
 export function round(number, scalar = 10) {
-    return Math.round((number + Number.EPSILON) * scalar) / scalar;
+    return Math.round((number + Number.EPSILON) * scalar) / scalar;     // Number.EPSILON ensures e.g. round(1.005, 100) --> 1.01
 };
 // console.log(round(15.5498, 10))  // e.v. 15.5, not 15.6
 
