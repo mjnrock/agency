@@ -6,7 +6,7 @@ export class Registry extends Watchable {
     constructor(entries = [], state = {}, { deep = true, nestedProps } = {}) {
         super(state, { deep, nestedProps });
 
-        this.props = {
+        this.__props = {
             size: 0,
         };
 
@@ -66,7 +66,7 @@ export class Registry extends Watchable {
     }
 
     get size() {
-        return this.props.size;
+        return this.__props.size;
     }
 
     get keys() {
@@ -147,7 +147,7 @@ export class Registry extends Watchable {
         let uuid = (entry || {}).__id || uuidv4();
         
         this[ uuid ] = entry;
-        this.props.size += 1;
+        this.__props.size += 1;
 
         for(let synonym of synonyms) {
             this[ synonym ] = uuid;
@@ -178,7 +178,7 @@ export class Registry extends Watchable {
             }
 
             delete this[ uuid ];
-            this.props.size -= 1;
+            this.__props.size -= 1;
         }
 
         return this;

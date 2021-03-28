@@ -27,7 +27,7 @@ export class World extends Emitter {
         this.id = uuidv4();
         
         this.size = size;
-        this._nodes = new NodeManager(this.size);
+        this._nodes = new NodeManager(this.size, { namespace });
 
         this._entities = new EntityManager(entities);
 

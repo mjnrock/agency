@@ -9,14 +9,8 @@ console.log("------------ NEW EXECUTION CONTEXT ------------");
 
 const player = new Watchable({
     name: "Bob",
-    position: Util.Helper.seedObject([ "world", "x", "y", "cat.dog", "cat.fish", "cat.fish.a" ]),
+    position: Util.Helper.seedObject([ "world", "x", "y" ]),
 });
-
-// console.log(JSON.stringify(Util.Helper.seedObject([ "world", "x", "y", "cat.dog", "cat.fish", "cat.fish.a" ], () => 1)));
-console.log(Util.Helper.round(1.005, 1000))
-console.log(Util.Helper.round(1.005, 100))
-console.log(Util.Helper.round(1.005, 10))
-console.log(Util.Helper.round(Util.Helper.round(Util.Helper.round(Util.Helper.round(15.5498, 10000), 1000), 100), 10))
 
 function createEntities(world, count = 1) {
     const entities = [];
@@ -50,8 +44,8 @@ const world2 = new World([ 5, 5 ], {
     config: { spawn: [ 3, 3 ] },
 });
 
-createEntities(world1, 20);
-createEntities(world2, 10);
+createEntities(world1, 5);
+createEntities(world2, 2);
 
 world1.open(0, 1, new Portal(world2));
 world2.open(1, 0, new Portal(world1));
