@@ -104,7 +104,7 @@ Game.loop.$.subscribe((prop, { dt, now }) => {
 
         return `-`;
     })));
-    console.log(`[World]:`, Game.world.id)
+    console.log(`[World]:`, `(${ Game.world.id === world1.id ? 1 : 2 }-${ Game.world.width }x${ Game.world.height })`, Game.world.id);
     console.log(`[Entities]:`, Game.world.entities.size)
     console.log(`[Player]: `, Game.world.LAST_MESSAGE);
     // console.log(`----------------`);

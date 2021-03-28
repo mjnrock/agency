@@ -21,7 +21,7 @@ export const wrapNested = (root, prop, input, nestedProps) => {
         return input;
     }
 
-    const proxy = new Proxy(input, {
+    return new Proxy(input, {
         getPrototypeOf(t) {
             return WatchableArchetype.prototype;
         },
@@ -68,7 +68,7 @@ export const wrapNested = (root, prop, input, nestedProps) => {
     //     }
     // }
 
-    return proxy;
+    // return proxy;
 };
 
 export class Watchable {
