@@ -49,4 +49,4 @@ console.log(999993, ob[ "nested.layer1" ]);
 
 // console.log(ob)
 // console.log(ob.toData())
-console.log(JSON.stringify(ob))
+// console.log(JSON.stringify(ob))

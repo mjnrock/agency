@@ -12,15 +12,20 @@ const obs1 = new Watcher([
     ob1,
     ob2,
 ]);
+// obs1.$.watch(ob1);
+// obs1.$.watch(ob2);
 const obs2 = new Watcher([
     obs1,
 ]);
+// obs2.$.watch(obs1);
 const obs3 = new Watcher([
     obs2,
 ]);
+// obs3.$.watch(obs2);
 const obs4 = new Watcher([
     obs3,
 ]);
+// obs4.$.watch(obs3);
 
 // obs.$.subscribe((...args) => { console.log(this, ...args); });
 // obs1.$.subscribe(function(...args) { console.log(this, ...args); });

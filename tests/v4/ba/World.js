@@ -1,25 +1,26 @@
 import { v4 as uuidv4 } from "uuid";
 
 import Emitter from "../../../src/v4/Emitter";
+import EntityManager from "./EntityManager";
 import Node from "./Node";
 import NodeManager from "./NodeManager";
 import Portal from "./Portal";
 
-export class World {
+export class World extends Emitter {
     static Cost = function(node) { return node.terrain.terrain.cost; };
 
     constructor(size = [], { entities = [], portals = [], namespace, config = {} } = {}) {
-        // super([
-        //     "join",
-        //     "leave",
-        // ], {}, { namespace, nestedProps: false });
+        super([
+            "join",
+            "leave",
+        ], {}, { namespace, nestedProps: false });
 
         this.id = uuidv4();
         
         this.size = size;
         this._nodes = new NodeManager(this.size);
 
-        this._entities = new Set();
+        this._entities = new EntityManager(entities);
 
         this._config = {
             ...config,
@@ -61,16 +62,24 @@ export class World {
         return dim => this.size[ dim ];
     }
 
-    join(entity) {
-        this._entities.add(entity);
+    join(entity, ...synonyms) {
+        this._entities.register(entity, ...synonyms);
         this._nodes.move(entity);
+
+        this.$join(this, entity);
         
         return this;
     }
     leave(entity) {
-        this._entities.delete(entity);
+        this._entities.unregister(entity);
 
-        return this._nodes.remove(entity);
+        if(this._nodes.remove(entity)) {
+            this.$leave(this, entity);
+
+            return true;
+        }
+
+        return false;
     }
 
     open(x, y, portal) {

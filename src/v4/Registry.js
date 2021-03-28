@@ -1,10 +1,14 @@
 import { v4 as uuidv4, validate } from "uuid";
 
-import Watcher from "./Watcher";
+import Watchable from "./Watchable";
 
-export class Registry extends Watcher {
+export class Registry extends Watchable {
     constructor(entries = [], state = {}, { deep = true } = {}) {
-        super([], state, { deep });
+        super(state, { deep });
+
+        this.props = {
+            size: 0,
+        };
 
         for(let entry of entries) {
             if(Array.isArray(entry)) {
@@ -13,12 +17,8 @@ export class Registry extends Watcher {
                 this.register(entry);
             }
         }
-
-        this.__props = {
-            size: 0,
-        };
             
-        return new Proxy(this, {
+        const proxy = new Proxy(this, {
             get(target, prop) {
                 if(!validate(prop) && validate(target[ prop ])) {   // prop is NOT a uuid AND target[ prop ] IS a uuid --> prop is a synonym
                     const entry = target[ target[ prop ] ];
@@ -38,6 +38,8 @@ export class Registry extends Watcher {
                 return target;
             }
         });
+
+        return proxy;
     }
 
     get $() {
@@ -60,7 +62,7 @@ export class Registry extends Watcher {
     }
 
     get size() {
-        return this.__props.size;
+        return this.props.size;
     }
 
     get entries() {
@@ -119,7 +121,7 @@ export class Registry extends Watcher {
         let uuid = (entry || {}).__id || uuidv4();
         
         this[ uuid ] = entry;
-        this.__props.size += 1;
+        this.props.size += 1;
 
         for(let synonym of synonyms) {
             this[ synonym ] = uuid;
@@ -139,7 +141,7 @@ export class Registry extends Watcher {
             }
 
             delete this[ uuid ];
-            this.__props.size -= 1;
+            this.props.size -= 1;
         }
 
         return this;

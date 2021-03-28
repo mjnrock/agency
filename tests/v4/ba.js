@@ -67,7 +67,7 @@ Game.loop.$.subscribe((prop, { dt, now }) => {
     // player.position.x = Util.Dice.roll(1, Game.world.width, -1),
     // player.position.y = Util.Dice.roll(1, Game.world.height, -1),
     
-    Game.world.entities.forEach(entity => {
+    Game.world.entities.values.forEach(entity => {
         if(entity === player) {
             entity.position.x = Util.Dice.roll(1, 2, -1);
             entity.position.y = Util.Dice.roll(1, 2, -1);

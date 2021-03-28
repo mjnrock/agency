@@ -1,6 +1,7 @@
 import Watchable from "./Watchable";
+import Emitter from "./Emitter";
 
-export class Watcher extends Watchable {
+export class Watcher extends Emitter {
     constructor(watchables = [], handlers = [], state = {}, opts = {}) {
         super(state, opts);
 

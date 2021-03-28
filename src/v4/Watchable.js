@@ -21,7 +21,7 @@ export const wrapNested = (root, prop, input, nestedProps) => {
         return input;
     }
 
-    return new Proxy(input, {
+    const proxy = new Proxy(input, {
         getPrototypeOf(t) {
             return WatchableArchetype.prototype;
         },
@@ -62,13 +62,14 @@ export const wrapNested = (root, prop, input, nestedProps) => {
         // }
     });
 
-    // for(let [ key, value ] of Object.entries(input)) {
-    //     if(typeof value === "object") {
-    //         proxy[ key ] = wrapNested(root, prop, value, nestedProps);
-    //     }
-    // }
+    for(let [ key, value ] of Object.entries(input)) {
+        if(typeof value === "object") {
+            // proxy[ key ] = wrapNested(root, prop, value, nestedProps);
+            proxy[ key ] = value;//wrapNested(root, prop, value, nestedProps);
+        }
+    }
 
-    // return proxy;
+    return proxy;
 };
 
 export class Watchable {
@@ -84,7 +85,7 @@ export class Watchable {
             };
         }
         
-        const _this = new Proxy(this, {
+        const proxy = new Proxy(this, {
             get(target, prop) {
                 if((typeof prop === "string" || prop instanceof String) && prop.includes(".")) {
                     let props = prop.split(".");
@@ -141,16 +142,16 @@ export class Watchable {
             // }
         });
 
+        //NOTE  Allow @target to regain its <Proxy>, such as in a .broadcast(...) --> { subject: @target } situation
+        this.__ = { proxy: proxy, target: this };  // Store a proxy and target accessor so that either can access each other
+
         if(typeof state === "object") {
             for(let [ key, value ] of Object.entries(state)) {
-                _this[ key ] = value;
+                proxy[ key ] = value;
             }
         }
 
-        //NOTE  Allow @target to regain its <Proxy>, such as in a .broadcast(...) --> { subject: @target } situation
-        this.__ = { proxy: _this, target: this };  // Store a proxy and target accessor so that either can access each other
-
-        return _this;
+        return proxy;
     }
 
     // Method wrapper to easily prevent { key : value } collisions
