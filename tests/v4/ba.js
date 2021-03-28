@@ -109,6 +109,7 @@ Game.loop.$.subscribe((prop, { dt, now }) => {
     Game.world.nodes.move(Game.player, Game.player.position.x, Game.player.position.y);
     Game.world.LAST_MESSAGE = [ Game.player.position.x, Game.player.position.y ].toString();
 
+    // console.log(`----- Tick -----`);
     console.clear();
     console.log(Game.world.nodes.range(0, 0, Game.world.width, Game.world.height, { asGrid: true }).map(r => r.map(n => n._frequency)));
     console.log(Game.world.nodes.range(0, 0, Game.world.width, Game.world.height, { asGrid: true }).map(r => r.map(n => {

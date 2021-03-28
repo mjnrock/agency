@@ -2,7 +2,7 @@ import { v4 as uuidv4, validate } from "uuid";
 
 export const WatchableArchetype = class {};
 
-export const wrapNested = (root, prop, input, nestedProps) => {
+export const wrapNested = (root, prop, input) => {
     if(input === null || prop.includes("__")) {
         return input;
     }
@@ -40,7 +40,7 @@ export const wrapNested = (root, prop, input, nestedProps) => {
             }
             
             if(typeof v === "object") {
-                let ob = wrapNested(root, nprop, v, nestedProps);
+                let ob = wrapNested(root, nprop, v);
 
                 t[ p ] = ob;
             } else {
@@ -68,7 +68,7 @@ export const wrapNested = (root, prop, input, nestedProps) => {
         if(typeof value === "object") {
             let kprop = `${ prop }.${ key }`;
             
-            proxy[ key ] = wrapNested(root, kprop, value, nestedProps);
+            proxy[ key ] = wrapNested(root, kprop, value);
         }
     }
 
@@ -76,7 +76,7 @@ export const wrapNested = (root, prop, input, nestedProps) => {
 };
 
 export class Watchable {
-    constructor(state = {}, { deep = true, only = [], ignore = [], nestedProps = true } = {}) {
+    constructor(state = {}, { deep = true, only = [], ignore = [] } = {}) {
         this.__id = uuidv4();
 
         this.__subscribers = new Map();
@@ -125,7 +125,7 @@ export class Watchable {
                 }
 
                 if(deep && typeof value === "object") {
-                    target[ prop ] = wrapNested(target, prop, value, nestedProps);
+                    target[ prop ] = wrapNested(target, prop, value);
 
                     target.$.broadcast(prop, target[ prop ]);
                 } else {
@@ -208,7 +208,17 @@ export class Watchable {
                         subscriber: subscriber instanceof Watchable ? subscriber.$.proxy : subscriber,
                     };
         
-                    let finalProp = "__namespace" in payload.subject ? prop : payload.prop;     // Check if
+                    let finalProp;
+                    if("__namespace" in payload.subject) {
+                        if(payload.subject.__namespace === Infinity) {
+                            finalProp = payload.prop;
+                        } else {
+                            finalProp = prop;
+                        }
+                    } else {
+                        finalProp = payload.prop;
+                    }
+                    
                     if(typeof subscriber === "function") {
                         subscriber.call(payload, finalProp, value, payload.subject.$.id);
                     } else if(subscriber instanceof Watchable) {

@@ -17,6 +17,7 @@ let A = new Watchable({
                 emitter: new Emitter([
                     "cat",
                 ]),
+                // ], { namespace: Infinity }),
             }
         }
     }
@@ -24,7 +25,7 @@ let A = new Watchable({
 
 ob.a = A;
 
-console.log(ob.a.nested.layer1.layer2.emitter)
+console.log(ob.a.nested.layer1.layer2.emitter.$.events)
 
 let run  = false;
 const pulse = new Pulse(1, { autostart: true });
