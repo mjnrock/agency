@@ -1,6 +1,10 @@
 import Watchable from "./Watchable";
 
 export class Emitter extends Watchable {
+    static GetEvent(namespace, event) {
+        return namespace ? `${ namespace }.${ event }` : event;
+    };
+
     static Handler = (...args) => args;
 
     constructor(events = {}, { state = {}, deep = false, namespace = "", ...rest } = {}) {
@@ -44,6 +48,11 @@ export class Emitter extends Watchable {
 
             get namespace() {
                 return _this.__namespace;
+            },
+            get events() {
+                return Object.fromEntries(Object.keys(_this.__events).map(e => {
+                    return [ e, Emitter.GetEvent(_this.__namespace, e) ];
+                }));
             },
 
             add(event, emitter) {

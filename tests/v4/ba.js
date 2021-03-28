@@ -40,6 +40,7 @@ const world1 = new World([ 6, 6 ], {
     entities: Game.entities,
     config: { spawn: [ 4, 4 ] },
 });
+
 const world2 = new World([ 5, 5 ], {
     config: { spawn: [ 3, 3 ] },
 });

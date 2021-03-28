@@ -12,8 +12,6 @@ export class World extends Emitter {
             entity.position.world = this;
             entity.position.x = this.config.spawn[ 0 ];
             entity.position.y = this.config.spawn[ 1 ];
-
-            
         }
     };
     static Cost = function(node) { return node.terrain.terrain.cost; };

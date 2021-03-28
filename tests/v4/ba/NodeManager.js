@@ -40,14 +40,22 @@ export class NodeManager extends Watcher {
             },
         });
         this.$.on(
-            namespace ? `${ namespace }.join` : `join`,
+            Node.GetEvent(namespace, "join"),
             typeof cacher === "function" ? cacher.bind(this) : NodeManager.Cacher.bind(this),
         );
         this.$.on(
-            namespace ? `${ namespace }.portal` : `portal`,
+            Node.GetEvent(namespace, "portal"),
             typeof teleporter === "function" ? teleporter.bind(this) : NodeManager.Teleporter.bind(this),
-
         );
+
+        // this.$.on(
+        //     this.$.events.join,
+        //     typeof cacher === "function" ? cacher.bind(this) : NodeManager.Cacher.bind(this),
+        // );
+        // this.$.on(
+        //     this.$.events.portal,
+        //     typeof teleporter === "function" ? teleporter.bind(this) : NodeManager.Teleporter.bind(this),
+        // );
 
         this.__extractor = extractor;
     }

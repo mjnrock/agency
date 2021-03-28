@@ -2,12 +2,14 @@
 import Emitter from "../../../src/v4/Emitter";
 
 export class Node extends Emitter {
+    static Events = [
+        "join",
+        "leave",
+        "portal",
+    ];
+
     constructor(coords = [], terrain, { portals = [], occupants = [], frequency = 0, value = 0, clearance = Infinity, ...rest } = {}) {
-        super([
-            "join",
-            "leave",
-            "portal",
-        ], { ...rest });
+        super(Node.Events, { ...rest });
 
         this._coords = coords;
         this._terrain = terrain;
