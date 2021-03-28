@@ -3,8 +3,8 @@ import { v4 as uuidv4, validate } from "uuid";
 import Watchable from "./Watchable";
 
 export class Registry extends Watchable {
-    constructor(entries = [], state = {}, { deep = true } = {}) {
-        super(state, { deep });
+    constructor(entries = [], state = {}, { deep = true, nestedProps } = {}) {
+        super(state, { deep, nestedProps });
 
         this.props = {
             size: 0,

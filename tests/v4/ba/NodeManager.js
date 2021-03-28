@@ -24,7 +24,7 @@ export class NodeManager extends Watcher {
     };
 
     constructor(size = [ 1, 1 ], { extractor, cacher, teleporter, namespace, ...opts } = {}) {
-        super([], [], {}, { nestedProps: false, ...opts });
+        super([], { ...opts });
 
         this._cache = new WeakMap();
         

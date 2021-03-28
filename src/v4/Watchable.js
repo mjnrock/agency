@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4, validate } from "uuid";
 
 export const WatchableArchetype = class {};
 
@@ -27,6 +27,8 @@ export const wrapNested = (root, prop, input, nestedProps) => {
             return t[ p ];
         },
         set(t, p, v) {
+            let nprop = `${ prop }.${ p }`;
+
             if(t[ p ] === v) {  // Ignore if the old value === new value
                 return t;
             }
@@ -38,7 +40,7 @@ export const wrapNested = (root, prop, input, nestedProps) => {
             }
             
             if(typeof v === "object") {
-                let ob = wrapNested(root, nestedProps ? `${ prop }.${ p }` : p, v, nestedProps);
+                let ob = wrapNested(root, nprop, v, nestedProps);
 
                 t[ p ] = ob;
             } else {
@@ -46,23 +48,27 @@ export const wrapNested = (root, prop, input, nestedProps) => {
             }
             
             if(!(Array.isArray(input) && p in Array.prototype)) {   // Don't broadcast native <Array> keys (i.e. .push returns .length)
-                root.$.broadcast(nestedProps ? `${ prop }.${ p }` : p, v);
+                root.$.broadcast(nprop, v);
             }
 
             return t;
         },
-        // deleteProperty(t, p) {
-        //     if(p in t) {
-        //         delete t[ p ];
+        deleteProperty(t, p) {
+            if(p in t) {
+                delete t[ p ];
 
-        //         t.$.broadcast(p, void 0);
-        //     }
-        // }
+                t.$.unsubscribe(root.$.proxy.id);
+            }
+
+            return t;
+        }
     });
 
     for(let [ key, value ] of Object.entries(input)) {
         if(typeof value === "object") {
-            proxy[ key ] = wrapNested(root, `${ prop }.${ key }`, value, nestedProps);
+            let kprop = `${ prop }.${ key }`;
+            
+            proxy[ key ] = wrapNested(root, kprop, value, nestedProps);
         }
     }
 
@@ -130,13 +136,19 @@ export class Watchable {
 
                 return target;
             },
-            // deleteProperty(target, prop) {
-            //     if(prop in target) {
-            //         delete target[ prop ];
+            deleteProperty(target, prop) {
+                if(prop in target) {
+                    if(target[ prop ] instanceof Watchable) {
+                        target[ prop ].$.unsubscribe(target);
+                    }
 
-            //         target.$.broadcast(prop, void 0);
-            //     }
-            // }
+                    delete target[ prop ];
+
+                    target.$.broadcast(prop, void 0);
+                }
+
+                return target;
+            }
         });
 
         //NOTE  Allow @target to regain its <Proxy>, such as in a .broadcast(...) --> { subject: @target } situation
@@ -179,7 +191,7 @@ export class Watchable {
                     }
                 }
 
-                for(let [ subscriber, nestedProp ] of _this.__subscribers.values()) {
+                for(let [ subscriber, parentProp ] of _this.__subscribers.values()) {
                     /**
                      * @prop | The chain-prop from the original emission
                      * @value | The chain-prop's value from the original emission
@@ -189,18 +201,18 @@ export class Watchable {
                      * @subscriber | The subscription fn|Watcher receiving the invocation
                      */
                     const payload = {
-                        prop: nestedProp != null  ? `${ nestedProp }.${ prop }` : prop,
-                        // prop,
+                        prop: parentProp != null  ? `${ parentProp }.${ prop }` : prop,
                         value,
                         subject: "subject" in this ? this.subject.$.proxy : _this.$.proxy,
                         emitter: _this.$.proxy,
                         subscriber: subscriber instanceof Watchable ? subscriber.$.proxy : subscriber,
                     };
         
+                    let finalProp = "__namespace" in payload.subject ? prop : payload.prop;     // Check if
                     if(typeof subscriber === "function") {
-                        subscriber.call(payload, prop, value, payload.subject.$.id);
+                        subscriber.call(payload, finalProp, value, payload.subject.$.id);
                     } else if(subscriber instanceof Watchable) {
-                        subscriber.$.broadcast.call(payload, payload.prop, value, payload.subject.$.id);
+                        subscriber.$.broadcast.call(payload, finalProp, value, payload.subject.$.id);
                     }
                 }
         
@@ -235,8 +247,14 @@ export class Watchable {
         
                 return false;
             },
-            unsubscribe(id) {
-                return _this.__subscribers.delete(id);
+            unsubscribe(entryOrId) {
+                if(validate(entryOrId)) {
+                    return _this.__subscribers.delete(entryOrId);
+                } else if(validate((entryOrId || {}).__id)) {
+                    return _this.__subscribers.delete((entryOrId || {}).__id);
+                }
+
+                return false;
             },
         
             toData({ includePrivateKeys = false } = {}) {

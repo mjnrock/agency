@@ -3,7 +3,7 @@ import Watchable from "./Watchable";
 export class Emitter extends Watchable {
     static Handler = (...args) => args;
 
-    constructor(events = {}, state = {}, { deep = false, namespace = "", ...rest } = {}) {
+    constructor(events = {}, { state = {}, deep = false, namespace = "", ...rest } = {}) {
         super(state, { deep, ...rest });
 
         if(Array.isArray(events)) {
@@ -16,13 +16,16 @@ export class Emitter extends Watchable {
             this.__events = events;
         }
 
+        this.__namespace = namespace;
         return new Proxy(this, {
             get(target, prop) {
                 if(prop[ 0 ] === "$" && prop.length > 1) {
                     let key = prop.slice(1);
 
                     if(key in target.__events) {
-                        return async (...args) => target.$.broadcast(namespace ?  `${ namespace }.${ key }` : key, target.__events[ key ](...args));
+                        const nkey = target.__namespace ?  `${ target.__namespace }.${ key }` : key;
+
+                        return async (...args) => target.$.broadcast(nkey, target.__events[ key ](...args));
                     }
 
                     return () => void 0;
@@ -38,6 +41,10 @@ export class Emitter extends Watchable {
 
         return {
             ...super.$,
+
+            get namespace() {
+                return _this.__namespace;
+            },
 
             add(event, emitter) {
                 if(typeof emitter === "function") {
@@ -56,7 +63,9 @@ export class Emitter extends Watchable {
                 const fn = _this.__events[ event ];
 
                 if(typeof fn === "function") {
-                    _this.$.broadcast(event, fn(...args));
+                    const nkey = _this.__namespace ?  `${ _this.__namespace }.${ event }` : event;
+
+                    _this.$.broadcast(nkey, fn(...args));
                 }
 
                 return this;

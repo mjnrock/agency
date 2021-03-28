@@ -22,7 +22,7 @@ export class World extends Emitter {
         super([
             "join",
             "leave",
-        ], {}, { namespace, nestedProps: false });
+        ], { namespace });
 
         this.id = uuidv4();
         

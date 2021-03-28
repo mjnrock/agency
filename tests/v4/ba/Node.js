@@ -7,7 +7,7 @@ export class Node extends Emitter {
             "join",
             "leave",
             "portal",
-        ], {}, { nestedProps: false, ...rest });
+        ], { ...rest });
 
         this._coords = coords;
         this._terrain = terrain;
