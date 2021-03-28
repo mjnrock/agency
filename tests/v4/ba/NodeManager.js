@@ -4,20 +4,8 @@ import Node from "./Node";
 
 export class NodeManager extends Watcher {
     static Extractor = function(entity) { return [ entity.position.x, entity.position.y ] };
-    static Cacher = function([ entity ]) { this.cache.set(entity,  [ entity.position.x, entity.position.y ]); };
-    static Teleporter = function([ portal, entity ]) {
-        if(entity.position.world) {
-            entity.position.world.leave(entity);
-        }
 
-        entity.position.world = portal.world;
-        portal.world.join(entity);
-        
-        entity.position.x = portal.x;
-        entity.position.y = portal.y;
-    };
-
-    constructor(size = [ 1, 1 ], { extractor, cacher, teleporter, namespace, ...opts } = {}) {
+    constructor(size = [ 1, 1 ], { extractor, namespace, ...opts } = {}) {
         super([], { ...opts });
 
         this._cache = new WeakMap();
@@ -33,23 +21,6 @@ export class NodeManager extends Watcher {
                 return node;
             },
         });
-        this.$.on(
-            Node.GetEvent(namespace, "join"),
-            typeof cacher === "function" ? cacher.bind(this) : NodeManager.Cacher.bind(this),
-        );
-        this.$.on(
-            Node.GetEvent(namespace, "portal"),
-            typeof teleporter === "function" ? teleporter.bind(this) : NodeManager.Teleporter.bind(this),
-        );
-
-        // this.$.on(
-        //     this.$.events.join,
-        //     typeof cacher === "function" ? cacher.bind(this) : NodeManager.Cacher.bind(this),
-        // );
-        // this.$.on(
-        //     this.$.events.portal,
-        //     typeof teleporter === "function" ? teleporter.bind(this) : NodeManager.Teleporter.bind(this),
-        // );
 
         this.__extractor = extractor;
     }

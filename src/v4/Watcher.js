@@ -2,8 +2,8 @@ import Watchable from "./Watchable";
 import Emitter from "./Emitter";
 
 export class Watcher extends Emitter {
-    constructor(handlers = [], { watchables = [], state = {}, opts = {} } = {}) {
-        super(state, opts);
+    constructor(handlers = [], { events = [], watchables = [], ...opts } = {}) {
+        super(events, { ...opts });
 
         this.__handlers = new Set(handlers);
 

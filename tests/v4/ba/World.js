@@ -1,28 +1,19 @@
 import { v4 as uuidv4 } from "uuid";
 
-import Emitter from "../../../src/v4/Emitter";
+import Watcher from "../../../src/v4/Watcher";
 import EntityManager from "./EntityManager";
 import Node from "./Node";
 import NodeManager from "./NodeManager";
 import Portal from "./Portal";
 
-export class World extends Emitter {
+export class World extends Watcher {
     static Events = [
         "join",
         "leave",
     ];
 
-    static Joiner = function(entity) {
-        if(entity.position.world !== this) {
-            entity.position.world = this;
-            entity.position.x = this.config.spawn[ 0 ];
-            entity.position.y = this.config.spawn[ 1 ];
-        }
-    };
-    static Cost = function(node) { return node.terrain.terrain.cost; };
-
     constructor(size = [], { entities = [], portals = [], namespace, config = {} } = {}) {
-        super(World.Events, { namespace });
+        super([], { events: World.Events, namespace });
 
         this.id = uuidv4();
         
@@ -74,7 +65,6 @@ export class World extends Emitter {
     join(entity, ...synonyms) {
         this._entities.register(entity, ...synonyms);
 
-        World.Joiner.call(this, entity);
         this._nodes.move(entity);
 
         this.$join(this, entity);
@@ -138,15 +128,6 @@ export class World extends Emitter {
         if(node) {
             return node.portals;
         }
-    }
-    cost(x, y, extractor = World.Cost) {
-        const node = this.subnodes.get(x, y);
-
-        if(node) {
-            return extractor(node);
-        }
-
-        return Infinity;
     }
 
 

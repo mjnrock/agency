@@ -54,6 +54,9 @@ export class Emitter extends Watchable {
                     return [ e, Emitter.GetEvent(_this.__namespace, e) ];
                 }));
             },
+            event(e) {
+                return Emitter.GetEvent(_this.__namespace, e);
+            },
 
             add(event, emitter) {
                 if(typeof emitter === "function") {

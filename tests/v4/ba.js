@@ -19,7 +19,7 @@ function createEntities(world, count = 1) {
     }
 
     return entities;
-}
+};
 function createEntity(world) {
     const entity = new Watchable({
         name: Math.random(),
@@ -27,7 +27,42 @@ function createEntity(world) {
     });
 
     world.join(entity);
-}
+};
+function createWorld(size = [], opts = {}) {
+    const world = new World(size, opts);
+
+    world.$.on(world.$.event("join"), function([ world, entity ]) {
+        if(entity.position.world !== world) {
+            entity.position.world = world;
+            entity.position.x = world.config.spawn[ 0 ];
+            entity.position.y = world.config.spawn[ 1 ];
+        }
+    })
+
+    const nodeManager = world.nodes;
+    nodeManager.$.on(
+        World.GetEvent(opts.namespace, "join"),
+        function([ entity ]) {
+            nodeManager.cache.set(entity,  [ entity.position.x, entity.position.y ]);
+        },
+    );
+    nodeManager.$.on(
+        World.GetEvent(opts.namespace, "portal"),
+        function([ portal, entity ]) {
+            if(entity.position.world) {
+                entity.position.world.leave(entity);
+            }
+    
+            entity.position.world = portal.world;
+            portal.world.join(entity);
+            
+            entity.position.x = portal.x;
+            entity.position.y = portal.y;
+        },
+    );
+
+    return world;
+};
 
 const Game = {
     loop: new Pulse(1, { autostart: true }),
@@ -36,12 +71,11 @@ const Game = {
     ],
 };
 
-const world1 = new World([ 6, 6 ], {
+const world1 = createWorld([ 6, 6 ], {
     entities: Game.entities,
     config: { spawn: [ 4, 4 ] },
 });
-
-const world2 = new World([ 5, 5 ], {
+const world2 = createWorld([ 5, 5 ], {
     config: { spawn: [ 3, 3 ] },
 });
 
