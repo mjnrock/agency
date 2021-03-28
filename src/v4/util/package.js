@@ -6,6 +6,8 @@ import CrossMap from "./CrossMap";
 import Enumerator from "./Enumerator";
 import LinkedList from "./LinkedList";
 
+import Helper from "./helper";
+
 export default {
     Dice,
     WeightedPool,
@@ -14,4 +16,6 @@ export default {
     CrossMap,
     Enumerator,
     LinkedList,
+
+    Helper,
 };

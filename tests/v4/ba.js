@@ -9,12 +9,14 @@ console.log("------------ NEW EXECUTION CONTEXT ------------");
 
 const player = new Watchable({
     name: "Bob",
-    position: {
-        world: null,
-        x: 0,
-        y: 0,
-    }
+    position: Util.Helper.seedObject([ "world", "x", "y", "cat.dog", "cat.fish", "cat.fish.a" ]),
 });
+
+// console.log(JSON.stringify(Util.Helper.seedObject([ "world", "x", "y", "cat.dog", "cat.fish", "cat.fish.a" ], () => 1)));
+console.log(Util.Helper.round(1.005, 1000))
+console.log(Util.Helper.round(1.005, 100))
+console.log(Util.Helper.round(1.005, 10))
+console.log(Util.Helper.round(Util.Helper.round(Util.Helper.round(Util.Helper.round(15.5498, 10000), 1000), 100), 10))
 
 function createEntities(world, count = 1) {
     const entities = [];
@@ -27,11 +29,7 @@ function createEntities(world, count = 1) {
 function createEntity(world) {
     const entity = new Watchable({
         name: Math.random(),
-        position: {
-            world: world,
-            x: 0,
-            y: 0,
-        }
+        position: Util.Helper.seedObject([ "world", "x", "y" ]),
     });
 
     world.join(entity);
@@ -46,14 +44,14 @@ const Game = {
 
 const world1 = new World([ 6, 6 ], {
     entities: Game.entities,
-    config: { spawn: [ 0, 0 ] },
+    config: { spawn: [ 4, 4 ] },
 });
 const world2 = new World([ 5, 5 ], {
-    config: { spawn: [ 0, 0 ] },
+    config: { spawn: [ 3, 3 ] },
 });
 
 createEntities(world1, 20);
-// createEntities(world2, 10);
+createEntities(world2, 10);
 
 world1.open(0, 1, new Portal(world2));
 world2.open(1, 0, new Portal(world1));

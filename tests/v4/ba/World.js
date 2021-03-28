@@ -7,6 +7,15 @@ import NodeManager from "./NodeManager";
 import Portal from "./Portal";
 
 export class World extends Emitter {
+    static Joiner = function(entity) {
+        if(entity.position.world !== this) {
+            entity.position.world = this;
+            entity.position.x = this.config.spawn[ 0 ];
+            entity.position.y = this.config.spawn[ 1 ];
+
+            
+        }
+    };
     static Cost = function(node) { return node.terrain.terrain.cost; };
 
     constructor(size = [], { entities = [], portals = [], namespace, config = {} } = {}) {
@@ -64,6 +73,8 @@ export class World extends Emitter {
 
     join(entity, ...synonyms) {
         this._entities.register(entity, ...synonyms);
+
+        World.Joiner.call(this, entity);
         this._nodes.move(entity);
 
         this.$join(this, entity);
