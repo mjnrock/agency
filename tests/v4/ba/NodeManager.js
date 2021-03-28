@@ -10,12 +10,6 @@ export class NodeManager extends Watcher {
             entity.position.world.leave(entity);
         }
 
-        // entity.position = {
-        //     ...entity.position,
-        //     world: portal.world,
-        //     x: portal.x,
-        //     y: portal.y,
-        // };
         entity.position.world = portal.world;
         portal.world.join(entity);
         
@@ -118,15 +112,17 @@ export class NodeManager extends Watcher {
             return true;
         } else if(leaver(posNode)) {
             return true;
-        } else {
-            const nodes = this.nodes.toLeaf({ flatten: true });
-            for(let node of nodes) {
-                if(node.leave(entity)) {
-                    return true;
-                }
-            }
         }
         
+        return this.findAndRemove(entity);
+    }
+    findAndRemove(entity) {
+        const nodes = this.nodes.toLeaf({ flatten: true });
+        for(let node of nodes) {
+            if(node.leave(entity)) {
+                return true;
+            }
+        }
 
         return false;
     }
