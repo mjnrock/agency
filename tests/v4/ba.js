@@ -85,7 +85,7 @@ Game.world.LAST_MESSAGE = "";
 Game.world.join(Game.player);
 
 Game.player.$.subscribe((prop, value) => {
-    if(prop.includes("world")) {
+    if(prop === "position.world") {
         Game.world = Game.player.position.world || Game.world;
     }
 });
