@@ -65,24 +65,6 @@ export class Registry extends Watchable {
         return this.props.size;
     }
 
-    get entries() {
-        return Object.entries(this).reduce((a, [ k, v ]) => {
-            if(validate(k)) {
-                return [ ...a, [ k, v ] ];
-            }
-
-            return a;
-        }, []);
-    }
-    get values() {
-        return Object.entries(this).reduce((a, [ k, v ]) => {
-            if(validate(k)) {
-                return [ ...a, v ];
-            }
-
-            return a;
-        }, []);
-    }
     get keys() {
         return Object.keys(this).reduce((a, key) => {
             if(key[ 0 ] !== "_" || (key[ 0 ] === "_" && key[ 1 ] !== "_")) {
@@ -91,6 +73,46 @@ export class Registry extends Watchable {
 
             return a;
         }, []);
+    }
+    get values() {
+        return Object.keys(this).reduce((a, k) => {
+            if(validate(k)) {
+                return [ ...a, this[ k ] ];
+            }
+
+            return a;
+        }, []);
+    }
+    get entries() {
+        return Object.keys(this).reduce((a, k) => {
+            if(validate(k)) {
+                return [ ...a, [ k, this[ k ] ] ];
+            }
+
+            return a;
+        }, []);
+    }
+    get records() {
+        const obj = {};
+        for(let key of Object.keys(this)) {
+            if(key[ 0 ] !== "_" || (key[ 0 ] === "_" && key[ 1 ] !== "_")) {
+                const entry = this[ key ];
+
+                if(validate(entry)) {
+                    obj[ entry ] = [
+                        ...((obj || [])[ entry ] || []),
+                        key,
+                    ];
+                } else if(validate(key)) {
+                    obj[ key ] = [
+                        ...((obj || [])[ key ] || []),
+                        entry,
+                    ];
+                }
+            }
+        }
+        
+        return obj;
     }
     
     get ids() {
@@ -103,8 +125,8 @@ export class Registry extends Watchable {
         }, []);
     }
     get synonyms() {
-        return Object.entries(this).reduce((a, [ k, v ]) => {
-            if((k[ 0 ] !== "_" || (k[ 0 ] === "_" && k[ 1 ] !== "_")) && validate(v)) {
+        return Object.keys(this).reduce((a, k) => {
+            if((k[ 0 ] !== "_" || (k[ 0 ] === "_" && k[ 1 ] !== "_")) && validate(this[ k ])) {
                 return [ ...a, k ];
             }
 

@@ -5,8 +5,7 @@ import Node from "./Node";
 export class NodeManager extends Watcher {
     static Extractor = function(entity) { return [ entity.position.x, entity.position.y ] };
     static Cacher = function([ entity ]) { this.cache.set(entity,  [ entity.position.x, entity.position.y ]); };
-    static Teleporter = function([ portal, entity ]) { entity.position = { ...entity.position, world: portal.world, x: portal.x, y: portal.y, }; };
-    static Teleporter2 = function([ portal, entity ]) {
+    static Teleporter = function([ portal, entity ]) {
         if(entity.position.world) {
             entity.position.world.leave(entity);
         }
@@ -46,7 +45,7 @@ export class NodeManager extends Watcher {
         );
         this.$.on(
             namespace ? `${ namespace }.portal` : `portal`,
-            typeof teleporter === "function" ? teleporter.bind(this) : NodeManager.Teleporter2.bind(this),
+            typeof teleporter === "function" ? teleporter.bind(this) : NodeManager.Teleporter.bind(this),
 
         );
 
