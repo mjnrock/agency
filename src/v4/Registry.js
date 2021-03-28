@@ -49,6 +49,10 @@ export class Registry extends Watchable {
         return {
             ...super.$,
 
+            synId(synonym) {
+                return _this.$.target[ synonym ];
+            },
+
             async broadcast(prop, value) {
                 if(validate(prop.substring(0, 36))) {
                     prop = prop.slice(37);
@@ -151,8 +155,19 @@ export class Registry extends Watchable {
 
         return this;
     }
-    unregister(entryOrId) {
-        let uuid = validate(entryOrId) ? entryOrId : (entryOrId || {}).__id;
+    unregister(entrySynonymOrId) {
+        let uuid;
+        if(validate(entrySynonymOrId)) {
+            uuid = entrySynonymOrId;
+        } else {
+            let synid = this.$.synId(entrySynonymOrId);
+
+            if(validate(synid)) {
+                uuid = synid;
+            } else {
+                uuid = (entrySynonymOrId || {}).__id;
+            }
+        }
         
         if(uuid) {
             const entry = this[ uuid ];
