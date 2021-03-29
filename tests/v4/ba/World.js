@@ -6,6 +6,7 @@ import EntityManager from "./EntityManager";
 import Node from "./Node";
 import NodeManager from "./NodeManager";
 import Portal from "./Portal";
+import Registry from "../../../src/v4/Registry";
 
 export class World extends Watcher {
     static Events = [
@@ -21,8 +22,8 @@ export class World extends Watcher {
         this.size = size;
         this._nodes = new NodeManager(this.size, { namespace });
 
-        // this._entities = new EntityManager(entities);
-        this._entities = new Network(entities);
+        this._entities = new Registry(entities);
+        // this._entities = new Network(entities);
 
         this._config = {
             ...config,
@@ -42,7 +43,8 @@ export class World extends Watcher {
         return this._nodes;
     }
     get entities() {
-        return this._entities.emitters;
+        return this._entities;
+        // return this._entities.emitters;
     }
     get subnodes() {
         return this._nodes.nodes;
@@ -65,19 +67,18 @@ export class World extends Watcher {
     }
 
     join(entity, ...synonyms) {
-        // this._entities.register(entity, ...synonyms);
-        this._entities.join(entity, ...synonyms)
+        this._entities.register(entity, ...synonyms);
+        // this._entities.join(entity, ...synonyms)
 
         this._nodes.move(entity);
 
         this.$join(this, entity);
-        // entity, this.entities)
         
         return this;
     }
     leave(entity) {
-        // this._entities.unregister(entity);
-        this._entities.join(entity);
+        this._entities.unregister(entity);
+        // this._entities.join(entity);
 
         if(this._nodes.remove(entity)) {
             this.$leave(this, entity);

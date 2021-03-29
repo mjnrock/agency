@@ -40,13 +40,13 @@ e1.$.emit("cats");
 
 console.log("--- Connecting to Network ---");
 
-network.join(e1);
-network.join(e2);
-network.fire("cats", "meow");
+network.$.join(e1);
+network.$.join(e2);
+network.$.fire("cats", "meow");
 
 console.log("--- Adding Network 2 ---");
 
-network2.join(network);
+network2.$.join(network);
 network2.$.subscribe(function(prop, value) {
     console.log(`[Network2]:`, this.subject.$.id.slice(0, 8), prop, value);
 });

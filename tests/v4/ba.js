@@ -97,6 +97,8 @@ Game.player.$.subscribe((prop, value) => {
     }
 });
 
+console.log(Game.world)
+
 Game.loop.$.subscribe((prop, { dt, now }) => {
     // Game.player.position.x = Util.Dice.roll(1, Game.world.width, -1),
     // Game.player.position.y = Util.Dice.roll(1, Game.world.height, -1),

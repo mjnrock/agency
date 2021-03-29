@@ -11,8 +11,8 @@ export class Network extends Watcher {
     /**
      * @parentKey will be inserted via Reflect.defineProperty into the emitter on .join--as an internal property (i.e. `__${ parentKey }`)--and removed on .leave
      */
-    constructor(emitters = [], { events = [], handlers = [], parentKey = "network", ...opts } = {}) {
-        super(handlers, { events: [
+    constructor(emitters = [], { events = [], parentKey = "network", ...opts } = {}) {
+        super([], { events: [
             ...Network.Events,
             ...events,
         ], ...opts });
@@ -68,7 +68,7 @@ export class Network extends Watcher {
 
         return this;
     }
-    joinMany(joinArgs = []) {
+    bulkJoin(joinArgs = []) {
         for(let [ emitter, ...synonyms ] of joinArgs) {
             this.join(emitter, ...synonyms);
         }
@@ -122,7 +122,7 @@ export class Network extends Watcher {
      * @param {fn} argsFn | .$event(...args) finalizes as .broadcast(event, argsFn(...args))
      * @param {fn} filter | A selector function that filters which of this.emitters will have the new event added
      */
-    addEvent(event, { argsFn, filter } = {}) {
+    attachEvent(event, { argsFn, filter } = {}) {
         const emitters = typeof filter === "function" ? filter(this.emitters) : this.emitters;
 
         for(let emitter of emitters) {
@@ -138,14 +138,14 @@ export class Network extends Watcher {
     /**
      * @param {[ event, { argsFn, filter }]} addEventArgs | This should have one array row per intended .addEvent call
      */
-    addEvents(addEventArgs = []) {
+    bulkAttachEvent(addEventArgs = []) {
         for(let [ event, opts ] of addEventArgs) {
-            this.addEvent(event, opts);
+            this.attachEvent(event, opts);
         }
 
         return this;
     }
-    removeEvent(...events) {
+    detatchEvent(...events) {
         for(let emitter of this.emitters) {
             for(let event of events) {
                 emitter.$.removeEvent(event);
