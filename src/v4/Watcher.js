@@ -48,12 +48,12 @@ export class Watcher extends Emitter {
                     return _this;
             },
 
-            add(handler) {
+            addHandler(handler) {
                 _this.__handlers.add(handler);
 
                 return this;
             },
-            remove(handler) {
+            removeHandler(handler) {
                 return _this.__handlers.delete(handler);
             },
 

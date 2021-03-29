@@ -1,4 +1,5 @@
 import Watchable from "../../src/v4/Watchable";
+import Watcher from "../../src/v4/Watcher";
 import Pulse from "../../src/v4/Pulse";
 import Emitter from "../../src/v4/Emitter";
 
@@ -24,6 +25,10 @@ let A = new Watchable({
 });
 
 ob.a = A;
+
+const obs = new Watcher();
+obs.$.on("cat", (...args) => console.log("CATTTTT"));
+obs.$.watch(ob.a);
 
 console.log(ob.a.nested.layer1.layer2.emitter.$.events)
 

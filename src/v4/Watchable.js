@@ -24,7 +24,7 @@ export const wrapNested = (root, prop, input) => {
             return WatchableArchetype.prototype;
         },
         get(t, p) {
-            return t[ p ];
+            return Reflect.get(t, p);
         },
         set(t, p, v) {
             let nprop = `${ prop }.${ p }`;
@@ -34,17 +34,22 @@ export const wrapNested = (root, prop, input) => {
             }
 
             if(v === null || p[ 0 ] === "_" || (Object.getOwnPropertyDescriptor(t, p) || {}).set) {      // Don't broadcast any _Private/__Internal variables
-                t[ p ] = v;
+                return Reflect.defineProperty(t, p, {
+                    value: v,
+                    configurable: true,
+                    writable: true,
+                    enumerable: false,
+                });
 
-                return t;
+                // return Reflect.set(t, p, v);
             }
             
             if(typeof v === "object") {
                 let ob = wrapNested(root, nprop, v);
 
-                t[ p ] = ob;
+                Reflect.set(t, p, ob);
             } else {
-                t[ p ] = v;
+                Reflect.set(t, p, v);
             }
             
             if(!(Array.isArray(input) && p in Array.prototype)) {   // Don't broadcast native <Array> keys (i.e. .push returns .length)
@@ -55,13 +60,15 @@ export const wrapNested = (root, prop, input) => {
         },
         deleteProperty(t, p) {
             if(p in t) {
-                delete t[ p ];
+                if(t[ p ] instanceof Watchable) {
+                    t[ p ].$.unsubscribe(t.$.proxy);
+                }
 
-                t.$.unsubscribe(root.$.proxy.id);
+                return Reflect.deleteProperty(t, p);
             }
 
-            return t;
-        }
+            return false;
+        },
     });
 
     for(let [ key, value ] of Object.entries(input)) {
@@ -76,18 +83,7 @@ export const wrapNested = (root, prop, input) => {
 };
 
 export class Watchable {
-    constructor(state = {}, { deep = true, only = [], ignore = [] } = {}) {
-        this.__id = uuidv4();
-
-        this.__subscribers = new Map();
-
-        if(only.length || ignore.length) {
-            this.__filter = {
-                type: only.length ? true : (ignore.length ? false : null),
-                props: only.length ? only : (ignore.length ? ignore : []),
-            };
-        }
-        
+    constructor(state = {}, { deep = true, only = [], ignore = [] } = {}) {        
         const proxy = new Proxy(this, {
             get(target, prop) {
                 if((typeof prop === "string" || prop instanceof String) && prop.includes(".")) {
@@ -111,7 +107,7 @@ export class Watchable {
                     }
                 }
 
-                return target[ prop ];
+                return Reflect.get(target, prop);
             },
             set(target, prop, value) {
                 if(target[ prop ] === value || prop === "$") {  // Ignore if the old value === new value, or if accessing get $()
@@ -119,18 +115,31 @@ export class Watchable {
                 }
                 
                 if(value === null || prop[ 0 ] === "_" || (Object.getOwnPropertyDescriptor(target, prop) || {}).set) {      // Don't broadcast any _Private/__Internal variables
-                    target[ prop ] = value;
+                    if(prop[ 0 ] === "_" && prop[ 1 ] === "_") {        // Prevent modification of internal variables after first assignment
+                        return Reflect.defineProperty(target, prop, {
+                            value,
+                            configurable: false,
+                            writable: false,
+                            enumerable: false,
+                        });
+                    }
 
-                    return target;
+                    return Reflect.defineProperty(target, prop, {
+                        value,
+                        configurable: true,
+                        writable: true,
+                        enumerable: false,
+                    });
+                    // return Reflect.set(target, prop, value);
                 }
 
                 if(deep && typeof value === "object") {
-                    target[ prop ] = wrapNested(target, prop, value);
+                    let newValue = wrapNested(target, prop, value);
 
-                    target.$.broadcast(prop, target[ prop ]);
+                    Reflect.set(target, prop, newValue);
+                    target.$.broadcast(prop, newValue);
                 } else {
-                    target[ prop ] = value;
-
+                    Reflect.set(target, prop, value);
                     target.$.broadcast(prop, value);
                 }
 
@@ -139,20 +148,33 @@ export class Watchable {
             deleteProperty(target, prop) {
                 if(prop in target) {
                     if(target[ prop ] instanceof Watchable) {
-                        target[ prop ].$.unsubscribe(target);
+                        target[ prop ].$.unsubscribe(target.$.proxy);
                     }
 
-                    delete target[ prop ];
+                    Reflect.deleteProperty(target, prop);
 
                     target.$.broadcast(prop, void 0);
+
+                    return true;
                 }
 
-                return target;
-            }
+                return false;
+            },
         });
 
+        proxy.__id = uuidv4();
+
+        proxy.__subscribers = new Map();
+
+        if(only.length || ignore.length) {
+            proxy.__filter = {
+                type: only.length ? true : (ignore.length ? false : null),
+                props: only.length ? only : (ignore.length ? ignore : []),
+            };
+        }
+
         //NOTE  Allow @target to regain its <Proxy>, such as in a .broadcast(...) --> { subject: @target } situation
-        this.__ = { proxy: proxy, target: this };  // Store a proxy and target accessor so that either can access each other
+        proxy.__ = { proxy: proxy, target: this };  // Store a proxy and target accessor so that either can access each other
 
         if(typeof state === "object") {
             for(let [ key, value ] of Object.entries(state)) {
@@ -162,6 +184,15 @@ export class Watchable {
 
         return proxy;
     }
+
+    [ Symbol.iterator ]() {
+        var index = -1;
+        var data = Object.entries(this);
+
+        return {
+            next: () => ({ value: data[ ++index ], done: !(index in data) })
+        };
+    };
 
     // Method wrapper to easily prevent { key : value } collisions
     get $() {
@@ -209,11 +240,17 @@ export class Watchable {
                     };
         
                     let finalProp;
-                    if("__namespace" in payload.subject) {
-                        if(payload.subject.__namespace === Infinity) {
-                            finalProp = payload.prop;
-                        } else {
+                    if("__namespace" in payload.subject) {      // Proxy evaluation to test if an Emitter
+                        if(payload.subject.__namespace === Infinity) {      // Special Case: Emit from local scope
+                            if(Object.keys(payload.subject.__events).includes(prop.slice(prop.lastIndexOf(".") + 1))) {
+                                finalProp = `${ parentProp }.$${ prop }`;   // Prepend "$" to the event to signify that prop does not exist--it is a scoped event (.e.g "nested.cat" --> "nested.$cat")
+                            } else {
+                                finalProp = payload.prop;
+                            }
+                        } else if(Object.keys(payload.subject.__events).includes(prop.slice(prop.lastIndexOf(".") + 1))) {   // A state change in the Emitter (check for event only--namespace removed)
                             finalProp = prop;
+                        } else {
+                            finalProp = payload.prop;
                         }
                     } else {
                         finalProp = payload.prop;
