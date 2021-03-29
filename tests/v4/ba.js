@@ -1,5 +1,5 @@
 import Pulse from "./../../src/v4/Pulse";
-import Watchable from "./../../src/v4/Watchable";
+import Emitter from "../../src/v4/Emitter";
 import Util from "./../../src/v4/util/package";
 
 import World from "./ba/World";
@@ -16,12 +16,16 @@ function createEntities(world, count = 1) {
     return entities;
 };
 function createEntity(world) {
-    const entity = new Watchable({
-        name: Math.random(),
-        position: Util.Helper.seedObject([ "world", "x", "y" ]),
+    const entity = new Emitter([], {
+        state: {
+            name: Math.random(),
+            position: Util.Helper.seedObject([ "world", "x", "y" ]),
+        }
     });
 
     world.join(entity);
+
+    return entity;
 };
 function createWorld(size = [], opts = {}) {
     const world = new World(size, opts);
@@ -61,9 +65,11 @@ function createWorld(size = [], opts = {}) {
 
 const Game = {
     loop: new Pulse(1, { autostart: true }),
-    player: new Watchable({
-        name: "Bob",
-        position: Util.Helper.seedObject([ "world", "x", "y" ]),
+    player: new Emitter([], {
+        state: {
+            name: Math.random(),
+            position: Util.Helper.seedObject([ "world", "x", "y" ]),
+        }
     }),
 };
 
@@ -78,7 +84,7 @@ world1.open(0, 1, new Portal(world2));
 world2.open(1, 0, new Portal(world1));
 
 createEntities(world1, 5);
-createEntities(world2, 2);
+// createEntities(world2, 2);
 
 Game.world = world1;
 Game.world.LAST_MESSAGE = "";

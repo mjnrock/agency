@@ -9,9 +9,9 @@ export class Network extends Watcher {
     ];
 
     /**
-     * @parentKey will be inserted via Reflect.defineProperty into the entity on .join--as an internal property (i.e. `__${ parentKey }`)--and removed on .leave
+     * @parentKey will be inserted via Reflect.defineProperty into the emitter on .join--as an internal property (i.e. `__${ parentKey }`)--and removed on .leave
      */
-    constructor(entities = [], { events = [], handlers = [], parentKey = "network", ...opts } = {}) {
+    constructor(emitters = [], { events = [], handlers = [], parentKey = "network", ...opts } = {}) {
         super(handlers, { events: [
             ...Network.Events,
             ...events,
@@ -19,8 +19,8 @@ export class Network extends Watcher {
 
         this.__parentKey = parentKey;
 
-        this.entities = new Registry();
-        this.join(...entities);
+        this.emitters = new Registry();
+        this.join(...emitters);
     }
 
     get $() {
@@ -46,45 +46,49 @@ export class Network extends Watcher {
         };
     }
 
-    join(...entities) {
-        for(let entity of entities) {
-            if(entity instanceof Emitter) {
-                this.entities.register(entity);
-    
-                entity.$.subscribe(this);
-                // entity.__namespace = `${ this.__namespace }.${ entity.__namespace }`;
+    join(emitter, ...synonyms) {
+        if(emitter instanceof Emitter) {
+            this.emitters.register(emitter, ...synonyms);
 
-                Reflect.defineProperty(entity, this.__parentKey, {
-                    configurable: true,
-                    get: function() {
-                        return Reflect.get(this, `__${ this.__parentKey }`);
-                    },
-                    set: function(value) {
-                        return Reflect.set(this, `__${ this.__parentKey }`, value);
-                    },
-                });
-                entity[ this.__parentKey ] = this;
-    
-                this.$join(entity);
-            }
+            this.$.watch(emitter);
+
+            Reflect.defineProperty(emitter, this.__parentKey, {
+                configurable: true,
+                get: function() {
+                    return Reflect.get(this, `__${ this.__parentKey }`);
+                },
+                set: function(value) {
+                    return Reflect.set(this, `__${ this.__parentKey }`, value);
+                },
+            });
+            emitter[ this.__parentKey ] = this;
+
+            this.$join(emitter);
         }
 
         return this;
     }
-    leave(...entities) {
+    joinMany(joinArgs = []) {
+        for(let [ emitter, ...synonyms ] of joinArgs) {
+            this.join(emitter, ...synonyms);
+        }
+
+        return this;
+    }
+
+    leave(...emitters) {
         let bools = [];
-        for(let entity of entities) {
-            if(entity instanceof Emitter) {
-                let bool = this.entities.unregister(entity).length;
+        for(let emitter of emitters) {
+            if(emitter instanceof Emitter) {
+                let bool = this.emitters.unregister(emitter).length;
     
                 if(bool) {    
-                    entity.$.unsubscribe(this);
-                    // entity.__namespace = entity.__namespace.replace(`${ this.__namespace }.`, "");
+                    this.$.unwatch(emitter);
 
-                    Reflect.deleteProperty(entity, `__${ this.__parentKey }`);     // Delete the value
-                    Reflect.deleteProperty(entity, this.__parentKey);       // Delete the trap--will get recreated if entity rejoins a <${ this.__parentKey }>
+                    Reflect.deleteProperty(emitter, `__${ this.__parentKey }`);     // Delete the value
+                    Reflect.deleteProperty(emitter, this.__parentKey);       // Delete the trap--will get recreated if emitter rejoins a <${ this.__parentKey }>
 
-                    this.$leave(entity);
+                    this.$leave(emitter);
                 }
     
                 bools.push(bool);
@@ -98,9 +102,16 @@ export class Network extends Watcher {
         return bools;
     }
 
+    /**
+     * Due to the nature of <Emitter>, if an emitter does not contain
+     *      the @event, then it will not emit it.  This behavior can
+     *      be exploited to create de facto groups based on the presence
+     *      or absence of an event within a given emitter, and invoke
+     *      those groups collectively here.
+     */
     fire(event, ...args) {
-        for(let entity of this.entities) {
-            entity.$.emit(event, ...args);
+        for(let emitter of this.emitters) {
+            emitter.$.emit(event, ...args);
         }
 
         return this;
@@ -109,16 +120,16 @@ export class Network extends Watcher {
     /**
      * @param {string} event | The event name
      * @param {fn} argsFn | .$event(...args) finalizes as .broadcast(event, argsFn(...args))
-     * @param {fn} filter | A selector function that filters which of this.entities will have the new event added
+     * @param {fn} filter | A selector function that filters which of this.emitters will have the new event added
      */
     addEvent(event, { argsFn, filter } = {}) {
-        const entities = typeof filter === "function" ? filter(this.entities) : this.entities;
+        const emitters = typeof filter === "function" ? filter(this.emitters) : this.emitters;
 
-        for(let entity of entities) {
+        for(let emitter of emitters) {
             if(typeof argsFn === "function") {
-                entity.$.addEvent(event, argsFn);
+                emitter.$.addEvent(event, argsFn);
             } else {
-                entity.$.handle(event);
+                emitter.$.handle(event);
             }
         }
 
@@ -135,9 +146,9 @@ export class Network extends Watcher {
         return this;
     }
     removeEvent(...events) {
-        for(let entity of this.entities) {
+        for(let emitter of this.emitters) {
             for(let event of events) {
-                entity.$.removeEvent(event);
+                emitter.$.removeEvent(event);
             }
         }
 
