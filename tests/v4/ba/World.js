@@ -8,7 +8,7 @@ import NodeManager from "./NodeManager";
 import Portal from "./Portal";
 import Registry from "../../../src/v4/Registry";
 
-export class World extends Watcher {
+export class World extends Network {
     static Events = [
         "join",
         "leave",
@@ -32,10 +32,10 @@ export class World extends Watcher {
         };
 
         for(let [ x, y, portal ] of portals) {
-            this.open(x, y, portal);
+            this.openPortal(x, y, portal);
         }
         for(let entity of entities) {
-            this.join(entity);
+            this.joinWorld(entity);
         }
     }
 
@@ -66,7 +66,7 @@ export class World extends Watcher {
         return dim => this.size[ dim ];
     }
 
-    join(entity, ...synonyms) {
+    joinWorld(entity, ...synonyms) {
         this._entities.register(entity, ...synonyms);
         // this._entities.join(entity, ...synonyms)
 
@@ -76,7 +76,7 @@ export class World extends Watcher {
         
         return this;
     }
-    leave(entity) {
+    leaveWorld(entity) {
         this._entities.unregister(entity);
         // this._entities.join(entity);
 
@@ -89,7 +89,7 @@ export class World extends Watcher {
         return false;
     }
 
-    open(x, y, portal) {
+    openPortal(x, y, portal) {
         const node = this.subnodes.get(x, y);
 
         if(node instanceof Node && portal instanceof Portal) {
@@ -100,7 +100,7 @@ export class World extends Watcher {
 
         return false;
     }
-    close(x, y, portal) {
+    closePortal(x, y, portal) {
         const node = this.subnodes.get(x, y);
 
         if(node instanceof Node && portal instanceof Portal) {

@@ -23,7 +23,7 @@ function createEntity(world) {
         }
     });
 
-    world.join(entity);
+    world.joinWorld(entity);
 
     return entity;
 };
@@ -49,11 +49,11 @@ function createWorld(size = [], opts = {}) {
         World.GetEvent(opts.namespace, "portal"),
         function([ portal, entity ]) {
             if(entity.position.world) {
-                entity.position.world.leave(entity);
+                entity.position.world.leaveWorld(entity);
             }
     
             entity.position.world = portal.world;
-            portal.world.join(entity);
+            portal.world.joinWorld(entity);
             
             entity.position.x = portal.x;
             entity.position.y = portal.y;
@@ -80,39 +80,41 @@ const world2 = createWorld([ 5, 5 ], {
     config: { spawn: [ 3, 3 ] },
 });
 
-world1.open(0, 1, new Portal(world2));
-world2.open(1, 0, new Portal(world1));
+world1.openPortal(0, 1, new Portal(world2));
+world2.openPortal(1, 0, new Portal(world1));
 
 createEntities(world1, 5);
 createEntities(world2, 2);
 
 Game.world = world1;
 Game.world.LAST_MESSAGE = "";
-Game.world.join(Game.player);
+Game.world.joinWorld(Game.player);
 
 Game.player.$.subscribe((prop, value) => {
-    console.log(prop);
     if(prop === "position.world") {
         Game.world = Game.player.position.world || Game.world;
     }
 });
 
-console.log(Game.world)
+// console.log(Game.world)
 
 Game.loop.$.subscribe((prop, { dt, now }) => {
+    console.clear();
     // Game.player.position.x = Util.Dice.roll(1, Game.world.width, -1),
     // Game.player.position.y = Util.Dice.roll(1, Game.world.height, -1),
     // Game.world.nodes.move(Game.player, Game.player.position.x, Game.player.position.y);
     
     // Game.world = Game.player.position.world || Game.world;
     for(let entity of Game.world.entities) {
-        if(entity === Game.player) {
-            entity.position.x = Util.Dice.roll(1, 2, -1);
-            entity.position.y = Util.Dice.roll(1, 2, -1);
-        } else {
-            entity.position.x = Util.Dice.roll(1, Game.world.width, -1);
-            entity.position.y = Util.Dice.roll(1, Game.world.height, -1);
-        }
+        entity.position.x = Util.Dice.roll(1, Game.world.width, -1);
+        entity.position.y = Util.Dice.roll(1, Game.world.height, -1);
+        // if(entity === Game.player) {
+        //     entity.position.x = Util.Dice.roll(1, 2, -1);
+        //     entity.position.y = Util.Dice.roll(1, 2, -1);
+        // } else {
+        //     entity.position.x = Util.Dice.roll(1, Game.world.width, -1);
+        //     entity.position.y = Util.Dice.roll(1, Game.world.height, -1);
+        // }
 
         Game.world.nodes.move(entity, entity.position.x, entity.position.y);
     }
@@ -120,7 +122,6 @@ Game.loop.$.subscribe((prop, { dt, now }) => {
     Game.world.LAST_MESSAGE = [ Game.player.position.x, Game.player.position.y ].toString();
 
     // console.log(`----- Tick -----`);
-    console.clear();
     console.log(Game.player);
     console.log(Game.world.nodes.range(0, 0, Game.world.width, Game.world.height, { asGrid: true }).map(r => r.map(n => n._frequency)));
     console.log(Game.world.nodes.range(0, 0, Game.world.width, Game.world.height, { asGrid: true }).map(r => r.map(n => {
