@@ -63,11 +63,13 @@ e1.name = Math.random();
 
 console.log("--- Adding 'fish' Event ---");
 
-network.addEvent("fish").fire("fish", 1, 2, 4, 5, 9);
+network.$.attachEvent("fish");
+network.$.fire("fish", 1, 2, 4, 5, 9);
 
+console.log(network.emitters)
 console.log("--- E1 Leaving Network ---");
 
-network.leave(e1);
+network.$.leave(e1);
 e1.$fish(1234);
 
 // console.log(e1.$.id);

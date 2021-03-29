@@ -151,11 +151,7 @@ export class Watchable {
                         target[ prop ].$.unsubscribe(target.$.proxy);
                     }
 
-                    Reflect.deleteProperty(target, prop);
-
-                    target.$.broadcast(prop, void 0);
-
-                    return true;
+                    return Reflect.deleteProperty(target, prop);
                 }
 
                 return false;

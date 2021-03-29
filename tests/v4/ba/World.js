@@ -67,7 +67,7 @@ export class World extends Network {
     }
 
     joinWorld(entity, ...synonyms) {
-        this._entities.register(entity, ...synonyms);
+        this._entities.$.register(entity, ...synonyms);
         // this._entities.join(entity, ...synonyms)
 
         this._nodes.move(entity);
@@ -77,7 +77,7 @@ export class World extends Network {
         return this;
     }
     leaveWorld(entity) {
-        this._entities.unregister(entity);
+        this._entities.$.unregister(entity);
         // this._entities.join(entity);
 
         if(this._nodes.remove(entity)) {
