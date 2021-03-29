@@ -67,7 +67,7 @@ const Game = {
     loop: new Pulse(1, { autostart: true }),
     player: new Emitter([], {
         state: {
-            name: Math.random(),
+            name: "Buddhiszka",
             position: Util.Helper.seedObject([ "world", "x", "y" ]),
         }
     }),
@@ -84,13 +84,14 @@ world1.open(0, 1, new Portal(world2));
 world2.open(1, 0, new Portal(world1));
 
 createEntities(world1, 5);
-// createEntities(world2, 2);
+createEntities(world2, 2);
 
 Game.world = world1;
 Game.world.LAST_MESSAGE = "";
 Game.world.join(Game.player);
 
 Game.player.$.subscribe((prop, value) => {
+    console.log(prop);
     if(prop === "position.world") {
         Game.world = Game.player.position.world || Game.world;
     }
@@ -101,6 +102,7 @@ Game.loop.$.subscribe((prop, { dt, now }) => {
     // Game.player.position.y = Util.Dice.roll(1, Game.world.height, -1),
     // Game.world.nodes.move(Game.player, Game.player.position.x, Game.player.position.y);
     
+    // Game.world = Game.player.position.world || Game.world;
     for(let entity of Game.world.entities) {
         if(entity === Game.player) {
             entity.position.x = Util.Dice.roll(1, 2, -1);
@@ -117,6 +119,7 @@ Game.loop.$.subscribe((prop, { dt, now }) => {
 
     // console.log(`----- Tick -----`);
     console.clear();
+    console.log(Game.player);
     console.log(Game.world.nodes.range(0, 0, Game.world.width, Game.world.height, { asGrid: true }).map(r => r.map(n => n._frequency)));
     console.log(Game.world.nodes.range(0, 0, Game.world.width, Game.world.height, { asGrid: true }).map(r => r.map(n => {
         const icons = [];

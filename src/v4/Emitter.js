@@ -38,8 +38,8 @@ export class Emitter extends Watchable {
 
     static Handler = (...args) => args;     // A convenience method to simply return all passed arguments
 
-    constructor(events = {}, { state = {}, deep = false, namespace = "", ...rest } = {}) {
-        super(state, { deep, ...rest });
+    constructor(events = {}, { state = {}, namespace = "", ...rest } = {}) {
+        super(state, { ...rest });
 
         if(Array.isArray(events)) {
             this.__events = {};
@@ -66,7 +66,7 @@ export class Emitter extends Watchable {
                     return () => void 0;
                 }
 
-                return target[ prop ];
+                return Reflect.get(target, prop);
             }
         });
     }
