@@ -30,11 +30,11 @@ export class Registry extends Watchable {
                 if (validate(prop)) {        // assignment
                     // target[ prop ] = value;
                     return Reflect.set(target, prop, value);
-                } else if (validate(value)) {    // synonym assignment
+                } else if (validate(value)) {    // sic | synonym assignment
                     return Reflect.defineProperty(target, prop, {
                         configurable: true,
                         get: function () {
-                            return Reflect.get(target, value);
+                            return Reflect.get(target, value);  // sic
                         },
                         set: function (v) {
                             return Reflect.set(target, prop, value);
