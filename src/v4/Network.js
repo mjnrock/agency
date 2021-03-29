@@ -30,6 +30,9 @@ export class Network extends Watcher {
         return {
             ...super.$,
 
+            /**
+             * Prepend the namespace, if it exists, and eliminate redundant wrapping in nested <Network(s)>.
+             */
             async broadcast(prop, value) {
                 if((typeof _this.__namespace === "string" && _this.__namespace.length) || _this.__namespace === Infinity) {
                     const regex = new RegExp(`(${ _this.__namespace }\.)+`, "i");
