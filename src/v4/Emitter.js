@@ -28,7 +28,9 @@ export class Emitter extends Watchable {
      */
     static GetEvent(namespace, event) {     // A convenience method to help work with namespaces
         if(typeof namespace === "string" && namespace.length) {
-            return `${ namespace }.${ event }`;
+            let cleanNamespace = namespace.replace(/^[.\s]+|[.\s]+$/g, "");
+
+            return `${ cleanNamespace }.${ event }`;
         }
 
         return event;
@@ -87,13 +89,13 @@ export class Emitter extends Watchable {
                 return Emitter.GetEvent(_this.__namespace, e);
             },
 
-            addEvent(event, emitter) {
-                if(typeof emitter === "function") {
-                    _this.__events[ event ] = emitter;
+            addEvent(event, argsFn) {
+                if(typeof argsFn === "function") {
+                    _this.__events[ event ] = argsFn;
                 }
             },
             removeEvent(event) {
-                delete _this[ event ];
+                return Reflect.deleteProperty(_this.__events, event);
             },
 
             handle(event) {

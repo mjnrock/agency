@@ -115,14 +115,14 @@ export class Watchable {
                 }
                 
                 if(value === null || prop[ 0 ] === "_" || (Object.getOwnPropertyDescriptor(target, prop) || {}).set) {      // Don't broadcast any _Private/__Internal variables
-                    if(prop[ 0 ] === "_" && prop[ 1 ] === "_") {        // Prevent modification of internal variables after first assignment
-                        return Reflect.defineProperty(target, prop, {
-                            value,
-                            configurable: false,
-                            writable: false,
-                            enumerable: false,
-                        });
-                    }
+                    // if(prop[ 0 ] === "_" && prop[ 1 ] === "_") {        // Prevent modification of internal variables after first assignment
+                    //     return Reflect.defineProperty(target, prop, {
+                    //         value,
+                    //         configurable: false,
+                    //         writable: false,
+                    //         enumerable: false,
+                    //     });
+                    // }
 
                     return Reflect.defineProperty(target, prop, {
                         value,
