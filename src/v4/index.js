@@ -1,17 +1,21 @@
 import Util from "./util/package";
 
 import Watchable from "./Watchable";
-import Watcher from "./Watcher";
+import Emitter from "./Emitter";
 import EventWatchable from "./EventWatchable";
-import Pulse from "./Pulse";
 import Registry from "./Registry";
+import Watcher from "./Watcher";
+import Network from "./Network";
+import Pulse from "./Pulse";
 
 export default {
     Util,
     
     Watchable,
-    Watcher,
+    Emitter,
     EventWatchable,
-    Pulse,
     Registry,
+    Watcher,
+    Network,
+    Pulse,
 };

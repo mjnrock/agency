@@ -3,7 +3,16 @@ export class CrossMap {
         this.__entries = new Map();
         this.__lookups = [];
 
+        this.__size = dimensions;
+
         this.seed({ dimensions, seedFn, saveFnInstead });
+    }
+
+    get size() {
+        return this.__size;
+    }
+    get cardinality() {
+        return this.size.reduce((a, v) => a * v, 1);
     }
 
     addLookup(fn) {

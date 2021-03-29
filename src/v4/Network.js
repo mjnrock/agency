@@ -22,10 +22,6 @@ export class Network extends Watcher {
         this.join(...entities);
     }
 
-    get pkey() {
-        return this.__parentKey;
-    }
-
     get values() {
         return [ ...this.entities ];
     }
