@@ -3,19 +3,11 @@ import Watcher from "./Watcher";
 import Registry from "./Registry";
 
 export class Network extends Watcher {
-    static Events = [
-        "join",
-        "leave",
-    ];
-
     /**
      * @parentKey will be inserted via Reflect.defineProperty into the emitter on .join--as an internal property (i.e. `__${ parentKey }`)--and removed on .leave
      */
-    constructor(emitters = [], { events = [], parentKey = "network", ...opts } = {}) {
-        super([], { events: [
-            ...Network.Events,
-            ...events,
-        ], ...opts });
+    constructor(emitters = [], { parentKey = "network", ...opts } = {}) {
+        super([], { ...opts });
 
         this.__parentKey = parentKey;
 
@@ -62,8 +54,6 @@ export class Network extends Watcher {
                 },
             });
             emitter[ this.__parentKey ] = this;
-
-            this.$join(emitter);
         }
 
         return this;
@@ -87,8 +77,6 @@ export class Network extends Watcher {
 
                     Reflect.deleteProperty(emitter, `__${ this.__parentKey }`);     // Delete the value
                     Reflect.deleteProperty(emitter, this.__parentKey);       // Delete the trap--will get recreated if emitter rejoins a <${ this.__parentKey }>
-
-                    this.$leave(emitter);
                 }
     
                 bools.push(bool);
