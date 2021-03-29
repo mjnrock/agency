@@ -1,7 +1,7 @@
 import Emitter from "./Emitter";
 import Watcher from "./Watcher";
 
-export class System extends Watcher {
+export class Network extends Watcher {
     static Events = [
         "join",
         "leave",
@@ -9,27 +9,17 @@ export class System extends Watcher {
 
     constructor(entities = [], { events = [], handlers = [], ...opts } = {}) {
         super(handlers, { events: [
-            ...System.Events,
+            ...Network.Events,
             ...events,
         ], ...opts });
 
-        this._entities = new Set();
+        this.entities = new Set();
         for(let entity of entities) {       // Don't emit on seeded entities
             if(entity instanceof Emitter) {
                 this.entities.add(entity);    
                 entity.$.subscribe(this);
             }
         }
-    }
-
-    get entities() {
-        return this._entities;
-    }
-    get values() {
-        return [ ...this._entities ];
-    }
-    get size() {
-        return this._entities.size;
     }
 
     join(...entities) {
@@ -89,4 +79,4 @@ export class System extends Watcher {
     }
 };
 
-export default System;
+export default Network;

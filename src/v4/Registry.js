@@ -71,20 +71,9 @@ export class Registry extends Watchable {
             },
         };
     }
-    
-    get keys() {
-        return Reflect.ownKeys(this);
-    }
-    get values() {
-        return Object.values(this);
-    }
 
     get size() {
-        return Object.keys(this).size;
-    }
-
-    get ids() {
-        return Object.keys(this);
+        return this.keys.size;
     }
 
     get synonyms() {
