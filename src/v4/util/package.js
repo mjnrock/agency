@@ -3,7 +3,7 @@ import WeightedPool from "./WeightedPool";
 import Bitwise from "./Bitwise";
 import Base64 from "./Base64";
 import CrossMap from "./CrossMap";
-import MaskedEnumerator from "./MaskedEnumerator";
+import Enumerator from "./Enumerator";
 import LinkedList from "./LinkedList";
 
 import Helper from "./helper";
@@ -14,7 +14,7 @@ export default {
     Bitwise,
     Base64,
     CrossMap,
-    BitmaskEnumerator: MaskedEnumerator,
+    Enumerator,
     LinkedList,
 
     Helper,

@@ -3,7 +3,7 @@ import Bitwise from "./Bitwise";
 /**
  * This adds "lookup" functions to an enumeration object
  */
-export function MaskedEnumerator(items = {}) {
+export function Enumerator(items = {}) {
     let obj = {
         ...items,
     };
@@ -32,4 +32,4 @@ export function MaskedEnumerator(items = {}) {
     return Object.freeze(obj);
 };
 
-export default MaskedEnumerator;
+export default Enumerator;
