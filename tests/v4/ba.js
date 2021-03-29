@@ -93,8 +93,9 @@ Game.player.$.subscribe((prop, value) => {
 Game.loop.$.subscribe((prop, { dt, now }) => {
     // Game.player.position.x = Util.Dice.roll(1, Game.world.width, -1),
     // Game.player.position.y = Util.Dice.roll(1, Game.world.height, -1),
+    // Game.world.nodes.move(Game.player, Game.player.position.x, Game.player.position.y);
     
-    Game.world.entities.values.forEach(entity => {
+    for(let entity of Game.world.entities) {
         if(entity === Game.player) {
             entity.position.x = Util.Dice.roll(1, 2, -1);
             entity.position.y = Util.Dice.roll(1, 2, -1);
@@ -104,9 +105,8 @@ Game.loop.$.subscribe((prop, { dt, now }) => {
         }
 
         Game.world.nodes.move(entity, entity.position.x, entity.position.y);
-    });
+    }
 
-    Game.world.nodes.move(Game.player, Game.player.position.x, Game.player.position.y);
     Game.world.LAST_MESSAGE = [ Game.player.position.x, Game.player.position.y ].toString();
 
     // console.log(`----- Tick -----`);

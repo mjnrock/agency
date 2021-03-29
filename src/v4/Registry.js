@@ -50,17 +50,24 @@ export class Registry extends Watchable {
         return proxy;
     }
 
+    /**
+     * ! [Special Case]:    <Registry> iteration is VALUES ONLY, because the UUID is internal.
+     */
+    [ Symbol.iterator ]() {
+        var index = -1;
+        var data = Object.values(this);
+
+        return {
+            next: () => ({ value: data[ ++index ], done: !(index in data) })
+        };
+    };
+
     get $() {
         const _this = this;
         const _broadcast = super.$.broadcast;
-        const _ownKeys = super.$.ownKeys;
 
         return {
             ...super.$,
-
-            synId(synonym) {
-                return _ownKeys[ synonym ];
-            },
 
             async broadcast(prop, value) {
                 if (validate(prop.substring(0, 36))) {
