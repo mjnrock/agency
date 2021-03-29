@@ -32,6 +32,7 @@ export class Registry extends Watchable {
                     return Reflect.set(target, prop, value);
                 } else if (validate(value)) {    // synonym assignment
                     return Reflect.defineProperty(target, prop, {
+                        configurable: true,
                         get: function () {
                             return Reflect.get(target, value);
                         },
@@ -52,12 +53,13 @@ export class Registry extends Watchable {
     get $() {
         const _this = this;
         const _broadcast = super.$.broadcast;
+        const _ownKeys = super.$.ownKeys;
 
         return {
             ...super.$,
 
             synId(synonym) {
-                return _this.$.target[ synonym ];
+                return _ownKeys[ synonym ];
             },
 
             async broadcast(prop, value) {
@@ -73,11 +75,11 @@ export class Registry extends Watchable {
     }
 
     get size() {
-        return this.keys.size;
+        return this.$.size;
     }
 
     get synonyms() {
-        return Reflect.ownKeys(this).reduce((a, k) => {
+        return this.$.ownKeys.reduce((a, k) => {
             if ((k[ 0 ] !== "_" || (k[ 0 ] === "_" && k[ 1 ] !== "_")) && validate(this[ k ])) {
                 return [ ...a, k ];
             }
@@ -87,7 +89,7 @@ export class Registry extends Watchable {
     }
     get records() {
         const obj = {};
-        for (let key of Reflect.ownKeys(this)) {
+        for (let key of this.$.ownKeys) {
             if (key[ 0 ] !== "_" || (key[ 0 ] === "_" && key[ 1 ] !== "_")) {
                 const entry = this[ key ];
 
@@ -122,34 +124,27 @@ export class Registry extends Watchable {
             this[ synonym ] = uuid;
         }
 
-        return this;
+        return uuid;
     }
-    unregister(entrySynonymOrId) {
-        let uuid;
-        if (validate(entrySynonymOrId)) {
-            uuid = entrySynonymOrId;
-        } else {
-            let synid = this.$.synId(entrySynonymOrId);
+    unregister(lookup) {
+        const ownKeys = this.$.ownKeys;
 
-            if (validate(synid)) {
-                uuid = synid;
-            } else {
-                uuid = (entrySynonymOrId || {}).__id;
+        let result = this[ lookup ];
+        let keys = [];
+
+        for(let key of ownKeys) {
+            const entry = this[ key ];
+
+            if(entry === result || entry === lookup) {
+                keys.push(key);
             }
         }
 
-        if (uuid) {
-            const entry = this[ uuid ];
-            for (let [ key, value ] of Object.entries(this)) {
-                if (value === entry) {   // this[ synonym ] will return the this[ uuid ], because of the Proxy get trap, thus @entry
-                    Reflect.deleteProperty(this, key);
-                }
-            }
-
-            Reflect.deleteProperty(this, uuid);
+        for(let key of keys) {
+            Reflect.deleteProperty(this, key)
         }
 
-        return this;
+        return keys;
     }
 };
 

@@ -184,19 +184,7 @@ export class Watchable {
 
         return proxy;
     }
-    
-    get ownKeys() {
-        return Reflect.ownKeys(this);
-    }
-    get size() {
-        return Object.keys(this).length;
-    }
-    get keys() {
-        return Object.keys(this);
-    }
-    get values() {
-        return Object.values(this);
-    }
+
     [ Symbol.iterator ]() {
         var index = -1;
         var data = Object.entries(this);
@@ -210,7 +198,20 @@ export class Watchable {
     get $() {
         const _this = this;
 
-        return {
+        return {    
+            get ownKeys() {
+                return Reflect.ownKeys(_this);
+            },
+            get size() {
+                return Object.keys(_this).length;
+            },
+            get keys() {
+                return Object.keys(_this);
+            },
+            get values() {
+                return Object.values(_this);
+            },
+
             get id() {
                 return _this.__id;
             },

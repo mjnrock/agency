@@ -22,6 +22,13 @@ export class Network extends Watcher {
         }
     }
 
+    get values() {
+        return [ ...this.entities ];
+    }
+    get size() {
+        return this.entities.size;
+    }
+
     join(...entities) {
         for(let entity of entities) {
             if(entity instanceof Emitter) {
