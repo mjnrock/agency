@@ -7,19 +7,23 @@ export class Network extends Watcher {
         "leave",
     ];
 
-    constructor(entities = [], { events = [], handlers = [], ...opts } = {}) {
+    /**
+     * @parentKey will be inserted via Reflect.defineProperty into the entity on .join--as an internal property (i.e. `__${ parentKey }`)--and removed on .leave
+     */
+    constructor(entities = [], { events = [], handlers = [], parentKey = "network", ...opts } = {}) {
         super(handlers, { events: [
             ...Network.Events,
             ...events,
         ], ...opts });
 
+        this.__parentKey = parentKey;
+
         this.entities = new Set();
-        for(let entity of entities) {       // Don't emit on seeded entities
-            if(entity instanceof Emitter) {
-                this.entities.add(entity);    
-                entity.$.subscribe(this);
-            }
-        }
+        this.join(...entities);
+    }
+
+    get pkey() {
+        return this.__parentKey;
     }
 
     get values() {
@@ -36,16 +40,16 @@ export class Network extends Watcher {
     
                 entity.$.subscribe(this);
 
-                Reflect.defineProperty(entity, "system", {
+                Reflect.defineProperty(entity, this.__parentKey, {
                     configurable: true,
                     get: function() {
-                        return Reflect.get(this, "__system");
+                        return Reflect.get(this, `__${ this.__parentKey }`);
                     },
-                    set: function(system) {
-                        return Reflect.set(this, "__system", system);
+                    set: function(value) {
+                        return Reflect.set(this, `__${ this.__parentKey }`, value);
                     },
                 });
-                entity.system = this;
+                entity[ this.__parentKey ] = this;
     
                 this.$join(entity);
             }
@@ -62,8 +66,8 @@ export class Network extends Watcher {
                 if(bool) {    
                     entity.$.unsubscribe(this);
 
-                    Reflect.deleteProperty(entity, "system");       // Delete the trap
-                    Reflect.deleteProperty(entity, "__system");     // Delete the value
+                    Reflect.deleteProperty(entity, `__${ this.__parentKey }`);     // Delete the value
+                    Reflect.deleteProperty(entity, this.__parentKey);       // Delete the trap--will get recreated if entity rejoins a <${ this.__parentKey }>
 
                     this.$leave(entity);
                 }
