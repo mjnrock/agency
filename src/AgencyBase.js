@@ -42,8 +42,14 @@ export class AgencyBase {
         return this.__id;
     }
     
-    get ownKeys() {
+    get _keys() {
         return Reflect.ownKeys(this);
+    }
+    get _values() {
+        return Reflect.ownKeys(this).map(key => this[ key ]);
+    }
+    get _entries() {
+        return Reflect.ownKeys(this).map(key => [ key, this[ key ] ]);
     }
 };
 
