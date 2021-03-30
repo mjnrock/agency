@@ -21,6 +21,11 @@ console.log(reg.a);     // ev:  7
 
 console.log(reg);
 
+console.warn("--- iterator ---");
+for(let entry of reg) {
+    console.log(entry);
+}
+
 // console.log(reg.$.ownKeys)
 // console.log("-------------------")
 // reg.$.unregister("a");

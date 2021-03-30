@@ -16,13 +16,13 @@ export class Registry extends Watchable {
 
         const proxy = new Proxy(this, {
             get(target, prop) {
-                if(!validate(prop) && validate(target[ prop ])) {   // prop is NOT a uuid AND target[ prop ] IS a uuid --> prop is a synonym
-                    const entry = target[ target[ prop ] ];
+                // if(!validate(prop) && validate(target[ prop ])) {   // prop is NOT a uuid AND target[ prop ] IS a uuid --> prop is a synonym
+                //     const entry = target[ target[ prop ] ];
 
-                    if(entry !== void 0) {
-                        return entry;
-                    }
-                }
+                //     if(entry !== void 0) {
+                //         return entry;
+                //     }
+                // }
 
                 return Reflect.get(target, prop);
             },
@@ -33,6 +33,7 @@ export class Registry extends Watchable {
                 } else if (validate(value)) {    // sic | synonym assignment
                     return Reflect.defineProperty(target, prop, {
                         configurable: true,
+                        enumerable: false,
                         get: function () {
                             return Reflect.get(target, value);  // sic
                         },
@@ -55,7 +56,7 @@ export class Registry extends Watchable {
      */
     [ Symbol.iterator ]() {
         var index = -1;
-        var data = Object.values(this);
+        var data = Object.keys(this).reduce((a, key) => validate(key) ? [ ...a, this[ key ] ] : a, []);
 
         return {
             next: () => ({ value: data[ ++index ], done: !(index in data) })
