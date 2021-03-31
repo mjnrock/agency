@@ -4,52 +4,42 @@ export class Emitter extends AgencyBase {
     constructor(handlers = {}, { relay, filter } = {}) {
         super();
 
-        this.__handlers = {
-            "*": new Set(),
-        };
-        this.__subscribers = new Set();
-
-        for(let [ event, fns ] of Object.entries(handlers)) {
-            this.addHandler(event, fns);
-        }
+        //#region RECEIVING
+            this.__filter = filter || (() => true);     // Universal filter that executed immediately in .handle to determine if should proceed
+            this.__handlers = {
+                "*": new Set(),
+            };
+            for(let [ event, fns ] of Object.entries(handlers)) {
+                this.addHandler(event, fns);
+            }
+        //#endregion RECEIVING
         
-        this.__relay = relay || (() => false);      // A bubbling function that decides whether or not the event should get bubbled ALSO
-        this.__filter = filter || (() => true);     // Universal filter that executed immediately in .handle to determine if should proceed
+        //#region SENDING
+            this.__subscribers = new Set();
+            this.__relay = relay || (() => false);      // A bubbling function that decides whether or not the event should get bubbled ALSO        
+        //#endregion SENDING
     }
 
-    get events() {
-        return Object.keys(this.__events);
-    }
-    get handlers() {
-        return Object.entries(this.__handlers);
-    }
-
-    addHandler(event, ...fns) {
-        if(!(this.__handlers[ event ] instanceof Set)) {
-            this.__handlers[ event ] = new Set();
+    //#region SENDING
+        get subscribers() {
+            return Object.entries(this.__subscribers);
         }
 
-        if(Array.isArray(fns[ 0 ])) {
-            fns = fns[ 0 ];
-        }
-
-        for(let fn of fns) {
-            if(typeof fn === "function") {
-                this.__handlers[ event ].add(fn);
+        addSubscriber(...subscribers) {
+            for(let subscriber of subscribers) {
+                if(typeof subscriber === "function") {
+                    this.__subscribers.add(subscriber);
+                } else if(subscriber instanceof Emitter) {
+                    this.__subscribers.add(subscriber);
+                }
             }
-        }
 
-        return this;
-    }
-    removeHandler(event, ...fns) {
-        if(this.__handlers[ event ] instanceof Set) {
-            if(Array.isArray(fns[ 0 ])) {
-                fns = fns[ 0 ];
-            }
-            
+            return this;
+        }
+        removeSubscriber(...subscribers) {
             let bools = [];
-            for(let fn of fns) {
-                bools.push(this.__handlers[ event ].delete(fn));
+            for(let subscriber of subscribers) {
+                bools.push(this.__subscribers.delete(subscriber));
             }
 
             if(bools.length === 1) {
@@ -58,33 +48,51 @@ export class Emitter extends AgencyBase {
 
             return bools;
         }
+    //#endregion SENDING
 
-        return false;
-    }
+    //#region RECEIVING
+        get handlers() {
+            return Object.entries(this.__handlers);
+        }
 
-    addSubscriber(...subscribers) {
-        for(let subscriber of subscribers) {
-            if(typeof subscriber === "function") {
-                this.__subscribers.add(subscriber);
-            } else if(subscriber instanceof Emitter) {
-                this.__subscribers.add(subscriber);
+        addHandler(event, ...fns) {
+            if(!(this.__handlers[ event ] instanceof Set)) {
+                this.__handlers[ event ] = new Set();
             }
-        }
 
-        return this;
-    }
-    removeSubscriber(...subscribers) {
-        let bools = [];
-        for(let subscriber of subscribers) {
-            bools.push(this.__subscribers.delete(subscriber));
-        }
+            if(Array.isArray(fns[ 0 ])) {
+                fns = fns[ 0 ];
+            }
 
-        if(bools.length === 1) {
-            return bools[ 0 ];
-        }
+            for(let fn of fns) {
+                if(typeof fn === "function") {
+                    this.__handlers[ event ].add(fn);
+                }
+            }
 
-        return bools;
-    }
+            return this;
+        }
+        removeHandler(event, ...fns) {
+            if(this.__handlers[ event ] instanceof Set) {
+                if(Array.isArray(fns[ 0 ])) {
+                    fns = fns[ 0 ];
+                }
+                
+                let bools = [];
+                for(let fn of fns) {
+                    bools.push(this.__handlers[ event ].delete(fn));
+                }
+
+                if(bools.length === 1) {
+                    return bools[ 0 ];
+                }
+
+                return bools;
+            }
+
+            return false;
+        }
+    //#endregion RECEIVING
 
     get $() {
         const _this = this;
