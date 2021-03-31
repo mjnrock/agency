@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from "uuid";
+
 import AgencyBase from "./../AgencyBase";
 
 export class Emitter extends AgencyBase {
@@ -18,6 +20,15 @@ export class Emitter extends AgencyBase {
             this.__subscribers = new Set();
             this.__relay = relay || (() => false);      // A bubbling function that decides whether or not the event should get bubbled ALSO        
         //#endregion SENDING
+    }
+
+    [ Symbol.iterator ]() {
+        var index = -1;
+        var data = [ ...this.__subscribers ];
+
+        return {
+            next: () => ({ value: data[ ++index ], done: !(index in data) })
+        };
     }
 
     //#region SENDING
@@ -99,7 +110,8 @@ export class Emitter extends AgencyBase {
 
         return {
             async emit(event, ...args) {
-                const payload = "emitter" in this ? this : {
+                const payload = "provenance" in this ? this : {
+                    id: uuidv4(),
                     event,
                     data: args,
                     emitter: _this,
@@ -118,30 +130,54 @@ export class Emitter extends AgencyBase {
                 return _this;
             },
             async handle(event, ...args) {
-                const payload = "emitter" in this ? this : _this;
+                const payload = "provenance" in this ? this : _this;
 
-                if(typeof _this.__filter === "function" && _this.__filter.call(payload, event, ...args) === true) {
-                    const receivers = _this.__handlers[ "*" ] || [];
-                    for(let receiver of receivers) {
-                        if(typeof receiver === "function") {
-                            receiver.call(payload, event, ...args);
+                if((payload.provenance || {}).has(_this) === false) {
+                    if(typeof _this.__filter === "function" && _this.__filter.call(payload, event, ...args) === true) {
+                        const receivers = _this.__handlers[ "*" ] || [];
+                        for(let receiver of receivers) {
+                            if(typeof receiver === "function") {
+                                receiver.call(payload, event, ...args);
+                            }
                         }
-                    }
-                    
-                    const handlers = _this.__handlers[ event ] || [];
-                    for(let handler of handlers) {
-                        if(typeof handler === "function") {
-                            handler.call(payload, ...args);
+                        
+                        const handlers = _this.__handlers[ event ] || [];
+                        for(let handler of handlers) {
+                            if(typeof handler === "function") {
+                                handler.call(payload, ...args);
+                            }
                         }
-                    }
-                    
-                    if(!payload.provenance.has(_this) && typeof _this.__relay === "function" && _this.__relay.call(payload, event, ...args) === true) {
-                        _this.$.emit.call(payload, event, ...args);
+                        
+                        if(typeof _this.__relay === "function" && _this.__relay.call(payload, event, ...args) === true) {
+                            _this.$.emit.call(payload, event, ...args);
+                        }
                     }
                 }
             }
         }
     }
 };
+
+export async function Factory({ amount = 1, argsFn, each } = {}) {
+    const emitters = [];
+    for(let i = 0; i < amount; i++) {
+        let emitter;
+        if(typeof argsFn === "function") {
+            emitter = new Emitter(...argsFn(i));
+        } else {
+            emitter = new Emitter();
+        }
+
+        emitters.push(emitter);
+
+        if(typeof each === "function") {
+            each(emitter, i);
+        }
+    }
+
+    return emitters;
+};
+
+Emitter.Factory = Factory;
 
 export default Emitter;

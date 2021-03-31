@@ -1,6 +1,6 @@
 import { v4 as uuidv4, validate } from "uuid";
 
-import AgencyBase from "./../AgencyBase";
+import AgencyBase from "./AgencyBase";
 
 export class Registry extends AgencyBase {
     constructor(entries = []) {
