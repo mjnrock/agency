@@ -22,6 +22,9 @@ export class Emitter extends AgencyBase {
         //#endregion SENDING
     }
 
+    /**
+     * Allow the <Emitter> to be used as a "subscription iterator"
+     */
     [ Symbol.iterator ]() {
         var index = -1;
         var data = [ ...this.__subscribers ];
@@ -112,7 +115,7 @@ export class Emitter extends AgencyBase {
             async emit(event, ...args) {
                 const payload = "provenance" in this ? this : {
                     id: uuidv4(),
-                    event,
+                    type: event,
                     data: args,
                     emitter: _this,
                     provenance: new Set(),
@@ -123,16 +126,20 @@ export class Emitter extends AgencyBase {
                     if(typeof subscriber === "function") {
                         subscriber.call(payload, event, ...args);
                     } else if(subscriber instanceof Emitter) {
-                        subscriber.$.handle.call(payload, event, ...args);
+                        subscriber.$._handle.call(payload, event, ...args);
                     }
                 }
         
                 return _this;
             },
-            async handle(event, ...args) {
-                const payload = "provenance" in this ? this : _this;
+            /**
+             * This is an internal function, so you must bind a proper payload before using outside of its
+             *      normal, singular scope within the emit function.  It is only here to exploit "this" bindings.
+             */
+            async _handle(event, ...args) {
+                const payload = this;
 
-                if((payload.provenance || {}).has(_this) === false) {
+                if(payload.provenance.has(_this) === false) {
                     if(typeof _this.__filter === "function" && _this.__filter.call(payload, event, ...args) === true) {
                         const receivers = _this.__handlers[ "*" ] || [];
                         for(let receiver of receivers) {
@@ -152,7 +159,11 @@ export class Emitter extends AgencyBase {
                             _this.$.emit.call(payload, event, ...args);
                         }
                     }
+
+                    return true;
                 }
+
+                return false;
             }
         }
     }

@@ -1,5 +1,11 @@
 import Emitter from "./Emitter";
 
+/**
+ * Due to the provenance chain present in a message, the <Emitter>
+ *      family should be largely immune to feedback loops, as a
+ *      recycled message should be ignored by the <Emitter> on any
+ *      subsequent passes.
+ */
 export class Network extends Emitter {
     constructor(handlers = {}, opts = {}) {
         super(handlers, opts);
@@ -30,8 +36,13 @@ export class Network extends Emitter {
         return this;
     }
 
+    /**
+     * This is a convenience association to the "*" handler that can be easily reassigned externally
+     *      without the additional need to manage the handler Set.
+     */
     onEvent(event, ...args) {
         console.log(event, ...args);
+        // this.$.emit(event, ...args);
     }
 };
 
