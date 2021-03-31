@@ -9,8 +9,10 @@ function consoleTracer(end, payload) {
     return `${ trace }::${ end }`;
 }
 
-const lowerNetwork = new Network();
-const upperNetwork = new Network();
+// const lowerNetwork = new Network();
+const lowerNetwork = new Network({ pairBinding: true });
+// const upperNetwork = new Network();
+const upperNetwork = new Network({ pairBinding: true });
 const registry = new Registry();
 
 const map = new Map();
@@ -53,6 +55,9 @@ for(let emitter of registry) {
     emitter.$.emit("jkhasdfkjhd", Math.random());
     console.log("---")
 }
+
+console.log("--------------------")
+lowerNetwork.fire("cats", Date.now())
 
 // let network = lowerNetwork;
 // // let network = upperNetwork;

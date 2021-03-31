@@ -12,17 +12,21 @@ export class Network extends Emitter {
         "leave",
     ];
 
-    constructor(handlers = {}, opts = {}) {
+    constructor({ handlers = {}, pairBinding = false, ...opts } = {}) {
         super(handlers, opts);
 
         this.__relay = () => true;
+        this.__pairBinding = pairBinding;
     }
 
     join(...emitters) {
         for(let emitter of emitters) {
             if(emitter instanceof Emitter) {
                 emitter.addSubscriber(this);
-                this.addSubscriber(emitter);
+
+                if(this.__pairBinding) {
+                    this.addSubscriber(emitter);
+                }
 
                 this.$.emit("join", emitter);
             }
@@ -34,7 +38,10 @@ export class Network extends Emitter {
         for(let emitter of emitters) {
             if(emitter instanceof Emitter) {
                 emitter.removeSubscriber(this);
-                this.removeSubscriber(emitter);
+
+                if(this.__pairBinding) {
+                    this.removeSubscriber(emitter);
+                }
 
                 this.$.emit("leave", emitter);
             }
