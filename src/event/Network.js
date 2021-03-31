@@ -7,12 +7,17 @@ import Emitter from "./Emitter";
  *      subsequent passes.
  */
 export class Network extends Emitter {
+    static Events = [
+        "join",
+        "leave",
+    ];
+
     constructor(handlers = {}, opts = {}) {
         super(handlers, opts);
 
         this.addHandler("*", (...args) => this.onEvent(...args));
 
-        this.__relay = (event) => event === "cats";
+        this.__relay = () => true;
     }
 
     join(...emitters) {
@@ -20,6 +25,8 @@ export class Network extends Emitter {
             if(emitter instanceof Emitter) {
                 emitter.addSubscriber(this);
                 this.addSubscriber(emitter);
+
+                this.$.emit("join", emitter);
             }
         }
 
@@ -30,6 +37,8 @@ export class Network extends Emitter {
             if(emitter instanceof Emitter) {
                 emitter.removeSubscriber(this);
                 this.removeSubscriber(emitter);
+
+                this.$.emit("leave", emitter);
             }
         }
 

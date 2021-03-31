@@ -9,8 +9,10 @@ const upperNetwork = new Network();
 const registry = new Registry();
 
 upperNetwork.join(lowerNetwork);
-upperNetwork.onEvent = function(...args) { console.log("UPPER", ...args) };
-lowerNetwork.onEvent = function(...args) { console.log("LOWER", ...args) };
+// lowerNetwork.join(upperNetwork);    //! TEST:   This circular loop should NOT break this, due to provenance
+
+upperNetwork.onEvent = function(...args) { console.log("==> [Upper]:", ...args) };
+lowerNetwork.onEvent = function(...args) { console.log("==> [Lower]:", ...args) };
 
 console.log("--------------------")
 console.log(`[LowerNetwork]`, lowerNetwork.id)
