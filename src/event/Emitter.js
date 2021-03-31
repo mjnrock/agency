@@ -23,11 +23,11 @@ export class Emitter extends AgencyBase {
     }
 
     /**
-     * Allow the <Emitter> to be used as a "subscription iterator"
+     * Allow the <Emitter> to be used as a "subscription iterator" for <Emitter> only!
      */
     [ Symbol.iterator ]() {
         var index = -1;
-        var data = [ ...this.__subscribers ];
+        var data = [ ...this.__subscribers ].filter(s => s instanceof Emitter);
 
         return {
             next: () => ({ value: data[ ++index ], done: !(index in data) })

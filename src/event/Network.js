@@ -15,8 +15,6 @@ export class Network extends Emitter {
     constructor(handlers = {}, opts = {}) {
         super(handlers, opts);
 
-        this.addHandler("*", (...args) => this.onEvent(...args));
-
         this.__relay = () => true;
     }
 
@@ -45,13 +43,16 @@ export class Network extends Emitter {
         return this;
     }
 
-    /**
-     * This is a convenience association to the "*" handler that can be easily reassigned externally
-     *      without the additional need to manage the handler Set.
-     */
-    onEvent(event, ...args) {
-        console.log(event, ...args);
-        // this.$.emit(event, ...args);
+    async fire(event, ...args) {
+        for(let emitter of this.__subscribers) {
+            if(typeof emitter === "function") {
+                emitter(event, ...args);
+            } else if(emitter instanceof Emitter) {
+                emitter.$.emit(event, ...args);
+            }
+        }
+
+        return true;
     }
 };
 

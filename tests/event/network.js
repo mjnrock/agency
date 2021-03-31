@@ -4,20 +4,24 @@ import Network from "../../src/event/Network";
 
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
+function consoleTracer(end, payload) {
+    let trace = [ ...payload.provenance ].map(e => map.get(e.id)).join("->");
+    return `${ trace }::${ end }`;
+}
+
 const lowerNetwork = new Network();
 const upperNetwork = new Network();
 const registry = new Registry();
 
-upperNetwork.join(lowerNetwork);
-// lowerNetwork.join(upperNetwork);    //! TEST:   This circular loop should NOT break this, due to provenance
+const map = new Map();
+map.set(lowerNetwork.id, "LowerNetwork");
+map.set(upperNetwork.id, "UpperNetwork");
+map.set(registry.id, "Registry");
 
-upperNetwork.onEvent = function(...args) { console.log("==> [Upper]:", ...args) };
-lowerNetwork.onEvent = function(...args) { console.log("==> [Lower]:", ...args) };
-
-console.log("--------------------")
-console.log(`[LowerNetwork]`, lowerNetwork.id)
-console.log(`[UpperNetwork]`, upperNetwork.id)
-console.log(`[Registry]`, registry.id)
+console.log("------- ID LOOKUP -------")
+console.log(`[LowerNetwork]`, lowerNetwork.id.slice(0, 8))
+console.log(`[UpperNetwork]`, upperNetwork.id.slice(0, 8))
+console.log(`[Registry]`, registry.id.slice(0, 8))
 
 Emitter.Factory({
     amount: 5,
@@ -25,21 +29,43 @@ Emitter.Factory({
         registry.register(emitter, `emitter${ i }`);
         lowerNetwork.join(emitter);
         
-        console.log(`[Emitter${ i }]`, emitter.id);
+        map.set(emitter.id, `Emitter${ i }`);
+
+        // emitter.addSubscriber(function(...args) { console.log(`S==> [${ consoleTracer(`Emitter${ i }`, this) }]:`, ...args) });
+        emitter.addHandler("*", function(...args) { console.log(`*==> [${ consoleTracer(`Emitter${ i }`, this) }]:`, ...args) });
+        
+        console.log(`[Emitter${ i }]`, emitter.id.slice(0, 8));
     },
 });
 
+upperNetwork.join(lowerNetwork);
+// lowerNetwork.join(upperNetwork);    //! TEST:   This circular loop should NOT break this, due to provenance
+
 console.log("--------------------")
 
-let i = 0;
-for(let emitter of lowerNetwork) {
-    emitter.$.emit("test", i, Math.random());
-}
+// lowerNetwork.addSubscriber(function(...args) { console.log(`S==> [${ consoleTracer(`LowerNetwork`, this) }]:`, ...args) });
+// upperNetwork.addSubscriber(function(...args) { console.log(`S==> [${ consoleTracer(`UpperNetwork`, this) }]:`, ...args) });
+lowerNetwork.addHandler("*", function(...args) { console.log(`*==> [${ consoleTracer(`LowerNetwork`, this) }]:`, ...args) });
+upperNetwork.addHandler("*", function(...args) { console.log(`*==> [${ consoleTracer(`UpperNetwork`, this) }]:`, ...args) });
 
-console.log("----------")
-i = 0;
-for(let emitter of lowerNetwork) {
-    emitter.$.emit("cats", i, Math.random());
-    ++i;
+for(let emitter of registry) {
+    console.log(`=>`, map.get(emitter.id))
+    emitter.$.emit("jkhasdfkjhd", Math.random());
     console.log("---")
 }
+
+// let network = lowerNetwork;
+// // let network = upperNetwork;
+
+// for(let emitter of network) {
+//     console.log(`=>`, map.get(emitter.id))
+//     emitter.$.emit("test", Math.random());
+//     console.log("---")
+// }
+
+// console.log("----------")
+// for(let emitter of network) {
+//     console.log(`=>`, map.get(emitter.id))
+//     emitter.$.emit("cats", Math.random());
+//     console.log("---")
+// }
