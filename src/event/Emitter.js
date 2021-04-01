@@ -3,13 +3,8 @@ import { v4 as uuidv4 } from "uuid";
 import AgencyBase from "./../AgencyBase";
 
 export class Emitter extends AgencyBase {
-    constructor(handlers = {}, { relay, filter, config = {} } = {}) {
+    constructor(handlers = {}, { relay, filter } = {}) {
         super();
-
-        this.__config = {
-            shouldHandleEmissions: true,
-            ...config,
-        };
 
         //#region RECEIVING
             this.__filter = filter || (() => true);     // Universal filter that executed immediately in .handle to determine if should proceed
@@ -126,11 +121,20 @@ export class Emitter extends AgencyBase {
                     provenance: new Set(),
                 };
 
-                if(_this.__config.shouldHandleEmissions === true) {                        
-                    const handlers = _this.__handlers[ payload.type ] || [];
-                    for(let handler of handlers) {
-                        if(typeof handler === "function") {
-                            handler.call(payload, ...args);
+                if(payload.provenance.has(_this) === false) {
+                    if(typeof _this.__filter === "function" && _this.__filter.call(payload, ...args) === true) {
+                        const receivers = _this.__handlers[ "*" ] || [];
+                        for(let receiver of receivers) {
+                            if(typeof receiver === "function") {
+                                receiver.call(payload, ...args);
+                            }
+                        }
+                        
+                        const handlers = _this.__handlers[ payload.type ] || [];
+                        for(let handler of handlers) {
+                            if(typeof handler === "function") {
+                                handler.call(payload, ...args);
+                            }
                         }
                     }
                 }
