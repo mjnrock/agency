@@ -1,6 +1,6 @@
 import Emitter from "./Emitter";
 import Watcher from "./Watcher";
-import Registry from "./Registry";
+import Registry from "./../Registry";
 
 export class Network extends Watcher {
     /**

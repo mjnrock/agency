@@ -3,8 +3,13 @@ import { v4 as uuidv4 } from "uuid";
 import AgencyBase from "./../AgencyBase";
 
 export class Emitter extends AgencyBase {
-    constructor(handlers = {}, { relay, filter } = {}) {
+    constructor(handlers = {}, { relay, filter, config = {} } = {}) {
         super();
+
+        this.__config = {
+            shouldHandleEmissions: true,
+            ...config,
+        };
 
         //#region RECEIVING
             this.__filter = filter || (() => true);     // Universal filter that executed immediately in .handle to determine if should proceed
@@ -120,13 +125,23 @@ export class Emitter extends AgencyBase {
                     emitter: _this,
                     provenance: new Set(),
                 };
+
+                if(_this.__config.shouldHandleEmissions === true) {                        
+                    const handlers = _this.__handlers[ payload.type ] || [];
+                    for(let handler of handlers) {
+                        if(typeof handler === "function") {
+                            handler.call(payload, ...args);
+                        }
+                    }
+                }
+
                 payload.provenance.add(_this);
     
                 for(let subscriber of _this.__subscribers) {
                     if(typeof subscriber === "function") {
-                        subscriber.call(payload, event, ...args);
+                        subscriber.call(payload, ...args);
                     } else if(subscriber instanceof Emitter) {
-                        subscriber.$._handle.call(payload, event, ...args);
+                        subscriber.$._handle.call(payload, ...args);
                     }
                 }
         
@@ -136,27 +151,27 @@ export class Emitter extends AgencyBase {
              * This is an internal function, so you must bind a proper payload before using outside of its
              *      normal, singular scope within the emit function.  It is only here to exploit "this" bindings.
              */
-            async _handle(event, ...args) {
+            async _handle(...args) {
                 const payload = this;
 
                 if(payload.provenance.has(_this) === false) {
-                    if(typeof _this.__filter === "function" && _this.__filter.call(payload, event, ...args) === true) {
+                    if(typeof _this.__filter === "function" && _this.__filter.call(payload, ...args) === true) {
                         const receivers = _this.__handlers[ "*" ] || [];
                         for(let receiver of receivers) {
                             if(typeof receiver === "function") {
-                                receiver.call(payload, event, ...args);
+                                receiver.call(payload, ...args);
                             }
                         }
                         
-                        const handlers = _this.__handlers[ event ] || [];
+                        const handlers = _this.__handlers[ this.type ] || [];
                         for(let handler of handlers) {
                             if(typeof handler === "function") {
                                 handler.call(payload, ...args);
                             }
                         }
                         
-                        if(typeof _this.__relay === "function" && _this.__relay.call(payload, event, ...args) === true) {
-                            _this.$.emit.call(payload, event, ...args);
+                        if(typeof _this.__relay === "function" && _this.__relay.call(payload, ...args) === true) {
+                            _this.$.emit.call(payload, this.type, ...args);
                         }
                     }
 
