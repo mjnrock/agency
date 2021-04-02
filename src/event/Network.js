@@ -15,6 +15,7 @@ export class Network extends Emitter {
     constructor({ handlers = {}, pairBinding = false, ...opts } = {}) {
         super(handlers, opts);
 
+        this.__relay = () => true;
         this.__pairBinding = pairBinding;
     }
 
