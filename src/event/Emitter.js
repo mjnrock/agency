@@ -86,6 +86,13 @@ export class Emitter extends AgencyBase {
 
             return this;
         }
+        addHandlers(addHandlerArgs = []) {
+            for(let [ event, ...fns ] of addHandlerArgs) {
+                this.addHandler(event, ...fns);
+            }
+
+            return this;
+        }
         removeHandler(event, ...fns) {
             if(this.__handlers[ event ] instanceof Set) {
                 if(Array.isArray(fns[ 0 ])) {
@@ -105,6 +112,13 @@ export class Emitter extends AgencyBase {
             }
 
             return false;
+        }
+        removeHandlers(addHandlerArgs = []) {
+            for(let [ event, ...fns ] of addHandlerArgs) {
+                this.removeHandler(event, ...fns);
+            }
+
+            return this;
         }
     //#endregion RECEIVING
 

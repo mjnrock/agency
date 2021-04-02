@@ -1,7 +1,26 @@
 export const Dice = {
 	random: (min, max) => {
+        if(!arguments.length) {
+            return Math.random();
+        }
+
 		return Math.floor(Math.random() * (max - min + 1)) + min;
 	},
+
+	ratio: (min, max) => {
+		return (Dice.random(min, max) - min) / (max - min);
+	},
+    rate: (min, max, threshold = 0.500) => {
+        return Dice.ratio(min, max) <= threshold;
+    },
+    /**
+     * A convenience function to calculate irregular chances.
+     * @scalar truncates the precision of the randomization.
+     */
+    chance: (min, max, threshold = 0.5, scalar = 10000) => {
+        return Math.round(this.ratio(min, max) * scalar) / scalar <= threshold;
+    },
+
     /**
      * This is a normal XdY+Z setup.
      */
@@ -37,13 +56,6 @@ export const Dice = {
      */
     percento: (threshold = 0.50) => {
         return (Dice.random(1, 100) / 100) <= threshold;
-    },
-    /**
-     * A convenience function to calculate irregular chances.
-     * @scalar truncates the precision of the randomization.
-     */
-    chance: (min, max, threshold = 0.5, scalar = 10000) => {
-        return Math.round((Dice.random(min, max) / max) * scalar) / scalar >= threshold;
     },
     /**
      * 50/50 chance, returning true or false

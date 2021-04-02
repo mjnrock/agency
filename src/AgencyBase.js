@@ -11,7 +11,7 @@ export class AgencyBase {
                     return target;
                 }
                 
-                if(value === null || prop[ 0 ] === "_" || (Object.getOwnPropertyDescriptor(target, prop) || {}).set) {
+                if(value == null || prop[ 0 ] === "_" || (Object.getOwnPropertyDescriptor(target, prop) || {}).set) {
                     return Reflect.defineProperty(target, prop, {
                         value,
                         configurable: true,
