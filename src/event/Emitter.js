@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 
 import AgencyBase from "./../AgencyBase";
+import EventBus from "./EventBus";
 
 export class Emitter extends AgencyBase {
     constructor(handlers = {}, { relay, filter } = {}) {
@@ -20,6 +21,8 @@ export class Emitter extends AgencyBase {
             this.__subscribers = new Set();
             this.__relay = relay || (() => false);      // A bubbling function that decides whether or not the event should get bubbled ALSO        
         //#endregion SENDING
+
+        EventBus.Middleware(this);
     }
 
     /**

@@ -6,11 +6,17 @@ export class Registry extends AgencyBase {
     constructor(entries = []) {
         super();
 
+        this._state = {};
+
         const proxy = new Proxy(this, {
             get(target, prop) {
-                return Reflect.get(target, prop);
+                if(prop in target) {
+                    return Reflect.get(target, prop);
+                }
+
+                return Reflect.get(target._state, prop);
             },
-            set(target, prop, value) {                
+            set(target, prop, value) {
                 if (validate(prop)) {        // assignment
                     return Reflect.defineProperty(target, prop, {
                         value,
@@ -31,7 +37,7 @@ export class Registry extends AgencyBase {
                     });
                 }
 
-                return target;
+                return Reflect.set(target._state, prop, value);
             },
         });
 
@@ -46,12 +52,16 @@ export class Registry extends AgencyBase {
         return proxy;
     }
 
+    get state() {
+        return this._state;
+    }
+    
     /**
      * ! [Special Case]:    <Registry> iteration is VALUES ONLY, because the UUID is internal.
      */
     [ Symbol.iterator ]() {
         var index = -1;
-        var data = Object.values(this);
+        var data = Object.keys(this).reduce((a, k) => k !== "state" ? [ ...a, this[ k ] ] : a, []);
 
         return {
             next: () => ({ value: data[ ++index ], done: !(index in data) })
@@ -107,7 +117,7 @@ export class Registry extends AgencyBase {
         return uuid;
     }
     unregister(lookup) {        
-        let result = this[ lookup ];
+        let result = this[ (lookup || {}).__id || (lookup || {}).id || lookup ];
         let keys = [];
 
         for(let key of Reflect.ownKeys(this)) {
