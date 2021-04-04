@@ -2,10 +2,6 @@ import Registry from "../Registry";
 import Channel from "./Channel";
 import Router from "./Router";
 
-export function route(...args) {
-    EventBus.$.router.route(this, this.type, ...args);
-};
-
 export class EventBus extends Registry {
     static Instance = new EventBus();
     static Middleware = emitter => emitter.addSubscriber(EventBus.Route);
@@ -75,7 +71,7 @@ export class EventBus extends Registry {
     }
 
     static Route(...args) {
-        EventBus.$.router.route(this, this.type, ...args);
+        EventBus.$.router.route(this, ...args);     // @this should resolve to the payload here, based on <Emitter> behavior
     }
 };
 

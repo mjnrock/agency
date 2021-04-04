@@ -10,9 +10,9 @@ export class Router extends AgencyBase {
         this.createRoutes(...routes);
     }
 
-    route(payload, event, ...args) {
+    async route(payload, ...args) {
         for(let fn of this.routes) {
-            let results = fn(payload, event, ...args);
+            let results = fn(payload, ...args);
 
             if(!Array.isArray(results)) {
                 results = [ results ];
@@ -22,7 +22,7 @@ export class Router extends AgencyBase {
                 const channel = EventBus.$[ result ];
 
                 if(channel instanceof Channel) {
-                    channel.bus(payload, event, ...args);
+                    await channel.bus(payload, args);
                 }
             }
         }

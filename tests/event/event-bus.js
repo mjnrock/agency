@@ -14,22 +14,25 @@ EventBus.$.createChannels([
         globals: GLOBALS,
         handlers: {
             dog: (payload, args, globals) => console.log(payload, args, globals),
-            cat: (payload, [ first ], { Cats }) => console.log(payload, first, Cats),
+            cat: (payload, [ first ], { Cats }, enqueue) => console.log(payload, first, Cats, enqueue),
         }
     }],
 ]);
 
 EventBus.$.router.createRoutes([
-    (payload, event, ...args) => {
+    payload => {
         return "test";
     }
 ]);
 
 const e1 = new Emitter();
 
+console.warn("----- Begin Emitting -----");
+
 e1.$.emit("cat", 123);
 e1.$.emit("dog", 123);
 
+console.warn("----- Begin Processing -----");
 EventBus.$.test.process();
 
 

@@ -72,8 +72,8 @@ export class Channel extends Registry {
         return this.unregister;
     }
 
-    bus(thisArg, event, ...args) {
-        return this.enqueue([ thisArg, event, ...args ]);
+    async bus(payload, args) {
+        return this.enqueue([ payload, args ]);
     }
 
     get isEmpty() {
@@ -93,12 +93,12 @@ export class Channel extends Registry {
 
     process() {
         while(!this.isEmpty) {
-            const [ payload, event, ...args ] = this.dequeue();
+            const [ payload, args ] = this.dequeue();
 
-            const handlers = this.handlers[ event ] || [];
+            const handlers = this.handlers[ payload.type ] || [];
             for(let handler of handlers) {
                 if(typeof handler === "function") {
-                    handler.call(this, payload, args, this.globals);
+                    handler(payload, args, this.globals, this.enqueue.bind(this));
                 }
             }
         }

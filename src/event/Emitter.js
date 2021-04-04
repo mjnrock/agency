@@ -4,7 +4,7 @@ import AgencyBase from "./../AgencyBase";
 import EventBus from "./EventBus";
 
 export class Emitter extends AgencyBase {
-    constructor(handlers = {}, { relay, filter } = {}) {
+    constructor(handlers = {}, { relay, filter, injectMiddleware = true } = {}) {
         super();
 
         //#region RECEIVING
@@ -22,7 +22,9 @@ export class Emitter extends AgencyBase {
             this.__relay = relay || (() => false);      // A bubbling function that decides whether or not the event should get bubbled ALSO        
         //#endregion SENDING
 
-        EventBus.Middleware(this);
+        if(injectMiddleware) {
+            EventBus.Middleware(this);
+        }
     }
 
     /**
