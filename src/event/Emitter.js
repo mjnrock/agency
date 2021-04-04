@@ -131,7 +131,7 @@ export class Emitter extends AgencyBase {
         const _this = () => this;
 
         return {
-            emit(event, ...args) {
+            async emit(event, ...args) {
                 const payload = "provenance" in this ? this : {
                     id: uuidv4(),
                     type: event,
@@ -155,7 +155,7 @@ export class Emitter extends AgencyBase {
              * This is an internal function, so you must bind a proper payload before using outside of its
              *      normal, singular scope within the emit function.  It is only here to exploit "this" bindings.
              */
-            _handle(...args) {
+            async _handle(...args) {
                 const payload = this;
 
                 if(payload.provenance.has(_this()) === false) {
