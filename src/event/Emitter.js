@@ -128,7 +128,7 @@ export class Emitter extends AgencyBase {
     //#endregion RECEIVING
 
     get $() {
-        const _this = this;
+        const _this = () => this;
 
         return {
             async emit(event, ...args) {
@@ -136,31 +136,12 @@ export class Emitter extends AgencyBase {
                     id: uuidv4(),
                     type: event,
                     data: args,
-                    emitter: _this,
+                    emitter: _this(),
                     provenance: new Set(),
                 };
-
-                if(payload.provenance.has(_this) === false) {
-                    if(typeof _this.__filter === "function" && _this.__filter.call(payload, ...args) === true) {
-                        const receivers = _this.__handlers[ "*" ] || [];
-                        for(let receiver of receivers) {
-                            if(typeof receiver === "function") {
-                                receiver.call(payload, ...args);
-                            }
-                        }
-                        
-                        const handlers = _this.__handlers[ payload.type ] || [];
-                        for(let handler of handlers) {
-                            if(typeof handler === "function") {
-                                handler.call(payload, ...args);
-                            }
-                        }
-                    }
-                }
-
-                payload.provenance.add(_this);
+                payload.provenance.add(_this());
     
-                for(let subscriber of _this.__subscribers) {
+                for(let subscriber of _this().__subscribers) {
                     if(typeof subscriber === "function") {
                         subscriber.call(payload, ...args);
                     } else if(subscriber instanceof Emitter) {
@@ -168,7 +149,7 @@ export class Emitter extends AgencyBase {
                     }
                 }
         
-                return _this;
+                return _this();
             },
             /**
              * This is an internal function, so you must bind a proper payload before using outside of its
@@ -177,24 +158,24 @@ export class Emitter extends AgencyBase {
             async _handle(...args) {
                 const payload = this;
 
-                if(payload.provenance.has(_this) === false) {
-                    if(typeof _this.__filter === "function" && _this.__filter.call(payload, ...args) === true) {
-                        const receivers = _this.__handlers[ "*" ] || [];
+                if(payload.provenance.has(_this()) === false) {
+                    if(typeof _this().__filter === "function" && _this().__filter.call(payload, ...args) === true) {
+                        const receivers = _this().__handlers[ "*" ] || [];
                         for(let receiver of receivers) {
                             if(typeof receiver === "function") {
                                 receiver.call(payload, ...args);
                             }
                         }
                         
-                        const handlers = _this.__handlers[ this.type ] || [];
+                        const handlers = _this().__handlers[ this.type ] || [];
                         for(let handler of handlers) {
                             if(typeof handler === "function") {
                                 handler.call(payload, ...args);
                             }
                         }
                         
-                        if(typeof _this.__relay === "function" && _this.__relay.call(payload, ...args) === true) {
-                            _this.$.emit.call(payload, this.type, ...args);
+                        if(typeof _this().__relay === "function" && _this().__relay.call(payload, ...args) === true) {
+                            _this().$.emit.call(payload, this.type, ...args);
                         }
                     }
 

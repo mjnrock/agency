@@ -13,25 +13,50 @@ EventBus.$.createChannels([
     [ "default", {
         globals: GLOBALS,
         handlers: {
-            dog: (payload, args, globals) => console.log(payload, args, globals),
-            cat: (payload, [ first ], { Cats, enqueue }) => console.log(payload, first, Cats, enqueue),
+            dog: (payload, args, globals) => console.log(`[Default]:`, payload, args, globals),
+            cat: (payload, [ first ], { Cats, enqueue }) => console.log(`[Default]:`, payload, first, Cats, enqueue),
+        }
+    }],
+    [ "context1", {
+        globals: GLOBALS,
+        handlers: {
+            "*": (payload, args, globals) => console.log(`[Context-1]:`, payload, args, globals),
+            // cat: (payload, args, globals) => console.log(`[Context-1]:`, payload, args, globals),
+        }
+    }],
+    [ "context2", {
+        globals: GLOBALS,
+        handlers: {
+            "*": (payload, args, globals) => console.log(`[Context-2]:`, payload, args, globals),
+            // dog: (payload, args, globals) => console.log(`[Context-2]:`, payload, args, globals),
         }
     }],
 ]);
 
+const e1 = new Emitter();
+const e2 = new Emitter();
+
 EventBus.$.router.createRoutes([
+    payload => {
+        if(payload.emitter.id === e1.id) {
+            return "context1";
+            return [ "default", "context1" ];
+        } else if(payload.emitter.id === e2.id) {
+            return "context2";
+        }
+    },
     () => "default",
 ]);
-
-const e1 = new Emitter();
 
 console.warn("----- Begin Emitting -----");
 
 e1.$.emit("cat", 123);
 e1.$.emit("dog", 123);
+e2.$.emit("cat", 234);
+e2.$.emit("dog", 234);
 
 console.warn("----- Begin Processing -----");
-EventBus.$.default.process();
+EventBus.$.process();
 
 
 

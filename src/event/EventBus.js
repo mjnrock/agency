@@ -4,6 +4,7 @@ import Router from "./Router";
 
 export class EventBus extends Registry {
     static Instance = new EventBus();
+
     static Middleware = emitter => emitter.addSubscriber(EventBus.Route);
 
     constructor() {
@@ -12,21 +13,28 @@ export class EventBus extends Registry {
         this.router = new Router();
     }
 
+    matchFirst() {
+        this.router.type = Router.EnumRouteType.MatchFirst;
+
+        return this;
+    }
+    matchAll() {
+        this.router.type = Router.EnumRouteType.MatchAll;
+
+        return this;
+    }
+
     joinChannel(nameOrChannel, emitter, ...synonyms) {
         const channel = this[ nameOrChannel ];
 
-        if(channel instanceof Channel) {
-            this.register(emitter);
-            
+        if(channel instanceof Channel) {            
             return channel.join(emitter, ...synonyms);
         }
     }
     leaveChannel(nameOrChannel, emitterSynOrId) {
         const channel = this[ nameOrChannel ];
 
-        if(channel instanceof Channel) {
-            this.unregister(emitterSynOrId);
-            
+        if(channel instanceof Channel) {            
             return channel.leave(emitterSynOrId, ...synonyms);
         }
     }
@@ -57,6 +65,12 @@ export class EventBus extends Registry {
         }
 
         return results;
+    }
+
+    process() {
+        for(let channel of this) {
+            channel.process();
+        }
     }
 
     static get $() {

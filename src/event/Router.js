@@ -3,14 +3,23 @@ import Channel from "./Channel";
 import EventBus from "./EventBus";
 
 export class Router extends AgencyBase {
-    constructor(routes = []) {
+    static EnumRouteType = {
+        MatchFirst: 1,
+        MatchAll: 2,
+    };
+    
+    constructor(routes = [], { type = Router.EnumRouteType.MatchFirst } = {}) {
         super();
+
+        this.type = type;
 
         this.routes = new Set();
         this.createRoutes(...routes);
     }
 
-    async route(payload, ...args) {
+    route(payload, ...args) {
+        let hasResult = false;
+
         for(let fn of this.routes) {
             let results = fn(payload, ...args);
 
@@ -22,8 +31,14 @@ export class Router extends AgencyBase {
                 const channel = EventBus.$[ result ];
 
                 if(channel instanceof Channel) {
-                    await channel.bus(payload, args);
+                    channel.bus(payload, args);
+
+                    hasResult = true;
                 }
+            }            
+                    
+            if(hasResult && this.type === Router.EnumRouteType.MatchFirst) {
+                return this;
             }
         }
 

@@ -6,10 +6,58 @@ export class Channel extends Registry {
 
         this.globals = globals;
         this.queue = [];
-        this.handlers = {};
+        this.handlers = {
+            "*": new Set(),
+        };
 
         for(let [ event, fns ] of Object.entries(handlers)) {
             this.addHandler(event, fns);
+        }
+    }
+
+    get join() {
+        return this.register;
+    }
+    get leave() {
+        return this.unregister;
+    }
+
+    bus(payload, args) {
+        return this.enqueue([ payload, args ]);
+    }
+
+    get isEmpty() {
+        return !this.state.queue.length;
+    }
+
+    enqueue(...items) {
+        this.queue.push(...items);
+
+        return this;
+    }
+    dequeue() {
+        if(this.queue.length) {
+            return this.queue.shift();
+        }
+    }
+
+    process() {
+        while(!this.isEmpty) {
+            const [ payload, args ] = this.dequeue();
+
+            const receivers = this.handlers[ "*" ] || [];
+            for(let receiver of receivers) {
+                if(typeof receiver === "function") {
+                    receiver(payload, args, { ...this.globals, enqueue: this.enqueue.bind(this) });
+                }
+            }
+
+            const handlers = this.handlers[ payload.type ] || [];
+            for(let handler of handlers) {
+                if(typeof handler === "function") {
+                    handler(payload, args, { ...this.globals, enqueue: this.enqueue.bind(this) });
+                }
+            }
         }
     }
 
@@ -63,45 +111,6 @@ export class Channel extends Registry {
         }
 
         return this;
-    }
-
-    get join() {
-        return this.register;
-    }
-    get leave() {
-        return this.unregister;
-    }
-
-    async bus(payload, args) {
-        return this.enqueue([ payload, args ]);
-    }
-
-    get isEmpty() {
-        return !this.state.queue.length;
-    }
-
-    enqueue(...items) {
-        this.queue.push(...items);
-
-        return this;
-    }
-    dequeue() {
-        if(this.queue.length) {
-            return this.queue.shift();
-        }
-    }
-
-    process() {
-        while(!this.isEmpty) {
-            const [ payload, args ] = this.dequeue();
-
-            const handlers = this.handlers[ payload.type ] || [];
-            for(let handler of handlers) {
-                if(typeof handler === "function") {
-                    handler(payload, args, { ...this.globals, enqueue: this.enqueue.bind(this) });
-                }
-            }
-        }
     }
 };
 
