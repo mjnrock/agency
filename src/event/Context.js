@@ -13,6 +13,7 @@ export class Context extends Registry {
         ]);
 
         this.config = {
+            isBatchProcess: true,
             maxBatchSize: 1000,
             ...config,
         }
@@ -30,7 +31,11 @@ export class Context extends Registry {
     }
 
     bus(payload, args) {
-        return this.enqueue([ payload, args ]);
+        if(this.config.isBatchProcess) {
+            return this.enqueue([ payload, args ]);
+        }
+
+        return this.invokeHandlers(payload, args);
     }
 
     get isEmpty() {
@@ -52,29 +57,37 @@ export class Context extends Registry {
         let i = 0;
         while(!this.isEmpty && i < this.config.maxBatchSize) {
             const [ payload, args ] = this.dequeue();
-            const optionArgs = {
-                ...this.globals,
-                enqueue: this.enqueue.bind(this),
-                // process: this.process.bind(this),
-            };
 
-            const receivers = this.handlers.get("*") || [];
-            for(let receiver of receivers) {
-                if(typeof receiver === "function") {
-                    receiver(payload, args, optionArgs);
-                }
-            }
-
-            const handlers = this.handlers.get(payload.type) || [];
-            for(let handler of handlers) {
-                if(typeof handler === "function") {
-                    handler(payload, args, optionArgs);
-                }
-            }
-
+            this.invokeHandlers(payload, args);
             ++i;
         }
+
+        return this;
     }
+    invokeHandlers(payload, args) {        
+        const optionArgs = {
+            ...this.globals,
+            enqueue: this.enqueue.bind(this),
+            // process: this.process.bind(this),
+        };
+
+        const receivers = this.handlers.get("*") || [];
+        for(let receiver of receivers) {
+            if(typeof receiver === "function") {
+                receiver.call(payload, payload.type, args, optionArgs);
+            }
+        }
+
+        const handlers = this.handlers.get(payload.type) || [];
+        for(let handler of handlers) {
+            if(typeof handler === "function") {
+                handler.call(payload, args, optionArgs);
+            }
+        }
+
+        return this;
+    }
+
 
     addHandler(event, ...fns) {
         if(!(this.handlers.get(event) instanceof Set)) {

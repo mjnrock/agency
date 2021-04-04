@@ -31,28 +31,33 @@ EventBus.$.createContexts([
     [ "default", {
         globals: GLOBALS,
         handlers: {
-            [ /./ ]: (payload, args, globals) => console.log(`[Default*]:`, consoleProcessor(payload)),
-            "*": (payload, args, globals) => console.log(`[Default*]:`, consoleProcessor(payload)),
-            // dog: (payload, args, globals) => console.log(`[Default]:`, consoleProcessor(payload)),
-            cat: (payload, args, globals) => {
-                // console.log(`[Default]:`, consoleProcessor(payload));
+            "*": function(event, args, globals) { console.log(`[Default*]:`, consoleProcessor(this)) },
+            // dog: function(args, globals) { console.log(`[Default*]:`, consoleProcessor(this)) },
+            cat: function(args, globals) {
+                console.log(`[Default]:`, consoleProcessor(this));
 
                 e1.$.emit("fish1", 5);
                 e2.$.emit("fish2", 6);
             },
-        }
+        },
+        isBatchProcess: true,
+        // isBatchProcess: false,
     }],
     [ "context1", {
         globals: GLOBALS,
         handlers: {
-            "*": (payload, args, globals) => console.log(`[Context-1*]:`, consoleProcessor(payload)),
-        }
+            "*": function(event, args, globals) { console.log(`[Context-1*]:`, consoleProcessor(this)) },
+        },
+        isBatchProcess: true,
+        // isBatchProcess: false,
     }],
     [ "context2", {
         globals: GLOBALS,
         handlers: {
-            "*": (payload, args, globals) => console.log(`[Context-2*]:`, consoleProcessor(payload)),
-        }
+            "*": function(event, args, globals) { console.log(`[Context-2*]:`, consoleProcessor(this)) },
+        },
+        isBatchProcess: true,
+        // isBatchProcess: false,
     }],
 ]);
 
