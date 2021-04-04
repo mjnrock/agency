@@ -42,6 +42,8 @@ export class EventBus extends Registry {
     createChannel(name, ...args) {
         const channel = new Channel(...args);
 
+        console.log(`[${ name }]`, channel.id.slice(0, 3));
+
         this.register(channel, name);
 
         return channel;

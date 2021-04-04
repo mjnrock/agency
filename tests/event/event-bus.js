@@ -1,5 +1,12 @@
+import { performance } from "perf_hooks";
+
 import EventBus from "./../../src/event/EventBus";
 import Emitter from "./../../src/event/Emitter";
+
+function consoleProcessor(payload) {
+    return [ payload.type, map.get(payload.emitter.id), performance.now() ];
+    // return [ payload.type, payload.emitter.id.slice(0, 8), performance.now() ];
+}
 
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
@@ -9,40 +16,51 @@ const GLOBALS = {
 
 console.log(EventBus.$.id);
 
+const e1 = new Emitter();
+const e2 = new Emitter();
+
+const map = new Map();
+map.set(e1.id, 1);
+map.set(e2.id, 2);
+
+console.log("------- ID LOOKUP -------")
+console.log(`[e1]`, e1.id.slice(0, 8))
+console.log(`[e2]`, e2.id.slice(0, 8))
+
 EventBus.$.createChannels([
     [ "default", {
         globals: GLOBALS,
         handlers: {
-            dog: (payload, args, globals) => console.log(`[Default]:`, payload, args, globals),
-            cat: (payload, [ first ], { Cats, enqueue }) => console.log(`[Default]:`, payload, first, Cats, enqueue),
+            "*": (payload, args, globals) => console.log(`[Default*]:`, consoleProcessor(payload)),
+            // dog: (payload, args, globals) => console.log(`[Default]:`, consoleProcessor(payload)),
+            cat: (payload, args, globals) => {
+                // console.log(`[Default]:`, consoleProcessor(payload));
+
+                e1.$.emit("fish1", 5);
+                e2.$.emit("fish2", 6);
+            },
         }
     }],
     [ "context1", {
         globals: GLOBALS,
         handlers: {
-            "*": (payload, args, globals) => console.log(`[Context-1]:`, payload, args, globals),
-            // cat: (payload, args, globals) => console.log(`[Context-1]:`, payload, args, globals),
+            "*": (payload, args, globals) => console.log(`[Context-1*]:`, consoleProcessor(payload)),
         }
     }],
     [ "context2", {
         globals: GLOBALS,
         handlers: {
-            "*": (payload, args, globals) => console.log(`[Context-2]:`, payload, args, globals),
-            // dog: (payload, args, globals) => console.log(`[Context-2]:`, payload, args, globals),
+            "*": (payload, args, globals) => console.log(`[Context-2*]:`, consoleProcessor(payload)),
         }
     }],
 ]);
 
-const e1 = new Emitter();
-const e2 = new Emitter();
-
 EventBus.$.router.createRoutes([
     payload => {
         if(payload.emitter.id === e1.id) {
-            return "context1";
             return [ "default", "context1" ];
         } else if(payload.emitter.id === e2.id) {
-            return "context2";
+            return [ "default", "context2" ];
         }
     },
     () => "default",
@@ -50,13 +68,71 @@ EventBus.$.router.createRoutes([
 
 console.warn("----- Begin Emitting -----");
 
-e1.$.emit("cat", 123);
-e1.$.emit("dog", 123);
-e2.$.emit("cat", 234);
-e2.$.emit("dog", 234);
+e1.$.emit("cat", 1);
+e1.$.emit("dog", 2);
+e2.$.emit("cat", 3);
+e2.$.emit("dog", 4);
 
 console.warn("----- Begin Processing -----");
 EventBus.$.process();
+
+
+
+
+
+
+
+
+// EventBus.$.createChannels([
+//     [ "default", {
+//         globals: GLOBALS,
+//         handlers: {
+//             dog: (payload, args, globals) => console.log(`[Default]:`, payload, args, globals),
+//             cat: (payload, [ first ], { Cats, enqueue }) => {
+//                 console.log(`[Default]:`, payload, first, Cats, enqueue);
+
+//                 e1.$.emit("fish", 89742341);
+//                 e2.$.emit("fish", 89742341);
+//             },
+//         }
+//     }],
+//     [ "context1", {
+//         globals: GLOBALS,
+//         handlers: {
+//             "*": (payload, args, globals) => console.log(`[Context-1]:`, payload, args, globals),
+//             // cat: (payload, args, globals) => console.log(`[Context-1]:`, payload, args, globals),
+//         }
+//     }],
+//     [ "context2", {
+//         globals: GLOBALS,
+//         handlers: {
+//             "*": (payload, args, globals) => console.log(`[Context-2]:`, payload, args, globals),
+//             // dog: (payload, args, globals) => console.log(`[Context-2]:`, payload, args, globals),
+//         }
+//     }],
+// ]);
+
+// EventBus.$.router.createRoutes([
+//     payload => {
+//         if(payload.emitter.id === e1.id) {
+//             // return "context1";
+//             return [ "default", "context1" ];
+//         } else if(payload.emitter.id === e2.id) {
+//             return "context2";
+//         }
+//     },
+//     () => "default",
+// ]);
+
+// console.warn("----- Begin Emitting -----");
+
+// e1.$.emit("cat", 123);
+// e1.$.emit("dog", 123);
+// e2.$.emit("cat", 234);
+// e2.$.emit("dog", 234);
+
+// console.warn("----- Begin Processing -----");
+// EventBus.$.process();
 
 
 

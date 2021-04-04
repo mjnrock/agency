@@ -1,7 +1,14 @@
+import { performance } from "perf_hooks";
+
 import Registry from "../Registry";
 
+function consoleProcessor(payload) {
+    return [ payload.type, performance.now() ];
+    // return [ payload.type, payload.emitter.id.slice(0, 8), performance.now() ];
+}
+
 export class Channel extends Registry {
-    constructor({ globals = {}, handlers = {} } = {}) {
+    constructor({ globals = {}, handlers = {}, ...config } = {}) {
         super();
 
         this.globals = globals;
@@ -9,6 +16,11 @@ export class Channel extends Registry {
         this.handlers = {
             "*": new Set(),
         };
+
+        this.config = {
+            maxBatchSize: 1000,
+            ...config,
+        }
 
         for(let [ event, fns ] of Object.entries(handlers)) {
             this.addHandler(event, fns);
@@ -23,6 +35,7 @@ export class Channel extends Registry {
     }
 
     bus(payload, args) {
+        console.log(this.id.slice(0, 3), consoleProcessor(payload))
         return this.enqueue([ payload, args ]);
     }
 
@@ -42,7 +55,8 @@ export class Channel extends Registry {
     }
 
     process() {
-        while(!this.isEmpty) {
+        let i = 0;
+        while(!this.isEmpty && i < this.config.maxBatchSize) {
             const [ payload, args ] = this.dequeue();
 
             const receivers = this.handlers[ "*" ] || [];
@@ -58,6 +72,8 @@ export class Channel extends Registry {
                     handler(payload, args, { ...this.globals, enqueue: this.enqueue.bind(this) });
                 }
             }
+
+            ++i;
         }
     }
 
