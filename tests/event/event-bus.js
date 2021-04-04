@@ -27,10 +27,11 @@ console.log("------- ID LOOKUP -------")
 console.log(`[e1]`, e1.id.slice(0, 8))
 console.log(`[e2]`, e2.id.slice(0, 8))
 
-EventBus.$.createChannels([
+EventBus.$.createContexts([
     [ "default", {
         globals: GLOBALS,
         handlers: {
+            [ /./ ]: (payload, args, globals) => console.log(`[Default*]:`, consoleProcessor(payload)),
             "*": (payload, args, globals) => console.log(`[Default*]:`, consoleProcessor(payload)),
             // dog: (payload, args, globals) => console.log(`[Default]:`, consoleProcessor(payload)),
             cat: (payload, args, globals) => {
@@ -83,7 +84,7 @@ EventBus.$.process();
 
 
 
-// EventBus.$.createChannels([
+// EventBus.$.createContexts([
 //     [ "default", {
 //         globals: GLOBALS,
 //         handlers: {
@@ -146,7 +147,7 @@ EventBus.$.process();
 // const globalObj = {
 //     Cats: 2,
 // };
-// EventBus.$.createChannels([
+// EventBus.$.createContexts([
 //     [ "test", {
 //         globals: globalObj
 //     }],
@@ -159,7 +160,7 @@ EventBus.$.process();
 // const e1 = new Emitter();
 // e1.addHandler("*", function(...args) { return EventBus.$.test.bus(this, ...EventBus.$.test); });
 
-// EventBus.$.joinChannel("test", e1, "sobriquet");
+// EventBus.$.joinContext("test", e1, "sobriquet");
 
 // console.log(EventBus.$.test)
 // console.log(EventBus.$.test.sobriquet)

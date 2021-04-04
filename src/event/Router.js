@@ -1,5 +1,5 @@
 import AgencyBase from "../AgencyBase";
-import Channel from "./Channel";
+import Context from "./Context";
 import EventBus from "./EventBus";
 
 export class Router extends AgencyBase {
@@ -28,10 +28,10 @@ export class Router extends AgencyBase {
             }
 
             for(let result of results) {
-                const channel = EventBus.$[ result ];
+                const context = EventBus.$[ result ];
 
-                if(channel instanceof Channel) {
-                    channel.bus(payload, args);
+                if(context instanceof Context) {
+                    context.bus(payload, args);
 
                     hasResult = true;
                 }

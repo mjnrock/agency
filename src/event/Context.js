@@ -2,20 +2,15 @@ import { performance } from "perf_hooks";
 
 import Registry from "../Registry";
 
-function consoleProcessor(payload) {
-    return [ payload.type, performance.now() ];
-    // return [ payload.type, payload.emitter.id.slice(0, 8), performance.now() ];
-}
-
-export class Channel extends Registry {
+export class Context extends Registry {
     constructor({ globals = {}, handlers = {}, ...config } = {}) {
         super();
 
         this.globals = globals;
         this.queue = [];
-        this.handlers = {
-            "*": new Set(),
-        };
+        this.handlers = new Map([
+            [ "*", new Set() ],
+        ]);
 
         this.config = {
             maxBatchSize: 1000,
@@ -35,7 +30,6 @@ export class Channel extends Registry {
     }
 
     bus(payload, args) {
-        console.log(this.id.slice(0, 3), consoleProcessor(payload))
         return this.enqueue([ payload, args ]);
     }
 
@@ -58,18 +52,23 @@ export class Channel extends Registry {
         let i = 0;
         while(!this.isEmpty && i < this.config.maxBatchSize) {
             const [ payload, args ] = this.dequeue();
+            const optionArgs = {
+                ...this.globals,
+                enqueue: this.enqueue.bind(this),
+                // process: this.process.bind(this),
+            };
 
-            const receivers = this.handlers[ "*" ] || [];
+            const receivers = this.handlers.get("*") || [];
             for(let receiver of receivers) {
                 if(typeof receiver === "function") {
-                    receiver(payload, args, { ...this.globals, enqueue: this.enqueue.bind(this) });
+                    receiver(payload, args, optionArgs);
                 }
             }
 
-            const handlers = this.handlers[ payload.type ] || [];
+            const handlers = this.handlers.get(payload.type) || [];
             for(let handler of handlers) {
                 if(typeof handler === "function") {
-                    handler(payload, args, { ...this.globals, enqueue: this.enqueue.bind(this) });
+                    handler(payload, args, optionArgs);
                 }
             }
 
@@ -78,8 +77,8 @@ export class Channel extends Registry {
     }
 
     addHandler(event, ...fns) {
-        if(!(this.handlers[ event ] instanceof Set)) {
-            this.handlers[ event ] = new Set();
+        if(!(this.handlers.get(event) instanceof Set)) {
+            this.handlers.set(event, new Set());
         }
 
         if(Array.isArray(fns[ 0 ])) {
@@ -88,7 +87,7 @@ export class Channel extends Registry {
 
         for(let fn of fns) {
             if(typeof fn === "function") {
-                this.handlers[ event ].add(fn);
+                this.handlers.get(event).add(fn);
             }
         }
 
@@ -102,14 +101,14 @@ export class Channel extends Registry {
         return this;
     }
     removeHandler(event, ...fns) {
-        if(this.handlers[ event ] instanceof Set) {
+        if(this.handlers.get(event) instanceof Set) {
             if(Array.isArray(fns[ 0 ])) {
                 fns = fns[ 0 ];
             }
             
             let bools = [];
             for(let fn of fns) {
-                bools.push(this.handlers[ event ].delete(fn));
+                bools.push(this.handlers.get(event).delete(fn));
             }
 
             if(bools.length === 1) {
@@ -130,4 +129,4 @@ export class Channel extends Registry {
     }
 };
 
-export default Channel;
+export default Context;

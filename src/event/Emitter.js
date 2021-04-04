@@ -127,11 +127,17 @@ export class Emitter extends AgencyBase {
         }
     //#endregion RECEIVING
 
+    is(input) {
+        return this === input
+            || ((typeof input === "string" || input instanceof String) && this.id === input)
+            || (typeof input === "object" && (this.id === input.id || this.id === input._id || this.id === input.__id));
+    }
+
     get $() {
         const _this = () => this;
 
         return {
-            async emit(event, ...args) {
+            emit(event, ...args) {
                 const payload = "provenance" in this ? this : {
                     id: uuidv4(),
                     type: event,
@@ -155,7 +161,7 @@ export class Emitter extends AgencyBase {
              * This is an internal function, so you must bind a proper payload before using outside of its
              *      normal, singular scope within the emit function.  It is only here to exploit "this" bindings.
              */
-            async _handle(...args) {
+            _handle(...args) {
                 const payload = this;
 
                 if(payload.provenance.has(_this()) === false) {
@@ -183,7 +189,61 @@ export class Emitter extends AgencyBase {
                 }
 
                 return false;
-            }
+            },
+            
+            async asyncEmit(event, ...args) {
+                const payload = "provenance" in this ? this : {
+                    id: uuidv4(),
+                    type: event,
+                    data: args,
+                    emitter: _this(),
+                    provenance: new Set(),
+                };
+                payload.provenance.add(_this());
+    
+                for(let subscriber of _this().__subscribers) {
+                    if(typeof subscriber === "function") {
+                        subscriber.call(payload, ...args);
+                    } else if(subscriber instanceof Emitter) {
+                        subscriber.$._asyncHandler.call(payload, ...args);
+                    }
+                }
+        
+                return _this();
+            },
+            /**
+             * This is an internal function, so you must bind a proper payload before using outside of its
+             *      normal, singular scope within the emit function.  It is only here to exploit "this" bindings.
+             */
+            async _asyncHandler(...args) {
+                const payload = this;
+
+                if(payload.provenance.has(_this()) === false) {
+                    if(typeof _this().__filter === "function" && _this().__filter.call(payload, ...args) === true) {
+                        const receivers = _this().__handlers[ "*" ] || [];
+                        for(let receiver of receivers) {
+                            if(typeof receiver === "function") {
+                                receiver.call(payload, ...args);
+                            }
+                        }
+                        
+                        const handlers = _this().__handlers[ this.type ] || [];
+                        for(let handler of handlers) {
+                            if(typeof handler === "function") {
+                                handler.call(payload, ...args);
+                            }
+                        }
+                        
+                        if(typeof _this().__relay === "function" && _this().__relay.call(payload, ...args) === true) {
+                            _this().$.asyncEmit.call(payload, this.type, ...args);
+                        }
+                    }
+
+                    return true;
+                }
+
+                return false;
+            },
         }
     }
 };

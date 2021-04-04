@@ -1,5 +1,5 @@
 import Registry from "../Registry";
-import Channel from "./Channel";
+import Context from "./Context";
 import Router from "./Router";
 
 export class EventBus extends Registry {
@@ -24,65 +24,63 @@ export class EventBus extends Registry {
         return this;
     }
 
-    joinChannel(nameOrChannel, emitter, ...synonyms) {
-        const channel = this[ nameOrChannel ];
+    joinContext(nameOrContext, emitter, ...synonyms) {
+        const context = this[ nameOrContext ];
 
-        if(channel instanceof Channel) {            
-            return channel.join(emitter, ...synonyms);
+        if(context instanceof Context) {            
+            return context.join(emitter, ...synonyms);
         }
     }
-    leaveChannel(nameOrChannel, emitterSynOrId) {
-        const channel = this[ nameOrChannel ];
+    leaveContext(nameOrContext, emitterSynOrId) {
+        const context = this[ nameOrContext ];
 
-        if(channel instanceof Channel) {            
-            return channel.leave(emitterSynOrId, ...synonyms);
+        if(context instanceof Context) {            
+            return context.leave(emitterSynOrId, ...synonyms);
         }
     }
 
-    createChannel(name, ...args) {
-        const channel = new Channel(...args);
+    createContext(name, ...args) {
+        const context = new Context(...args);
 
-        console.log(`[${ name }]`, channel.id.slice(0, 3));
+        this.register(context, name);
 
-        this.register(channel, name);
-
-        return channel;
+        return context;
     }
-    createChannels(createChannelArgs = []) {
-        let channels = [];
-        for(let [ name, ...args ] of createChannelArgs) {
-            channels.push(this.createChannel(name, ...args));
+    createContexts(createContextArgs = []) {
+        let contexts = [];
+        for(let [ name, ...args ] of createContextArgs) {
+            contexts.push(this.createContext(name, ...args));
         }
 
-        return channels;
+        return contexts;
     }
     
-    destroyChannel(nameOrChannel) {
-        return this.unregister(nameOrChannel);
+    destroyContext(nameOrContext) {
+        return this.unregister(nameOrContext);
     }
-    destroyChannels(destroyChannelArgs = []) {
+    destroyContexts(destroyContextArgs = []) {
         let results = [];
-        for(let [ name, ...args ] of destroyChannelArgs) {
-            results.push(this.destroyChannel(name, ...args));
+        for(let [ name, ...args ] of destroyContextArgs) {
+            results.push(this.destroyContext(name, ...args));
         }
 
         return results;
     }
 
-    process(channels = []) {
-        if(channels.length === 0) {
-            for(let channel of this) {
-                channel.process();
+    process(contexts = []) {
+        if(contexts.length === 0) {
+            for(let context of this) {
+                context.process();
             }
 
             return this;
         }
 
-        for(let nameOrChannel of channels) {
-            const channel = this[ nameOrChannel ];
+        for(let nameOrContext of contexts) {
+            const context = this[ nameOrContext ];
 
-            if(channel instanceof Channel) {
-                channel.process();
+            if(context instanceof Context) {
+                context.process();
             }
         }
 
