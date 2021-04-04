@@ -10,19 +10,17 @@ const GLOBALS = {
 console.log(EventBus.$.id);
 
 EventBus.$.createChannels([
-    [ "test", {
+    [ "default", {
         globals: GLOBALS,
         handlers: {
             dog: (payload, args, globals) => console.log(payload, args, globals),
-            cat: (payload, [ first ], { Cats }, enqueue) => console.log(payload, first, Cats, enqueue),
+            cat: (payload, [ first ], { Cats, enqueue }) => console.log(payload, first, Cats, enqueue),
         }
     }],
 ]);
 
 EventBus.$.router.createRoutes([
-    payload => {
-        return "test";
-    }
+    () => "default",
 ]);
 
 const e1 = new Emitter();
@@ -33,7 +31,7 @@ e1.$.emit("cat", 123);
 e1.$.emit("dog", 123);
 
 console.warn("----- Begin Processing -----");
-EventBus.$.test.process();
+EventBus.$.default.process();
 
 
 

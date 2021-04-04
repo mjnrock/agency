@@ -98,7 +98,7 @@ export class Channel extends Registry {
             const handlers = this.handlers[ payload.type ] || [];
             for(let handler of handlers) {
                 if(typeof handler === "function") {
-                    handler(payload, args, this.globals, this.enqueue.bind(this));
+                    handler(payload, args, { ...this.globals, enqueue: this.enqueue.bind(this) });
                 }
             }
         }
