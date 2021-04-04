@@ -67,10 +67,24 @@ export class EventBus extends Registry {
         return results;
     }
 
-    process() {
-        for(let channel of this) {
-            channel.process();
+    process(channels = []) {
+        if(channels.length === 0) {
+            for(let channel of this) {
+                channel.process();
+            }
+
+            return this;
         }
+
+        for(let nameOrChannel of channels) {
+            const channel = this[ nameOrChannel ];
+
+            if(channel instanceof Channel) {
+                channel.process();
+            }
+        }
+
+        return this;
     }
 
     static get $() {
