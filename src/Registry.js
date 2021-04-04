@@ -6,6 +6,7 @@ export class Registry extends AgencyBase {
     constructor(entries = []) {
         super();
 
+        this._cache = new WeakMap();
         this._state = {};
 
         const proxy = new Proxy(this, {
@@ -106,9 +107,14 @@ export class Registry extends AgencyBase {
             return false;
         }
 
-        let uuid = (entry || {}).__id || (entry || {}).id || uuidv4();
+        let uuid = this._cache.get(entry) || (entry || {}).__id || (entry || {}).id || uuidv4();
 
         this[ uuid ] = entry;
+
+        //  Re-registration, reuse the previous id
+        if(typeof entry === "object" && !this._cache.has(entry)) {
+            this._cache.set(entry, uuid);
+        }
 
         for (let synonym of synonyms) {
             this[ synonym ] = uuid;

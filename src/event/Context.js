@@ -1,5 +1,3 @@
-import { performance } from "perf_hooks";
-
 import Registry from "../Registry";
 
 export class Context extends Registry {
@@ -37,6 +35,10 @@ export class Context extends Registry {
 
         return this.invokeHandlers(payload, args);
     }
+
+    //TODO  Perhaps make <Context> an <Emitter> to utilize direct subscriptions
+    broadcast() {}
+    relay() {}
 
     get isEmpty() {
         return !this.state.queue.length;
