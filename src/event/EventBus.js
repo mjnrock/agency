@@ -50,20 +50,6 @@ export class EventBus extends Registry {
         return this;
     }
 
-    joinContext(nameOrContext, emitter, ...synonyms) {
-        const context = this[ nameOrContext ];
-
-        if(context instanceof Context) {            
-            return context.join(emitter, ...synonyms);
-        }
-    }
-    leaveContext(nameOrContext, emitterSynOrId) {
-        const context = this[ nameOrContext ];
-
-        if(context instanceof Context) {            
-            return context.leave(emitterSynOrId, ...synonyms);
-        }
-    }
 
     createContext(name, ...args) {
         const context = new Context(...args);
@@ -99,6 +85,7 @@ export class EventBus extends Registry {
         return results;
     }
 
+
     process(contexts = []) {
         if(contexts.length === 0) {
             for(let context of this) {
@@ -119,6 +106,7 @@ export class EventBus extends Registry {
         return this;
     }
 
+
     static get $() {
         if(!EventBus.Instance) {
             EventBus.Instance = new EventBus();
@@ -126,6 +114,7 @@ export class EventBus extends Registry {
 
         return EventBus.Instance;
     }
+    
     static Reassign(...args) {
         EventBus.Instance = new EventBus(...args);
     }

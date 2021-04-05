@@ -75,6 +75,8 @@ EventBus.$.router.createRoutes([
     () => "default",
 ]);
 
+EventBus.$.default.fire();
+
 console.warn("----- Begin Emitting -----");
 
 e1.$.emit("cat", 1);

@@ -21,13 +21,6 @@ export class Context extends Registry {
         }
     }
 
-    get join() {
-        return this.register;
-    }
-    get leave() {
-        return this.unregister;
-    }
-
     useRealTimeProcess() {
         this.config.isBatchProcess = false;
     }
@@ -38,6 +31,7 @@ export class Context extends Registry {
         this.config.maxBatchSize = size;
     }
 
+
     bus(payload, args) {
         if(this.config.isBatchProcess) {
             return this.enqueue([ payload, args ]);
@@ -46,9 +40,6 @@ export class Context extends Registry {
         return this.invokeHandlers(payload, args);
     }
 
-    //TODO  Perhaps flag <Context> an <Emitter> to utilize direct subscriptions
-    broadcast() {}
-    relay() {}
 
     get isEmpty() {
         return !this.state.queue.length;
@@ -65,6 +56,7 @@ export class Context extends Registry {
         }
     }
 
+
     process() {
         let i = 0;
         while(!this.isEmpty && i < this.config.maxBatchSize) {
@@ -76,6 +68,8 @@ export class Context extends Registry {
 
         return this;
     }
+
+
     invokeHandlers(payload, args) {        
         const optionArgs = {
             ...this.globals,
@@ -100,7 +94,6 @@ export class Context extends Registry {
         return this;
     }
 
-
     addHandler(event, ...fns) {
         if(!(this.handlers.get(event) instanceof Set)) {
             this.handlers.set(event, new Set());
@@ -124,7 +117,7 @@ export class Context extends Registry {
         }
 
         return this;
-    }
+    }    
     removeHandler(event, ...fns) {
         if(this.handlers.get(event) instanceof Set) {
             if(Array.isArray(fns[ 0 ])) {

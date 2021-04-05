@@ -19,6 +19,28 @@ export class Network extends Emitter {
         this.__pairBinding = pairBinding;
     }
 
+    // get join() {
+    //     return this.register;
+    // }
+    // get leave() {
+    //     return this.unregister;
+    // }
+
+    // joinContext(nameOrContext, emitter, ...synonyms) {
+    //     const context = this[ nameOrContext ];
+
+    //     if(context instanceof Context) {            
+    //         return context.join(emitter, ...synonyms);
+    //     }
+    // }
+    // leaveContext(nameOrContext, emitterSynOrId) {
+    //     const context = this[ nameOrContext ];
+
+    //     if(context instanceof Context) {            
+    //         return context.leave(emitterSynOrId, ...synonyms);
+    //     }
+    // }
+
     join(...emitters) {
         for(let emitter of emitters) {
             if(emitter instanceof Emitter) {
@@ -50,7 +72,8 @@ export class Network extends Emitter {
         return this;
     }
 
-    async fire(event, ...args) {
+    
+    fire(event, ...args) {
         for(let emitter of this.__subscribers) {
             if(typeof emitter === "function") {
                 emitter(event, ...args);
@@ -59,7 +82,18 @@ export class Network extends Emitter {
             }
         }
 
-        return true;
+        return this;
+    }
+    async asyncFire(event, ...args) {
+        for(let emitter of this.__subscribers) {
+            if(typeof emitter === "function") {
+                emitter(event, ...args);
+            } else if(emitter instanceof Emitter) {
+                emitter.$.asyncEmit(event, ...args);
+            }
+        }
+
+        return this;
     }
 };
 
