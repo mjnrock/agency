@@ -1,9 +1,11 @@
+import AgencyBase from "./../AgencyBase";
 import $Router, { EnumRouteType } from "./$Router";
-import $Registry from "../$Registry";
+import { $Registry } from "../Registry";
 
 import Context from "./Context";
+import { compose } from "../util/helper";
 
-export class EventBus extends $Registry($Router) {
+export class EventBus extends compose($Registry, $Router)(AgencyBase) {
     constructor() {
         super({
             Router: {

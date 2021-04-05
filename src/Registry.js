@@ -1,10 +1,11 @@
 import { v4 as uuidv4, validate } from "uuid";
 
 import AgencyBase from "./AgencyBase";
+import { compose } from "./util/helper";
 
-export class Registry extends AgencyBase {
-    constructor(entries = []) {
-        super();
+export const $Registry = $super => class extends $super {
+    constructor({ Registry = {}, ...rest } = {}) {
+        super({ ...rest });
 
         this.__cache = new WeakMap();    // Used primarily for the reregistration of objects
         this.__state = {};
@@ -42,7 +43,7 @@ export class Registry extends AgencyBase {
             },
         });
 
-        for(let entry of entries) {
+        for(let entry of (Registry.entries || [])) {
             if(Array.isArray(entry)) {
                 proxy.register(...entry);
             } else {
@@ -141,5 +142,7 @@ export class Registry extends AgencyBase {
         return keys;
     }
 };
+
+export class Registry extends compose($Registry)(AgencyBase) {};
 
 export default Registry;
