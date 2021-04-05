@@ -1,6 +1,6 @@
 import Registry from "../Registry";
 import Emitter from "./Emitter";
-import EventBus from "./EventBus";
+import Router from "./Router";
 
 export class Network extends Registry {
     static Instance = new Network();
@@ -10,7 +10,7 @@ export class Network extends Registry {
         super();
 
         this.cache = new WeakMap();
-        this.bus = new EventBus();
+        this.router = new Router();
     }
 
     join(...emitters) {
@@ -45,7 +45,7 @@ export class Network extends Registry {
     }
 
     route(payload, ...args) {
-        this.bus.route(payload, ...args);
+        this.router.route(payload, ...args);
     }
     
     fire(event, ...args) {
@@ -80,7 +80,7 @@ export class Network extends Registry {
     }
 
     static Route(...args) {
-        Network.$.bus.route(this, ...args);     // @this should resolve to the payload here, based on <Emitter> behavior
+        Network.$.router.route(this, ...args);     // @this should resolve to the payload here, based on <Emitter> behavior
     }
 };
 

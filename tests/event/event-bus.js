@@ -14,10 +14,10 @@ const GLOBALS = {
     Cats: 2,
 };
 
-Network.$.bus.useBatchProcess();
+Network.$.router.useBatchProcess();
 // Network.$.bus.useRealTimeProcess();
 
-console.log(Network.$.bus.id);
+console.log(Network.$.router.id);
 
 const e1 = new Emitter();
 const e2 = new Emitter();
@@ -30,7 +30,7 @@ console.log("------- ID LOOKUP -------")
 console.log(`[e1]`, e1.id.slice(0, 8))
 console.log(`[e2]`, e2.id.slice(0, 8))
 
-Network.$.bus.createContexts([
+Network.$.router.createContexts([
     [ "default", {
         globals: GLOBALS,
         handlers: {
@@ -64,7 +64,7 @@ Network.$.bus.createContexts([
     }],
 ]);
 
-Network.$.bus.createRoutes([
+Network.$.router.createRoutes([
     payload => {
         if(payload.emitter.id === e1.id) {
             return [ "default", "context1" ];
@@ -85,8 +85,9 @@ e2.$.emit("cat", 3);
 e2.$.emit("dog", 4);
 
 console.warn("----- Begin Processing -----");
-Network.$.bus.process();
+Network.$.router.process();
 
+console.log(Network.$)
 
 
 
