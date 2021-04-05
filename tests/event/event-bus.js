@@ -2,6 +2,7 @@ import { performance } from "perf_hooks";
 
 import EventBus from "./../../src/event/EventBus";
 import Emitter from "./../../src/event/Emitter";
+import { compose } from "../../src/util/helper";
 
 function consoleProcessor(payload) {
     return [ payload.type, map.get(payload.emitter.id), performance.now() ];
@@ -13,6 +14,17 @@ console.warn("------------ NEW EXECUTION CONTEXT ------------");
 const GLOBALS = {
     Cats: 2,
 };
+
+function subA(a, b) {
+    return a + 1;
+}
+function subB(a, b) {
+    return a / 3;
+}
+console.log(compose(subA, subB)(5));
+
+EventBus.$.useBatchProcess();
+// EventBus.$.useRealTimeProcess();
 
 console.log(EventBus.$.id);
 

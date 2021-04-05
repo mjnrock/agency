@@ -6,7 +6,7 @@ export class Registry extends AgencyBase {
     constructor(entries = []) {
         super();
 
-        this._cache = new WeakMap();
+        this._cache = new WeakMap();    // Used primarily for the reregistration of objects
         this._state = {};
 
         const proxy = new Proxy(this, {

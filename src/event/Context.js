@@ -28,6 +28,16 @@ export class Context extends Registry {
         return this.unregister;
     }
 
+    useRealTimeProcess() {
+        this.config.isBatchProcess = false;
+    }
+    useBatchProcess() {
+        this.config.isBatchProcess = true;
+    }
+    setBatchSize(size = 1000) {
+        this.config.maxBatchSize = size;
+    }
+
     bus(payload, args) {
         if(this.config.isBatchProcess) {
             return this.enqueue([ payload, args ]);
@@ -36,7 +46,7 @@ export class Context extends Registry {
         return this.invokeHandlers(payload, args);
     }
 
-    //TODO  Perhaps make <Context> an <Emitter> to utilize direct subscriptions
+    //TODO  Perhaps flag <Context> an <Emitter> to utilize direct subscriptions
     broadcast() {}
     relay() {}
 

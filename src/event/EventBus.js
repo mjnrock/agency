@@ -11,6 +11,9 @@ export class EventBus extends Registry {
         super();
 
         this.router = new Router();
+        this.config = {
+            isBatchProcess: true,
+        };
     }
 
     matchFirst() {
@@ -20,6 +23,29 @@ export class EventBus extends Registry {
     }
     matchAll() {
         this.router.type = Router.EnumRouteType.MatchAll;
+
+        return this;
+    }
+
+    useRealTimeProcess() {
+        this.config.isBatchProcess = false;
+
+        for(let context of this) {
+            if(context instanceof Context) {
+                context.useRealTimeProcess();
+            }
+        }
+
+        return this;
+    }
+    useBatchProcess() {
+        this.config.isBatchProcess = true;
+
+        for(let context of this) {
+            if(context instanceof Context) {
+                context.useBatchProcess();
+            }
+        }
 
         return this;
     }
@@ -43,6 +69,12 @@ export class EventBus extends Registry {
         const context = new Context(...args);
 
         this.register(context, name);
+
+        if(this.config.isBatchProcess) {
+            context.useBatchProcess();
+        } else {
+            context.useRealTimeProcess();
+        }
 
         return context;
     }
