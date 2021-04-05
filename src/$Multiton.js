@@ -13,6 +13,13 @@ export const $Multiton = $super => class extends $super {
 
         return this.Instances.default;
     }
+    static get _() {
+        if(!this.Instances) {
+            this.Recreate();
+        }
+
+        return this.Instances;
+    }
     
     /**
      * Recreate the .Instances registry

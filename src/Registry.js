@@ -156,6 +156,13 @@ export class Registry extends compose($Registry)(AgencyBase) {
 
         return Registry.Instances.default;
     }
+    static get _() {
+        if(!Registry.Instances) {
+            Registry.Recreate();
+        }
+
+        return Registry.Instances;
+    }
     
     /**
      * Recreate the .Instances registry with optional seeding
