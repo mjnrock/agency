@@ -144,13 +144,28 @@ export const $Registry = $super => class extends $super {
 };
 
 export class Registry extends compose($Registry)(AgencyBase) {
-    static Instance = new Registry();
+    static Instances = new Registry();
+    /**
+     * A convenience getter to easily access a default <Registry>
+     *  when a multi-Registry setup is unnecessary.
+     */
     static get $() {
-        if(!Registry.Instance) {
-            Registry.Instance = new Registry();
+        if(!(Registry.Instances || {}).default) {
+            Registry.Recreate();
         }
 
-        return Registry.Instance;
+        return Registry.Instances.default;
+    }
+    
+    /**
+     * Recreate the .Instances registry with optional seeding
+     */
+    static Recreate(registries = [], createDefault = true) {
+        Registry.Instances = new Registry({ Registry: { entries: registries }});
+
+        if(createDefault) {
+            Registry.Instances.register(new Registry(), "default");
+        }
     }
 };
 

@@ -1,4 +1,4 @@
-import Registry from "./../../src/Registry";
+import Registry from "../src/Registry";
 
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
