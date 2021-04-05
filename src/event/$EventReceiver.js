@@ -1,11 +1,15 @@
-export const $EventReceiver = superclass => class extends superclass {
-    constructor() {
-        super();
+export const $EventReceiver = $super => class extends $super {
+    constructor({ EventReceiver = {}, ...rest } = {}) {
+        super({ ...rest });
 
-        this.__filter = () => true;     // Universal filter that executed immediately in .handle to determine if should proceed
+        this.__filter = typeof EventReceiver.filter === "function" ? EventReceiver.filter : (() => true);     // Universal filter that executed immediately in .handle to determine if should proceed
         this.__handlers = {
             "*": new Set(),
         };
+
+        for(let [ event, fns ] of Object.entries(EventReceiver.handlers || [])) {
+            this.addHandler(event, fns);
+        }
     }
 
     get $() {

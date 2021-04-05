@@ -1,11 +1,11 @@
 import { v4 as uuidv4 } from "uuid";
 
-export const $EventSender = superclass => class extends superclass {
-    constructor() {
-        super();
+export const $EventSender = $super => class extends $super {
+    constructor({ EventSender = {}, ...rest } = {}) {
+        super({ ...rest });
 
         this.__subscribers = new Set();
-        this.__relay = () => false;      // A bubbling function that decides whether or not the event should get bubbled ALSO        
+        this.__relay = typeof EventSender.relay === "function" ? EventSender.relay : (() => false);      // A bubbling function that decides whether or not the event should get bubbled ALSO        
     }
 
     get subscribers() {

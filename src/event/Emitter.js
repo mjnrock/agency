@@ -6,15 +6,19 @@ import EventBus from "./EventBus";
 
 import { compose } from "./../util/helper";
 
-export class Emitter extends compose($EventReceiver, $EventSender)(AgencyBase) {
-    constructor(handlers = {}, { relay, filter, injectMiddleware = true } = {}) {
-        super();
+export const EmitterBase = compose($EventReceiver, $EventSender)(AgencyBase);
 
-        this.__filter = filter || (() => true);     // Universal filter that executed immediately in .handle to determine if should proceed
-        this.__relay = relay || (() => false);
-        for(let [ event, fns ] of Object.entries(handlers)) {
-            this.addHandler(event, fns);
-        }
+export class Emitter extends EmitterBase {
+    constructor(handlers = {}, { relay, filter, injectMiddleware = true } = {}) {
+        super({
+            EventReceiver: {
+                filter,
+                handlers,
+            },
+            EventSender: {
+                relay,
+            },
+        });
 
         if(injectMiddleware) {
             EventBus.Middleware(this);
