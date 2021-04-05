@@ -17,6 +17,6 @@ require = require("esm")(module/*, options*/)
 // module.exports = require("./tests/util/registry.js");
 
 // module.exports = require("./tests/event/emitter.js");
-module.exports = require("./tests/event/system.js");
+module.exports = require("./tests/event/network.js");
 
 // module.exports = require("./tests/agency-base.js");

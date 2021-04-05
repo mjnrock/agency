@@ -3,6 +3,9 @@ import Emitter from "./Emitter";
 import Router from "./Router";
 
 export class Network extends Registry {
+    static Instance = new Network();
+    static Middleware = emitter => Network.$.join(emitter);
+
     constructor() {
         super();
 
@@ -62,6 +65,18 @@ export class Network extends Registry {
         }
 
         return this;
+    }
+
+    static get $() {
+        if(!Network.Instance) {
+            Network.Instance = new Network();
+        }
+
+        return Network.Instance;
+    }
+    
+    static Reassign(...args) {
+        Network.Instance = new Network(...args);
     }
 };
 
