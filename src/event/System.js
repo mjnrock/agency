@@ -6,6 +6,11 @@ import Network from "./Network";
  *      are needed.  By default, the singleton <Network> will
  *      be registered to <System> with the synonym "default".
  * 
+ * In single-network situations, <System> will never be used
+ *      in any meaningful way--though it will have a singleton
+ *      reference--except to act a pass-through entity for <Emitter>
+ *      middleware attachment.
+ * 
  * In order to properly utilize a multi-network system, overwrite
  *      the << System.Middleware >> method to introduce qualifying
  *      behavior that will appropriately register each newly
@@ -13,7 +18,7 @@ import Network from "./Network";
  */
 export class System extends Registry {
     static Instance = new System();
-    static Middleware = emitter => Network.Middleware(emitter);
+    static Middleware = emitter => Network.Middleware(emitter);     // By default, join singleton <Network>
 
     constructor() {
         super();
