@@ -1,26 +1,24 @@
-import AgencyBase from "../AgencyBase";
 import Context from "./Context";
-import EventBus from "./EventBus";
 
-export class Router extends AgencyBase {
-    static EnumRouteType = {
-        MatchFirst: 1,
-        MatchAll: 2,
-    };
-    
-    constructor(routes = [], { type = Router.EnumRouteType.MatchFirst } = {}) {
-        super();
+export const EnumRouteType = {
+    MatchFirst: 1,
+    MatchAll: 2,
+};
 
-        this.type = type;
+export const $Router = $super => class extends $super {    
+    constructor({ Router = {}, ...rest } = {}) {
+        super({ ...rest });
 
-        this.routes = new Set();
-        this.createRoutes(...routes);
+        this.__type = Router.type || EnumRouteType.MatchFirst;
+
+        this.__routes = new Set();
+        this.createRoutes(...(Router.routes || []));
     }
 
     route(payload, ...args) {
         let hasResult = false;
 
-        for(let fn of this.routes) {
+        for(let fn of this.__routes) {
             let results = fn(payload, ...args);
 
             if(!Array.isArray(results)) {
@@ -28,7 +26,7 @@ export class Router extends AgencyBase {
             }
 
             for(let result of results) {
-                const context = EventBus.$[ result ];
+                const context = this[ result ];
 
                 if(context instanceof Context) {
                     context.bus(payload, args);
@@ -37,7 +35,7 @@ export class Router extends AgencyBase {
                 }
             }            
                     
-            if(hasResult && this.type === Router.EnumRouteType.MatchFirst) {
+            if(hasResult && this.__type === EnumRouteType.MatchFirst) {
                 return this;
             }
         }
@@ -47,7 +45,7 @@ export class Router extends AgencyBase {
 
     createRoute(filterFn) {
         if(typeof filterFn === "function") {
-            this.routes.add(filterFn);
+            this.__routes.add(filterFn);
         }
 
         return this;
@@ -62,7 +60,7 @@ export class Router extends AgencyBase {
 
     destroyRoute(filterFn) {
         if(typeof filterFn === "function") {
-            return this.routes.delete(filterFn);
+            return this.__routes.delete(filterFn);
         }
 
         return false;
@@ -77,4 +75,4 @@ export class Router extends AgencyBase {
     }
 };
 
-export default Router;
+export default $Router;

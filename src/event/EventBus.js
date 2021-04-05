@@ -1,28 +1,29 @@
-import Registry from "../Registry";
+import $Router, { EnumRouteType } from "./$Router";
+import $Registry from "../$Registry";
+
 import Context from "./Context";
-import Router from "./Router";
 
-export class EventBus extends Registry {
-    static Instance = new EventBus();
-
-    static Middleware = emitter => emitter.addSubscriber(EventBus.Route);
-
+export class EventBus extends $Registry($Router) {
     constructor() {
-        super();
-
-        this.router = new Router();
+        super({
+            Router: {
+                routes: [],
+                type: EnumRouteType.MatchFirst
+            },
+        });
+        
         this.config = {
             isBatchProcess: true,
         };
     }
 
     matchFirst() {
-        this.router.type = Router.EnumRouteType.MatchFirst;
+        this.type = EnumRouteType.MatchFirst;
 
         return this;
     }
     matchAll() {
-        this.router.type = Router.EnumRouteType.MatchAll;
+        this.type = EnumRouteType.MatchAll;
 
         return this;
     }
@@ -104,23 +105,6 @@ export class EventBus extends Registry {
         }
 
         return this;
-    }
-
-
-    static get $() {
-        if(!EventBus.Instance) {
-            EventBus.Instance = new EventBus();
-        }
-
-        return EventBus.Instance;
-    }
-    
-    static Reassign(...args) {
-        EventBus.Instance = new EventBus(...args);
-    }
-
-    static Route(...args) {
-        EventBus.$.router.route(this, ...args);     // @this should resolve to the payload here, based on <Emitter> behavior
     }
 };
 

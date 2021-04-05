@@ -1,56 +1,31 @@
+import Registry from "../Registry";
 import Emitter from "./Emitter";
+import EventBus from "./EventBus";
 
-/**
- * Due to the provenance chain present in a message, the <Emitter>
- *      family should be largely immune to feedback loops, as a
- *      recycled message should be ignored by the <Emitter> on any
- *      subsequent passes.
- */
-export class Network extends Emitter {
-    static Events = [
-        "join",
-        "leave",
-    ];
+export class Network extends Registry {
+    static Instance = new Network();
+    static Middleware = emitter => Network.$.join(emitter);
 
-    constructor({ handlers = {}, pairBinding = false, ...opts } = {}) {
-        super(handlers, opts);
+    constructor() {
+        super();
 
-        this.__relay = () => true;
-        this.__pairBinding = pairBinding;
+        this.cache = new WeakMap();
+        this.bus = new EventBus();
     }
-
-    // get join() {
-    //     return this.register;
-    // }
-    // get leave() {
-    //     return this.unregister;
-    // }
-
-    // joinContext(nameOrContext, emitter, ...synonyms) {
-    //     const context = this[ nameOrContext ];
-
-    //     if(context instanceof Context) {            
-    //         return context.join(emitter, ...synonyms);
-    //     }
-    // }
-    // leaveContext(nameOrContext, emitterSynOrId) {
-    //     const context = this[ nameOrContext ];
-
-    //     if(context instanceof Context) {            
-    //         return context.leave(emitterSynOrId, ...synonyms);
-    //     }
-    // }
 
     join(...emitters) {
         for(let emitter of emitters) {
             if(emitter instanceof Emitter) {
-                emitter.addSubscriber(this);
+                this.register(emitter);
 
-                if(this.__pairBinding) {
-                    this.addSubscriber(emitter);
-                }
+                const _this = this;
+                const fn = function(...args) {
+                    _this.route(this, ...args);
+                };
 
-                this.$.emit("join", emitter);
+                this.cache.set(emitter, fn);
+
+                emitter.addSubscriber(fn);
             }
         }
 
@@ -59,25 +34,23 @@ export class Network extends Emitter {
     leave(...emitters) {
         for(let emitter of emitters) {
             if(emitter instanceof Emitter) {
-                emitter.removeSubscriber(this);
+                const fn = this.cache.get(emitter);
 
-                if(this.__pairBinding) {
-                    this.removeSubscriber(emitter);
-                }
-
-                this.$.emit("leave", emitter);
+                emitter.removeSubscriber(fn);
+                this.unregister(emitter);
             }
         }
 
         return this;
     }
 
+    route(payload, ...args) {
+        this.bus.route(payload, ...args);
+    }
     
     fire(event, ...args) {
-        for(let emitter of this.__subscribers) {
-            if(typeof emitter === "function") {
-                emitter(event, ...args);
-            } else if(emitter instanceof Emitter) {
+        for(let emitter of this) {
+            if(emitter instanceof Emitter) {
                 emitter.$.emit(event, ...args);
             }
         }
@@ -85,15 +58,29 @@ export class Network extends Emitter {
         return this;
     }
     async asyncFire(event, ...args) {
-        for(let emitter of this.__subscribers) {
-            if(typeof emitter === "function") {
-                emitter(event, ...args);
-            } else if(emitter instanceof Emitter) {
+        for(let emitter of this) {
+            if(emitter instanceof Emitter) {
                 emitter.$.asyncEmit(event, ...args);
             }
         }
 
         return this;
+    }
+
+    static get $() {
+        if(!Network.Instance) {
+            Network.Instance = new Network();
+        }
+
+        return Network.Instance;
+    }
+    
+    static Reassign(...args) {
+        Network.Instance = new Network(...args);
+    }
+
+    static Route(...args) {
+        Network.$.bus.route(this, ...args);     // @this should resolve to the payload here, based on <Emitter> behavior
     }
 };
 

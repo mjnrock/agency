@@ -2,7 +2,7 @@ import $EventReceiver from "./$EventReceiver";
 import $EventSender from "./$EventSender";
 
 import AgencyBase from "./../AgencyBase";
-import EventBus from "./EventBus";
+import Network from "./Network";
 
 import { compose } from "./../util/helper";
 
@@ -21,7 +21,7 @@ export class Emitter extends EmitterBase() {
         });
 
         if(injectMiddleware) {
-            EventBus.Middleware(this);
+            Network.Middleware(this);
         }
     }
 
