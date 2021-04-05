@@ -93,17 +93,28 @@ export class Router extends compose($Registry, $Router)(AgencyBase) {
         };
     }
 
+    /**
+     * Stop routing after the first successful route
+     */
     matchFirst() {
         this.type = EnumRouteType.MatchFirst;
 
         return this;
     }
+    /**
+     * Run all routes that match the event
+     */
     matchAll() {
         this.type = EnumRouteType.MatchAll;
 
         return this;
     }
 
+    /**
+     * Turn off the batching process and process any event
+     *  that comes through as it comes through for *all*
+     *  <Context(s)>, including future additions.
+     */
     useRealTimeProcess() {
         this.config.isBatchProcess = false;
 
@@ -115,6 +126,12 @@ export class Router extends compose($Registry, $Router)(AgencyBase) {
 
         return this;
     }
+    /**
+     * Turn on the batching process for *all* <Context(s)>--
+     *  including future additions--and queue *all* events
+     *  that get captured. They will be stored in the queue
+     *  until << .process() >> is invoked.
+     */
     useBatchProcess() {
         this.config.isBatchProcess = true;
 
@@ -128,6 +145,10 @@ export class Router extends compose($Registry, $Router)(AgencyBase) {
     }
 
 
+    /**
+     * Create a <Context> to which events can be routed
+     *  and handled in an isolated scope.
+     */
     createContext(name, ...args) {
         const context = new Context(...args);
 
@@ -141,6 +162,9 @@ export class Router extends compose($Registry, $Router)(AgencyBase) {
 
         return context;
     }
+    /**
+     * A convenience method to iteratively invoke << createContext >>
+     */
     createContexts(createContextArgs = []) {
         let contexts = [];
         for(let [ name, ...args ] of createContextArgs) {
@@ -149,10 +173,15 @@ export class Router extends compose($Registry, $Router)(AgencyBase) {
 
         return contexts;
     }
-    
+    /**
+     * Remove a <Context> event route
+     */
     destroyContext(nameOrContext) {
         return this.unregister(nameOrContext);
     }
+    /**
+     * A convenience method to iteratively invoke << destroyContext >>
+     */
     destroyContexts(destroyContextArgs = []) {
         let results = [];
         for(let [ name, ...args ] of destroyContextArgs) {
@@ -162,7 +191,10 @@ export class Router extends compose($Registry, $Router)(AgencyBase) {
         return results;
     }
 
-
+    /**
+     * Invoke the << .process >> command on all <Context(s)>
+     *  to create a linear execution chain.
+     */
     process(contexts = []) {
         if(contexts.length === 0) {
             for(let context of this) {

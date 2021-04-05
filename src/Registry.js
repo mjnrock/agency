@@ -143,6 +143,15 @@ export const $Registry = $super => class extends $super {
     }
 };
 
-export class Registry extends compose($Registry)(AgencyBase) {};
+export class Registry extends compose($Registry)(AgencyBase) {
+    static Instance = new Registry();
+    static get $() {
+        if(!Registry.Instance) {
+            Registry.Instance = new Registry();
+        }
+
+        return Registry.Instance;
+    }
+};
 
 export default Registry;

@@ -2,13 +2,22 @@ import $EventReceiver from "./$EventReceiver";
 import $EventSender from "./$EventSender";
 
 import AgencyBase from "./../AgencyBase";
-import System from "./System";
+import Network from "./Network";
 
 import { compose } from "./../util/helper";
 
 export const EmitterBase = (...mixins) => compose(...mixins, $EventReceiver, $EventSender)(AgencyBase);
 
 export class Emitter extends EmitterBase() {
+    static Instance = new Emitter();
+    static get $() {
+        if(!Emitter.Instance) {
+            Emitter.Instance = new Emitter();
+        }
+
+        return Emitter.Instance;
+    }
+
     constructor(handlers = {}, { relay, filter, injectMiddleware = true } = {}) {
         super({
             EventReceiver: {
@@ -21,7 +30,7 @@ export class Emitter extends EmitterBase() {
         });
 
         if(injectMiddleware) {
-            System.Middleware(this);
+            Network.Middleware(this);
         }
     }
 

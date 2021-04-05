@@ -21,9 +21,18 @@ export class Context extends Registry {
         }
     }
 
+    /**
+     * Turn off the batching process and process any event
+     *  that comes through as it comes through
+     */
     useRealTimeProcess() {
         this.config.isBatchProcess = false;
     }
+    /**
+     * Queue *all* events that get captured and store them in
+     *  the queue until << .process() >> is invoked up to the
+     *  << this.config.maxBatchSize >>.
+     */
     useBatchProcess() {
         this.config.isBatchProcess = true;
     }
@@ -32,6 +41,10 @@ export class Context extends Registry {
     }
 
 
+    /**
+     * The interception function that is used to route an event
+     *  to a <Context>
+     */
     bus(payload, args) {
         if(this.config.isBatchProcess) {
             return this.enqueue([ payload, args ]);
@@ -70,11 +83,15 @@ export class Context extends Registry {
     }
 
 
+    /**
+     * An extracted invocation method so that << .bus >> can
+     *  bypass the queue if in real-time mode.
+     */
     invokeHandlers(payload, args) {        
         const optionArgs = {
             ...this.globals,
             enqueue: this.enqueue.bind(this),
-            // process: this.process.bind(this),
+            context: this,
         };
 
         const receivers = this.handlers.get("*") || [];
