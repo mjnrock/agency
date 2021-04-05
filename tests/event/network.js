@@ -1,76 +1,182 @@
-import Registry from "../../src/Registry";
-import Emitter from "../../src/event/Emitter";
+import { performance } from "perf_hooks";
+
 import Network from "../../src/event/Network";
+import Emitter from "../../src/event/Emitter";
+
+function consoleProcessor(payload) {
+    return [ payload.type, map.get(payload.emitter.id), performance.now() ];
+    // return [ payload.type, payload.emitter.id.slice(0, 8), performance.now() ];
+}
 
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
-function consoleTracer(end, payload) {
-    let trace = [ ...payload.provenance ].map(e => map.get(e.id)).join("->");
-    return `${ trace }::${ end }`;
-}
+const GLOBALS = {
+    Cats: 2,
+};
 
-// const lowerNetwork = new Network();
-const lowerNetwork = new Network({ pairBinding: true });
-// const upperNetwork = new Network();
-const upperNetwork = new Network({ pairBinding: true });
-const registry = new Registry();
+Network.$.router.useBatchProcess();
+// Network.$.bus.useRealTimeProcess();
+
+console.log(Network.$.router.id);
+
+const e1 = new Emitter();
+const e2 = new Emitter();
 
 const map = new Map();
-map.set(lowerNetwork.id, "LowerNetwork");
-map.set(upperNetwork.id, "UpperNetwork");
-map.set(registry.id, "Registry");
+map.set(e1.id, 1);
+map.set(e2.id, 2);
 
 console.log("------- ID LOOKUP -------")
-console.log(`[LowerNetwork]`, lowerNetwork.id.slice(0, 8))
-console.log(`[UpperNetwork]`, upperNetwork.id.slice(0, 8))
-console.log(`[Registry]`, registry.id.slice(0, 8))
+console.log(`[e1]`, e1.id.slice(0, 8))
+console.log(`[e2]`, e2.id.slice(0, 8))
 
-Emitter.Factory({
-    amount: 5,
-    each: (emitter, i) => {
-        registry.register(emitter, `emitter${ i }`);
-        lowerNetwork.join(emitter);
-        
-        map.set(emitter.id, `Emitter${ i }`);
+Network.$.router.createContexts([
+    [ "default", {
+        globals: GLOBALS,
+        handlers: {
+            "*": function(event, args, globals) { console.log(`[Default*]:`, consoleProcessor(this)) },
+            // dog: function(args, globals) { console.log(`[Default*]:`, consoleProcessor(this)) },
+            cat: function(args, globals) {
+                console.log(`[Default]:`, consoleProcessor(this));
 
-        // emitter.addSubscriber(function(...args) { console.log(`S==> [${ consoleTracer(`Emitter${ i }`, this) }]:`, ...args) });
-        emitter.addHandler("*", function(...args) { console.log(`*==> [${ consoleTracer(`Emitter${ i }`, this) }]:`, ...args) });
-        
-        console.log(`[Emitter${ i }]`, emitter.id.slice(0, 8));
+                e1.$.emit("fish1", 5);
+                e2.$.emit("fish2", 6);
+            },
+        },
+        isBatchProcess: true,
+        // isBatchProcess: false,
+    }],
+    [ "context1", {
+        globals: GLOBALS,
+        handlers: {
+            "*": function(event, args, globals) { console.log(`[Context-1*]:`, consoleProcessor(this)) },
+        },
+        isBatchProcess: true,
+        // isBatchProcess: false,
+    }],
+    [ "context2", {
+        globals: GLOBALS,
+        handlers: {
+            "*": function(event, args, globals) { console.log(`[Context-2*]:`, consoleProcessor(this)) },
+        },
+        isBatchProcess: true,
+        // isBatchProcess: false,
+    }],
+]);
+
+Network.$.router.createRoutes([
+    payload => {
+        if(payload.emitter.id === e1.id) {
+            return [ "default", "context1" ];
+        } else if(payload.emitter.id === e2.id) {
+            return [ "default", "context2" ];
+        }
     },
-});
+    () => "default",
+]);
 
-upperNetwork.join(lowerNetwork);
-// lowerNetwork.join(upperNetwork);    //! TEST:   This circular loop should NOT break this, due to provenance
+Network.$.fire("bunnies", 432);
 
-console.log("--------------------")
+console.warn("----- Begin Emitting -----");
 
-// lowerNetwork.addSubscriber(function(...args) { console.log(`S==> [${ consoleTracer(`LowerNetwork`, this) }]:`, ...args) });
-// upperNetwork.addSubscriber(function(...args) { console.log(`S==> [${ consoleTracer(`UpperNetwork`, this) }]:`, ...args) });
-lowerNetwork.addHandler("*", function(...args) { console.log(`*==> [${ consoleTracer(`LowerNetwork`, this) }]:`, ...args) });
-upperNetwork.addHandler("*", function(...args) { console.log(`*==> [${ consoleTracer(`UpperNetwork`, this) }]:`, ...args) });
+e1.$.emit("cat", 1);
+e1.$.emit("dog", 2);
+e2.$.emit("cat", 3);
+e2.$.emit("dog", 4);
 
-for(let emitter of registry) {
-    console.log(`=>`, map.get(emitter.id))
-    emitter.$.emit("jkhasdfkjhd", Math.random());
-    console.log("---")
-}
+console.warn("----- Begin Processing -----");
+Network.$.router.process();
 
-console.log("--------------------")
-lowerNetwork.fire("cats", Date.now())
+console.log(Network.$)
 
-// let network = lowerNetwork;
-// // let network = upperNetwork;
 
-// for(let emitter of network) {
-//     console.log(`=>`, map.get(emitter.id))
-//     emitter.$.emit("test", Math.random());
-//     console.log("---")
-// }
 
-// console.log("----------")
-// for(let emitter of network) {
-//     console.log(`=>`, map.get(emitter.id))
-//     emitter.$.emit("cats", Math.random());
-//     console.log("---")
-// }
+
+
+
+// Network.$.bus.createContexts([
+//     [ "default", {
+//         globals: GLOBALS,
+//         handlers: {
+//             dog: (payload, args, globals) => console.log(`[Default]:`, payload, args, globals),
+//             cat: (payload, [ first ], { Cats, enqueue }) => {
+//                 console.log(`[Default]:`, payload, first, Cats, enqueue);
+
+//                 e1.$.emit("fish", 89742341);
+//                 e2.$.emit("fish", 89742341);
+//             },
+//         }
+//     }],
+//     [ "context1", {
+//         globals: GLOBALS,
+//         handlers: {
+//             "*": (payload, args, globals) => console.log(`[Context-1]:`, payload, args, globals),
+//             // cat: (payload, args, globals) => console.log(`[Context-1]:`, payload, args, globals),
+//         }
+//     }],
+//     [ "context2", {
+//         globals: GLOBALS,
+//         handlers: {
+//             "*": (payload, args, globals) => console.log(`[Context-2]:`, payload, args, globals),
+//             // dog: (payload, args, globals) => console.log(`[Context-2]:`, payload, args, globals),
+//         }
+//     }],
+// ]);
+
+// Network.$.bus.router.createRoutes([
+//     payload => {
+//         if(payload.emitter.id === e1.id) {
+//             // return "context1";
+//             return [ "default", "context1" ];
+//         } else if(payload.emitter.id === e2.id) {
+//             return "context2";
+//         }
+//     },
+//     () => "default",
+// ]);
+
+// console.warn("----- Begin Emitting -----");
+
+// e1.$.emit("cat", 123);
+// e1.$.emit("dog", 123);
+// e2.$.emit("cat", 234);
+// e2.$.emit("dog", 234);
+
+// console.warn("----- Begin Processing -----");
+// Network.$.bus.process();
+
+
+
+
+
+
+
+// console.log(Network.$.bus);
+// console.log(Network.$.bus.id);
+
+// const globalObj = {
+//     Cats: 2,
+// };
+// Network.$.bus.createContexts([
+//     [ "test", {
+//         globals: globalObj
+//     }],
+// ]);
+
+// console.log(Network.$.bus);
+// console.log(Network.$.bus.test);
+// console.log(Network.$.bus.test.globals);
+
+// const e1 = new Emitter();
+// e1.addHandler("*", function(...args) { return Network.$.bus.test.bus(this, ...Network.$.bus.test); });
+
+// Network.$.bus.joinContext("test", e1, "sobriquet");
+
+// console.log(Network.$.bus.test)
+// console.log(Network.$.bus.test.sobriquet)
+
+// e1.$.emit("cat", 123);
+// e1.$.emit("cat", 123);
+// e1.$.emit("cat", 123);
+
+// Network.$.bus.test.process();

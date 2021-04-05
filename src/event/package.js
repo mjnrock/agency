@@ -1,13 +1,11 @@
 import Emitter from "./Emitter";
-import Network from "./Network";
-import Router from "./Router";
 import Context from "./Context";
-import EventBus from "./EventBus";
+import Router from "./Router";
+import Network from "./Network";
 
 export default {
     Emitter,
-    Network,
-    EventBus,
     Context,
     Router,
+    Network,
 };
