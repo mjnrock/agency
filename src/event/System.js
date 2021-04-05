@@ -7,13 +7,13 @@ import Network from "./Network";
  *      be registered to <System> with the synonym "default".
  * 
  * In order to properly utilize a multi-network system, overwrite
- *      the System.Middleware method to introduce qualifying
+ *      the << System.Middleware >> method to introduce qualifying
  *      behavior that will appropriately register each newly
  *      instantiated <Emitter> to its appropriate <Network>.
  */
 export class System extends Registry {
     static Instance = new System();
-    static Middleware = emitter => Network.$.join(emitter);
+    static Middleware = emitter => Network.Middleware(emitter);
 
     constructor() {
         super();
