@@ -1,4 +1,5 @@
 import Registry from "../Registry";
+import Context from "./Context";
 import Router from "./Router";
 
 export class Network extends Registry {
@@ -29,6 +30,16 @@ export class Network extends Registry {
         this.cache = new WeakMap();
         // create event routing contexts with qualifier functions to in/exclude events
         this.router = new Router();
+    }
+
+    share(nameOrContext, payload, ...args) {
+        const context = this.router[ nameOrContext ];
+
+        if(context instanceof Context) {
+            context.bus(payload, ...args);
+        }
+
+        return this;
     }
 
     /**
@@ -73,6 +84,13 @@ export class Network extends Registry {
      */
     route(payload, ...args) {
         this.router.route(payload, ...args);
+    }
+
+    /**
+     * Invoke << .process >> on all <Context(s)>
+     */
+    processAll() {
+        this.router.process();
     }
     
     /**
