@@ -6,9 +6,9 @@ import EventBus from "./EventBus";
 
 import { compose } from "./../util/helper";
 
-export const EmitterBase = compose($EventReceiver, $EventSender)(AgencyBase);
+export const EmitterBase = (...mixins) => compose(...mixins, $EventReceiver, $EventSender)(AgencyBase);
 
-export class Emitter extends EmitterBase {
+export class Emitter extends EmitterBase() {
     constructor(handlers = {}, { relay, filter, injectMiddleware = true } = {}) {
         super({
             EventReceiver: {
