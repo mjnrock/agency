@@ -4,7 +4,8 @@ import Network from "./Network";
 /**
  * <System> is to be used in cases where multiple <Network(s)>
  *      are needed.  By default, the singleton <Network> will
- *      be registered to <System> with the synonym "default".
+ *      be registered to the singleton <System> with the
+ *      synonym "default" (cf. line 27).
  * 
  * In single-network situations, <System> will never be used
  *      in any meaningful way--though it will have a singleton
