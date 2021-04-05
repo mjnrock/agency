@@ -1,6 +1,6 @@
 import { performance } from "perf_hooks";
 
-import Network from "../../src/event/Network";
+import System from "../../src/event/System";
 import Emitter from "../../src/event/Emitter";
 
 function consoleProcessor(payload) {
@@ -14,10 +14,10 @@ const GLOBALS = {
     Cats: 2,
 };
 
-Network.$.router.useBatchProcess();
-// Network.$.bus.useRealTimeProcess();
+System.$.router.useBatchProcess();
+// System.$.bus.useRealTimeProcess();
 
-console.log(Network.$.router.id);
+console.log(System.$.router.id);
 
 const e1 = new Emitter();
 const e2 = new Emitter();
@@ -30,7 +30,7 @@ console.log("------- ID LOOKUP -------")
 console.log(`[e1]`, e1.id.slice(0, 8))
 console.log(`[e2]`, e2.id.slice(0, 8))
 
-Network.$.router.createContexts([
+System.$.router.createContexts([
     [ "default", {
         globals: GLOBALS,
         handlers: {
@@ -64,7 +64,7 @@ Network.$.router.createContexts([
     }],
 ]);
 
-Network.$.router.createRoutes([
+System.$.router.createRoutes([
     payload => {
         if(payload.emitter.id === e1.id) {
             return [ "default", "context1" ];
@@ -75,7 +75,7 @@ Network.$.router.createRoutes([
     () => "default",
 ]);
 
-Network.$.fire("bunnies", 432);
+System.$.fire("bunnies", 432);
 
 console.warn("----- Begin Emitting -----");
 
@@ -85,16 +85,16 @@ e2.$.emit("cat", 3);
 e2.$.emit("dog", 4);
 
 console.warn("----- Begin Processing -----");
-Network.$.router.process();
+System.$.router.process();
 
-console.log(Network.$)
-
-
+console.log(System.$)
 
 
 
 
-// Network.$.bus.createContexts([
+
+
+// System.$.bus.createContexts([
 //     [ "default", {
 //         globals: GLOBALS,
 //         handlers: {
@@ -123,7 +123,7 @@ console.log(Network.$)
 //     }],
 // ]);
 
-// Network.$.bus.router.createRoutes([
+// System.$.bus.router.createRoutes([
 //     payload => {
 //         if(payload.emitter.id === e1.id) {
 //             // return "context1";
@@ -143,7 +143,7 @@ console.log(Network.$)
 // e2.$.emit("dog", 234);
 
 // console.warn("----- Begin Processing -----");
-// Network.$.bus.process();
+// System.$.bus.process();
 
 
 
@@ -151,32 +151,32 @@ console.log(Network.$)
 
 
 
-// console.log(Network.$.bus);
-// console.log(Network.$.bus.id);
+// console.log(System.$.bus);
+// console.log(System.$.bus.id);
 
 // const globalObj = {
 //     Cats: 2,
 // };
-// Network.$.bus.createContexts([
+// System.$.bus.createContexts([
 //     [ "test", {
 //         globals: globalObj
 //     }],
 // ]);
 
-// console.log(Network.$.bus);
-// console.log(Network.$.bus.test);
-// console.log(Network.$.bus.test.globals);
+// console.log(System.$.bus);
+// console.log(System.$.bus.test);
+// console.log(System.$.bus.test.globals);
 
 // const e1 = new Emitter();
-// e1.addHandler("*", function(...args) { return Network.$.bus.test.bus(this, ...Network.$.bus.test); });
+// e1.addHandler("*", function(...args) { return System.$.bus.test.bus(this, ...System.$.bus.test); });
 
-// Network.$.bus.joinContext("test", e1, "sobriquet");
+// System.$.bus.joinContext("test", e1, "sobriquet");
 
-// console.log(Network.$.bus.test)
-// console.log(Network.$.bus.test.sobriquet)
+// console.log(System.$.bus.test)
+// console.log(System.$.bus.test.sobriquet)
 
 // e1.$.emit("cat", 123);
 // e1.$.emit("cat", 123);
 // e1.$.emit("cat", 123);
 
-// Network.$.bus.test.process();
+// System.$.bus.test.process();
