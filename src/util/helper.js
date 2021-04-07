@@ -5,10 +5,10 @@ export function compose(...fns) {
     return args => fns.reduceRight((arg, fn) => fn(arg), args);
 };
 
-export function flatten(obj, { chain = "", asArray = false } = {}) {
+export function flatten(obj, { chain = "", asArray = false, joiner = "." } = {}) {
     let result = {};
     for(let [ key, entry ] of Object.entries(obj)) {
-        let newKey = chain.length ? `${ chain }.${ key }` : key;
+        let newKey = chain.length ? `${ chain }${ joiner }${ key }` : key;
 
         if(typeof entry === "object" && !Array.isArray(entry)) {
             result = {
@@ -25,6 +25,37 @@ export function flatten(obj, { chain = "", asArray = false } = {}) {
     }
 
     return result;
+};
+export function unflatten(obj, { splitter = "." } = {}) {    
+    const nester = (chain = [], parent = {}, entry) => {
+        if(chain.length > 1) {
+            let newKey = chain.shift();
+            parent[ newKey ] = {
+                ...(parent[ newKey ] || {}),
+                ...nester(chain, parent[ newKey ], entry),
+            }
+        } else {
+            parent[ chain.shift() ] = entry;
+        }
+
+        return parent;
+    };
+
+    if(Array.isArray(obj)) {
+        obj = Object.fromEntries(obj);
+    }
+
+    if(typeof obj === "object") {
+        let result = {};
+
+        for(let [ key, entry ] of Object.entries(obj)) {
+            result = nester(key.split(splitter), result, entry);
+        }
+
+        return result;
+    }
+
+    return obj;
 };
 
 export function seedObject(keys = [], fn = () => null) {
@@ -100,6 +131,8 @@ export function extendJavascript() {
 export default {
     pipe,
     compose,
+    flatten,
+    unflatten,
     seedObject,
     round,
     clamp,

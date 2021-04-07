@@ -1,4 +1,4 @@
-import { flatten } from "./../../src/util/helper";
+import { flatten, unflatten } from "./../../src/util/helper";
 
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
@@ -11,7 +11,23 @@ const obj = {
         yeah: "k",
     },
     cheese: "fish",
+    tier1: {
+        bv: 9,
+        tier2: {
+            tier3: {
+                a: 6
+            }
+        },
+    },
 };
 
-console.log(flatten(obj))
-console.log(flatten(obj, { asArray: true }));
+const flattenedObj = flatten(obj);
+const flattenedArr = flatten(obj, { asArray: true });
+
+const unflattenedObj = unflatten(flattenedObj);
+const unflattenedArr = unflatten(flattenedArr);
+
+console.log(flattenedObj);
+console.log(flattenedArr);
+console.log(unflattenedObj);
+console.log(unflattenedArr);
