@@ -5,6 +5,28 @@ export function compose(...fns) {
     return args => fns.reduceRight((arg, fn) => fn(arg), args);
 };
 
+export function flatten(obj, { chain = "", asArray = false } = {}) {
+    let result = {};
+    for(let [ key, entry ] of Object.entries(obj)) {
+        let newKey = chain.length ? `${ chain }.${ key }` : key;
+
+        if(typeof entry === "object" && !Array.isArray(entry)) {
+            result = {
+                ...result,
+                ...flatten(entry, { chain: newKey }),
+            }
+        } else {
+            result[ newKey ] = entry;
+        }
+    }
+
+    if(asArray) {
+        return Object.entries(result);
+    }
+
+    return result;
+};
+
 export function seedObject(keys = [], fn = () => null) {
     const obj = {};
     for (let key of keys) {
