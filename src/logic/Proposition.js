@@ -1,163 +1,139 @@
-import Mutator from "./Mutator";
-
-import Bitwise from "../util/Bitwise";
-
-export const EnumPropositionType = {
-    OR: 2 << 0,
-    NOT: 2 << 1,
-};
+import Bitwise from "./../util/Bitwise";
 
 export class Proposition {
-    constructor(type, ...evaluators) {
-        this.__type = type;
-        this.__evaluators = evaluators;
-    }
+    static EnumFlags = {
+        NOT: 2 << 1,
+        AND: 2 << 2,
+    };
 
-    get isOr() {
-        return Bitwise.has(this.__type, EnumPropositionType.OR);
-    }
-    get isAnd() {
-        return !Bitwise.has(this.__type, EnumPropositionType.OR);
-    }
-    get isNot() {
-        return Bitwise.has(this.__type, EnumPropositionType.NOT);
-    }
-    get isNor() {
-        return Bitwise.has(this.__type, EnumPropositionType.NOT, EnumPropositionType.OR);
-    }
-    get isNand() {
-        return Bitwise.has(this.__type, EnumPropositionType.NOT, EnumPropositionType.AND);
+    constructor(props = [], flags = []) {
+        this.mask = Bitwise.add(0, ...flags);
+        this.props = props;
     }
 
     test(...args) {
-        const results = [];
-        for(let evaluator of this.__evaluators) {
-            if(typeof evaluator === "function") {
-                results.push(evaluator(...args));
-            } else if(evaluator instanceof Proposition) {
-                results.push(evaluator.test(...args));
-            } else if(evaluator instanceof Mutator) {
-                results.push(evaluator.process(...args));
+        let bool;
+        if(Bitwise.has(this.mask, Proposition.EnumFlags.AND)) {
+            bool = true;
+            for(let prop of this.props) {
+                if(typeof prop === "function") {
+                    bool = bool && prop(...args);
+                } else if(prop instanceof Proposition) {
+                    bool = bool && prop.test(...args);
+                } else {
+                    bool = bool && !!prop;
+                }
+            }
+        } else {
+            bool = false;
+            for(let prop of this.props) {
+                if(typeof prop === "function") {
+                    bool = bool || prop(...args);
+                } else if(prop instanceof Proposition) {
+                    bool = bool || prop.test(...args);
+                } else {
+                    bool = bool || !!prop;
+                }
+            }
+        }
+        
+        if(Bitwise.has(this.mask, Proposition.EnumFlags.NOT)) {
+            return !bool;
+        }
+
+        return bool;
+    }
+
+    add(...props) {
+        this.props.push(...props);
+
+        return this;
+    }
+    remove(...props) {
+        this.props = this.props.filter(p => !props.includes(p));
+
+        return this;
+    }
+
+    toObject() {
+        let obj = {
+            type: Bitwise.has(this.mask, Proposition.EnumFlags.AND) ? "and" : "or",
+            props: this.props.map(p => {
+                if(p instanceof Proposition) {
+                    return p.toObject();
+                }
+
+                return p;
+            }),
+        };
+        
+        obj.type = Bitwise.has(this.mask, Proposition.EnumFlags.NOT) ? `n${ obj.type }` : obj.type;
+
+        return obj;
+    }
+    toJson() {
+        return JSON.stringify(this.toObject());
+    }
+
+    static FromObject(obj = {}) {
+        const proposition = new Proposition();
+
+        if(obj.type === "or") {
+            proposition.mask = 0;
+        } else if(obj.type === "and") {
+            proposition.mask = Bitwise.add(0, Proposition.EnumFlags.AND);
+        } else if(obj.type === "nor") {
+            proposition.mask = Bitwise.add(0, Proposition.EnumFlags.NOT);
+        } else if(obj.type === "nand") {
+            proposition.mask = Bitwise.add(0, Proposition.EnumFlags.AND, Proposition.EnumFlags.NOT);
+        }
+
+        for(let prop of obj.props) {
+            if(typeof prop === "object" && (
+                "type" in prop
+                && "isNegation" in prop
+                && "props" in prop
+            )) {
+                proposition.add(Proposition.FromObject(prop));
+            } else {
+                proposition.add(prop);
             }
         }
 
-        let result;
-        if(this.isAnd) {
-            result = results.every(v => v === true);
-        } else {
-            result = results.some(v => v === true);
-        }
-        
-        if(this.isNot) {
-            result = !result;
-        }
+        return proposition;
+    }
+    static FromJson(json = "") {
+        try {
+            let obj = json;
+            while(typeof obj === "string" || obj instanceof String) {
+                obj = JSON.parse(obj);
+            }
 
-        return result;
+            return Proposition.FromObject(obj);
+        } catch(e) {
+            return false;
+        }
+    }
+
+    static OR(...props) {
+        return new Proposition(props);
+    }
+    static AND(...props) {
+        return new Proposition(props, [
+            Proposition.EnumFlags.AND,
+        ]);
+    }
+    static NOR(...props) {
+        return new Proposition(props, [
+            Proposition.EnumFlags.NOT,
+        ]);
+    }
+    static NAND(...props) {
+        return new Proposition(props, [
+            Proposition.EnumFlags.AND,
+            Proposition.EnumFlags.NOT,
+        ]);
     }
 };
-
-export function OR(...evaluators) {
-    return new Proposition(EnumPropositionType.OR, ...evaluators);
-}
-export function AND(...evaluators) {
-    return new Proposition(EnumPropositionType.AND, ...evaluators);
-}
-export function NOT(...evaluators) {
-    return new Proposition(EnumPropositionType.NOT, ...evaluators);
-}
-export function NOR(...evaluators) {
-    return new Proposition(EnumPropositionType.OR | EnumPropositionType.NOT, ...evaluators);
-}
-export function NAND(...evaluators) {
-    return new Proposition(EnumPropositionType.AND | EnumPropositionType.NOT, ...evaluators);
-}
-
-export function IsGT(num) {
-    return Proposition.OR((no, ...args) => no > num);
-}
-export function IsGTE(num) {
-    return Proposition.OR((no, ...args) => no >= num);
-}
-export function IsLT(num) {
-    return Proposition.OR((no, ...args) => no < num);
-}
-export function IsLTE(num) {
-    return Proposition.OR((no, ...args) => no <= num);
-}
-export function IsBetween(min, max) {
-    return Proposition.OR((no, ...args) => no >= min && no <= max);
-}
-
-export function IsPrimitiveType(type) {
-    return Proposition.OR((input, ...args) => typeof input === type);
-}
-export function IsString() {
-    return Proposition.OR((input, ...args) => typeof input === "string" || input instanceof String);
-}
-export function IsNumber() {
-    return Proposition.OR((input, ...args) => typeof input === "number");
-}
-export function IsBoolean() {
-    return Proposition.OR((input, ...args) => typeof input === "boolean");
-}
-export function IsTrue() {
-    return Proposition.OR((input, ...args) => input === true);
-}
-export function IsFalse() {
-    return Proposition.OR((input, ...args) => input === false);
-}
-export function IsFunction() {
-    return Proposition.OR((input, ...args) => typeof input === "function");
-}
-export function IsArray() {
-    return Proposition.OR((input, ...args) => Array.isArray(input));
-}
-export function IsObject() {
-    return Proposition.OR((input, ...args) => typeof input === "object");
-}
-export function HasProps(...props) {
-    return Proposition.OR((input, ...args) => typeof input === "object" && props.every(prop => prop in input));
-}
-export function Match(regexp) {
-    return Proposition.OR((input, ...args) => regexp.test(input));
-}
-
-export function InstanceOf(clazz) {
-    return Proposition.OR((input, ...args) => input instanceof clazz);
-}
-export function IsProposition() {
-    return Proposition.OR((input, ...args) => input instanceof Proposition);
-}
-export function IsMutator() {
-    return Proposition.OR((input, ...args) => input instanceof Mutator);
-}
-
-Proposition.OR = OR;
-Proposition.AND = AND;
-Proposition.NOT = NOT;
-Proposition.NOR = NOR;
-Proposition.NAND = NAND;
-
-Proposition.IsGT = IsGT;
-Proposition.IsGTE = IsGTE;
-Proposition.IsLT = IsLT;
-Proposition.IsLTE = IsLTE;
-Proposition.IsBetween = IsBetween;
-
-Proposition.IsPrimitiveType = IsPrimitiveType;
-Proposition.IsString = IsString;
-Proposition.IsNumber = IsNumber;
-Proposition.IsBoolean = IsBoolean;
-Proposition.IsTrue = IsTrue;
-Proposition.IsFalse = IsFalse;
-Proposition.IsFunction = IsFunction;
-Proposition.IsArray = IsArray;
-Proposition.IsObject = IsObject;
-Proposition.HasProps = HasProps;
-Proposition.Match = Match;
-
-Proposition.InstanceOf = InstanceOf;
-Proposition.IsProposition = IsProposition;
-Proposition.IsMutator = IsMutator;
 
 export default Proposition;

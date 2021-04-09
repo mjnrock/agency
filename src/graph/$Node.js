@@ -13,12 +13,12 @@ export const $Node = $super => class extends $super {
         }
     }
 
-    request(data) {
+    request(...args) {
         for(let edge of this.edges) {
-            edge.request(this, data);
+            edge.request(this, ...args);
         }
     }
-    respond(data) {
+    respond(state, ...args) {
         return this;
     }
     response(node) {

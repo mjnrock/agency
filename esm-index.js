@@ -24,4 +24,6 @@ require = require("esm")(module/*, options*/)
 
 // module.exports = require("./tests/util/helper.js");
 
-module.exports = require("./tests/graph/node");
+// module.exports = require("./tests/graph/node.js");
+
+module.exports = require("./tests/logic/proposition.js");
