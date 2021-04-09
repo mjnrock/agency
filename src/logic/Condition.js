@@ -6,23 +6,19 @@ export class Condition {
         this.consequent = fn;
     }
 
-    test(ifArgs = [], thenArgs = [], { returnResult = false } = {})  {
-        let bool = false;
-
-        if(typeof this.antecedent === "function" && this.antecedent(...ifArgs) === true) {
-            bool = true;
-        } else if(this.antecedent instanceof Proposition && this.antecedent.test(...ifArgs) === true) {
-            bool = true;
-        }
-        
-        if(bool === true) {
-            let result = this.consequent(...thenArgs);
-            if(returnResult) {
-                return result;
-            }
+    test(...args)  {
+        if(typeof this.antecedent === "function" && this.antecedent(...args) === true) {
+            return true;
+        } else if(this.antecedent instanceof Proposition && this.antecedent.test(...args) === true) {
+            return true;
         }
 
-        return bool;
+        return false;
+    }
+    attempt(ifArgs = [], thenArgs = []) {
+        if(this.test(...ifArgs) === true) {
+            return this.consequent(...thenArgs);
+        }
     }
 
     toObject() {

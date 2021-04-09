@@ -18,9 +18,9 @@ const c1 = new Condition(
 );
 
 console.log(c1.test());
-console.log(c1.test([],[],{ returnResult: true }));
+console.log(c1.attempt());
 
 console.log(c1.toObject());
 console.log(c1.toJson());
 console.log(Condition.FromObject(c1.toObject()).test());
-console.log(Condition.FromJson(c1.toJson()).test([],[],{ returnResult: true }));
+console.log(Condition.FromJson(c1.toJson()).attempt());
