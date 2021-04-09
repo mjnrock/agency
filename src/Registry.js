@@ -20,6 +20,10 @@ export const $Registry = $super => class extends $super {
             },
             set(target, prop, value) {
                 if (validate(prop)) {        // assignment
+                    if(typeof Registry.typed === "function" && Registry.typed(prop, value, target[ prop ]) !== true) {
+                        return target;
+                    }
+                    
                     return Reflect.defineProperty(target, prop, {
                         value,
                         configurable: true,
@@ -145,6 +149,10 @@ export const $Registry = $super => class extends $super {
 
 export class Registry extends compose($Registry)(AgencyBase) {
     static Instances = new Registry();
+    constructor(opts = {}) {
+        super(opts);
+    }
+    
     /**
      * A convenience getter to easily access a default <Registry>
      *  when a multi-Registry setup is unnecessary.
