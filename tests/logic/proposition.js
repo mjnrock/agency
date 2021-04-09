@@ -1,4 +1,4 @@
-import Proposition from "./../../src/logic/Proposition";
+import Proposition from "../../src/logic/Proposition";
 
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
