@@ -3,6 +3,19 @@ import { v4 as uuidv4, validate } from "uuid";
 import AgencyBase from "./AgencyBase";
 import { compose } from "./util/helper";
 
+/**
+ * NOTE:    Only *actual* entries will appear if you enumerate @this, and as such, the <$Registry>
+ *          can be used as a value iterator.  Accessing the registry via a synonym will return the
+ *          referential entry, if it exists.
+ * 
+ * Origin-Only Variables
+ * ---------------------------------
+ *  The variables below can only be set during instantiation of <$Registry>
+ * 
+ * @typed {?fn} | A set trap that must be true to proceed (e.g. instanceof ClassX)
+ * @accessor {?fn} | A get trap that will accept the entry as its args --> fn(target[ prop ]) (e.g. factory methods)
+ *  - @accessorArgs {?obj} | Include additional arguments to be passed to the @accessor into perpetuity
+ */
 export const $Registry = $super => class extends $super {
     constructor({ Registry = {}, ...rest } = {}) {
         super({ ...rest });
@@ -12,6 +25,15 @@ export const $Registry = $super => class extends $super {
 
         const proxy = new Proxy(this, {
             get(target, prop) {
+                if(typeof Registry.accessor === "function") {                
+                    if(prop in target) {
+                        return Registry.accessor(Reflect.get(target, prop), Registry.accessorArgs || {});
+                    }
+    
+                    
+                    return Registry.accessor(Reflect.get(target.__state, prop), Registry.accessorArgs || {});
+                }
+                
                 if(prop in target) {
                     return Reflect.get(target, prop);
                 }
@@ -63,11 +85,11 @@ export const $Registry = $super => class extends $super {
     }
     
     /**
-     * ! [Special Case]:    <Registry> iteration is VALUES ONLY, because the UUID is internal.
+     * ! [Special Case]:    <Registry> iteration is VALUES ONLY, because the UUID is internal and synonyms are virtualized.
      */
     [ Symbol.iterator ]() {
         var index = -1;
-        var data = Object.keys(this).reduce((a, k) => k !== "state" ? [ ...a, this[ k ] ] : a, []);
+        var data = Object.values(this);
 
         return {
             next: () => ({ value: data[ ++index ], done: !(index in data) })

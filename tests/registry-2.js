@@ -12,13 +12,17 @@ const reg = new Registry({
     }
 });
 
-// console.log(reg);
-
 reg.register(1, "a");
 reg.register("2", "b");
 
 console.log(111, reg.a)
 console.log(111, reg.b)
+
+console.log(reg);
+
+for(let value of reg) {
+    console.log(value)
+}
 
 
 
