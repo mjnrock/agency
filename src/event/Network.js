@@ -92,6 +92,12 @@ export class Network extends Registry {
     processAll() {
         this.router.process();
     }
+    /**
+     * Invoke << .drop >> on all <Context(s)>
+     */
+    emptyAll() {
+        this.router.empty();
+    }
     
     /**
      * Cause every <Emitter> member of the <Network> to

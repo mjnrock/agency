@@ -214,6 +214,29 @@ export class Router extends compose($Registry, $Router)(AgencyBase) {
 
         return this;
     }
+    /**
+     * Invoke the << .drop >> command on all <Context(s)>
+     *  to create a linear execution chain.
+     */
+    empty(contexts = []) {
+        if(contexts.length === 0) {
+            for(let context of this) {
+                context.empty();
+            }
+
+            return this;
+        }
+
+        for(let nameOrContext of contexts) {
+            const context = this[ nameOrContext ];
+
+            if(context instanceof Context) {
+                context.empty();
+            }
+        }
+
+        return this;
+    }
 };
 
 export default Router;

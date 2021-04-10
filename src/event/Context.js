@@ -81,6 +81,11 @@ export class Context extends Registry {
 
         return this;
     }
+    empty() {
+        this.queue = [];
+
+        return this;
+    }
 
 
     /**
