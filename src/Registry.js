@@ -83,6 +83,20 @@ export const $Registry = $super => class extends $super {
     get state() {
         return this.__state;
     }
+
+    get size() {
+        return Object.keys(this).length;
+    }
+
+    has(entry) {
+        for(let value of this) {
+            if(value === entry) {
+                return true;
+            }
+        }
+
+        return false;
+    }
     
     /**
      * ! [Special Case]:    <Registry> iteration is VALUES ONLY, because the UUID is internal and synonyms are virtualized.

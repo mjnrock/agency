@@ -22,6 +22,7 @@ export class Network extends Registry {
      */
     static Instances = new Registry();
     static Middleware = emitter => Network.$.join(emitter);
+    static Cleanup = emitter => Network.$.leave(emitter);
 
     constructor() {
         super();

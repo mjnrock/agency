@@ -31,6 +31,7 @@ export class Emitter extends EmitterBase() {
 
         if(injectMiddleware) {
             Network.Middleware(this);
+            this.__deconstructor = () => Network.Cleanup(this);
         }
     }
 
@@ -51,6 +52,8 @@ export class Emitter extends EmitterBase() {
             || ((typeof input === "string" || input instanceof String) && this.id === input)
             || (typeof input === "object" && (this.id === input.id || this.id === input._id || this.id === input.__id));
     }
+
+    __deconstructor() {};
 };
 
 export async function Factory({ amount = 1, argsFn, each } = {}) {
