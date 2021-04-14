@@ -5,7 +5,7 @@ export const $EventSender = $super => class extends $super {
         super({ ...rest });
 
         this.__subscribers = new Set();
-        this.__relay = typeof EventSender.relay === "function" ? EventSender.relay : (() => false);      // A bubbling function that decides whether or not the event should get bubbled ALSO        
+        this.__relay = typeof EventSender.relay === "function" ? EventSender.relay : (() => false);      // A bubbling function that decides whether or not the event should get bubbled ALSO
     }
 
     get subscribers() {

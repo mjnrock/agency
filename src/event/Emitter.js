@@ -18,7 +18,7 @@ export class Emitter extends EmitterBase() {
         return Emitter.Instance;
     }
 
-    constructor(handlers = {}, { relay, filter, injectMiddleware = true } = {}) {
+    constructor(handlers = {}, { relay, filter, injectMiddleware = false } = {}) {
         super({
             EventReceiver: {
                 filter,

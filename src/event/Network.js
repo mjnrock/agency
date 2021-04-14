@@ -143,6 +143,7 @@ export class Network extends Registry {
 
         if(createDefault) {
             Network.Instances.register(new Network(), "default");
+            Network.Instances.register(new Network(), "agency");
         }
     }
 };
