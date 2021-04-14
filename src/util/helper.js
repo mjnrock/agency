@@ -83,10 +83,29 @@ export function seedObject(keys = [], fn = () => null) {
 /**
  * ! This may produce shallowly-unantipicated rounding calculations.  (cf. Math.round for nuances)
  */
+// console.log(round(15.5498, 10))  // e.v. 15.5, not 15.6
 export function round(number, scalar = 10) {
     return Math.round((number + Number.EPSILON) * scalar) / scalar;     // Number.EPSILON ensures e.g. round(1.005, 100) --> 1.01
 };
-// console.log(round(15.5498, 10))  // e.v. 15.5, not 15.6
+export function floor(number, scalar = 10) {
+    return Math.floor((number + Number.EPSILON) * scalar) / scalar;     // Number.EPSILON ensures e.g. round(1.005, 100) --> 1.01
+};
+export function ceil(number, scalar = 10) {
+    return Math.ceil((number + Number.EPSILON) * scalar) / scalar;     // Number.EPSILON ensures e.g. round(1.005, 100) --> 1.01
+};
+
+export function between(number, min, max, inclusive = true) {
+    if(inclusive) {
+        return number >= min && number <= max;
+    }
+    
+    return number > min && number < max;
+};
+export function near(number, scalar, moe = 0) {
+    let num = round(number, scalar);
+
+    return between(num, num - moe, num + moe);
+};
 
 export function clamp(value, { min, max } = {}) {
     if (arguments.length === 3) {
@@ -135,6 +154,10 @@ export default {
     unflatten,
     seedObject,
     round,
+    floor,
+    ceil,
+    between,
+    near,
     clamp,
 
     extendJavascript,
