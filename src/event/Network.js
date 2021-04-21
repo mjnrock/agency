@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from "uuid";
+
 import Registry from "../Registry";
 import Context from "./Context";
 import Router from "./Router";
@@ -79,6 +81,17 @@ export class Network extends Registry {
         return this;
     }
 
+    invoke(emitter, event, ...args) {
+        const payload = {
+            id: uuidv4(),
+            type: event,
+            data: args,
+            emitter: emitter,
+            provenance: new Set(),
+        };
+
+        this.route(payload, ...args);
+    }
     /**
      * Route a .emit or .asyncEmit event from <Emitter>
      *  to the routing system
