@@ -94,17 +94,24 @@ export function ceil(number, scalar = 10) {
     return Math.ceil((number + Number.EPSILON) * scalar) / scalar;     // Number.EPSILON ensures e.g. round(1.005, 100) --> 1.01
 };
 
-export function between(number, min, max, inclusive = true) {
+export function between(number, min, max, inclusive = true, scalar) {
+    if(scalar != null) {
+        number = round(number, scalar);
+        min = round(min, scalar);
+        max = round(max, scalar);
+    }
+
     if(inclusive) {
         return number >= min && number <= max;
     }
     
     return number > min && number < max;
 };
-export function near(number, scalar, moe = 0) {
+export function near(number, anchor, margin = 0, scalar = 1000) {
     let num = round(number, scalar);
+    let anch = round(anchor, scalar);
 
-    return between(num, num - moe, num + moe);
+    return between(num, anch - margin, anch + margin);
 };
 
 export function clamp(value, { min, max } = {}) {

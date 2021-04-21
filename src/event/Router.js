@@ -19,11 +19,11 @@ export const $Router = $super => class extends $super {
         this.createRoutes(...(Router.routes || []));
     }
 
-    route(payload, ...args) {
+    route(payload) {
         let hasResult = false;
 
         for(let fn of this.__routes) {
-            let results = fn(payload, ...args);
+            let results = fn(payload);
 
             if(!Array.isArray(results)) {
                 results = [ results ];
@@ -33,7 +33,7 @@ export const $Router = $super => class extends $super {
                 const context = this[ result ];
 
                 if(context instanceof Context) {
-                    context.bus(payload, args);
+                    context.bus(payload);
 
                     hasResult = true;
                 }

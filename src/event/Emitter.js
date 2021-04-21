@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from "uuid";
+
 import $EventReceiver from "./$EventReceiver";
 import $EventSender from "./$EventSender";
 
@@ -45,6 +47,43 @@ export class Emitter extends EmitterBase() {
         return {
             next: () => ({ value: data[ ++index ], done: !(index in data) })
         };
+    }
+
+    /**
+     * Invoke an event that will, instead of being emitted, be routed to the internal handlers.
+     * NOTE:    This will **not** invoke subscribers or relays.
+     */
+    invoke(event, ...args) {
+        const payload = {
+            id: uuidv4(),
+            type: event,
+            data: args,
+            emitter: this,
+            provenance: new Set(),
+        };
+
+        if(typeof this.__filter === "function" && this.__filter.call(payload, ...args) === true) {
+            const receivers = this.__handlers[ "*" ] || [];
+            for(let receiver of receivers) {
+                if(typeof receiver === "function") {
+                    receiver.call(payload, ...args);
+                }
+            }
+            
+            const handlers = this.__handlers[ event ] || [];
+            for(let handler of handlers) {
+                if(typeof handler === "function") {
+                    handler.call(payload, ...args);
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+    async asyncInvoke(event, ...args) {
+        return Promise.resolve(this.invoke(event, ...args));
     }
 
     is(input) {

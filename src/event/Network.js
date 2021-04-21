@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import Registry from "../Registry";
 import Context from "./Context";
+import Emitter from "./Emitter";
 import Router from "./Router";
 
 export class Network extends Registry {
@@ -33,16 +34,6 @@ export class Network extends Registry {
         this.cache = new WeakMap();
         // create event routing contexts with qualifier functions to in/exclude events
         this.router = new Router();
-    }
-
-    share(nameOrContext, payload, ...args) {
-        const context = this.router[ nameOrContext ];
-
-        if(context instanceof Context) {
-            context.bus(payload, ...args);
-        }
-
-        return this;
     }
 
     /**
@@ -81,24 +72,6 @@ export class Network extends Registry {
         return this;
     }
 
-    invoke(emitter, event, ...args) {
-        const payload = {
-            id: uuidv4(),
-            type: event,
-            data: args,
-            emitter: emitter,
-            provenance: new Set(),
-        };
-
-        this.route(payload, ...args);
-    }
-    /**
-     * Route a .emit or .asyncEmit event from <Emitter>
-     *  to the routing system
-     */
-    route(payload, ...args) {
-        this.router.route(payload, ...args);
-    }
 
     /**
      * Invoke << .process >> on all <Context(s)>
@@ -112,6 +85,53 @@ export class Network extends Registry {
     emptyAll() {
         this.router.empty();
     }
+
+
+    /**
+     * Route a .emit or .asyncEmit event from <Emitter>
+     *  to the routing system
+     */
+    route(payload) {
+        this.router.route(payload);
+
+        return this;
+    }
+    /**
+     * Create and route an event with @emitter
+     */
+    emit(emitter, event, ...args) {
+        this.route({
+            id: uuidv4(),
+            type: event,
+            data: args,
+            emitter: emitter,
+            provenance: new Set(),
+        });
+
+        return this;
+    }
+    async asyncEmit(emitter, event, ...args) {
+        return Promise.resolve(this.route({
+            id: uuidv4(),
+            type: event,
+            data: args,
+            emitter: emitter,
+            provenance: new Set(),
+        }));
+    }
+
+    /**
+     * Send the payload to another <Context> directly (i.e. bypass route)
+     */
+    share(nameOrContext, payload) {
+        const context = this.router[ nameOrContext ];
+
+        if(context instanceof Context) {
+            context.bus(payload);
+        }
+
+        return this;
+    }
     
     /**
      * Cause every <Emitter> member of the <Network> to
@@ -119,7 +139,9 @@ export class Network extends Registry {
      */
     fire(event, ...args) {
         for(let emitter of this) {
-            emitter.$.emit(event, ...args);
+            if(emitter instanceof Emitter) {
+                emitter.$.emit(event, ...args);
+            }
         }
 
         return this;
@@ -130,11 +152,14 @@ export class Network extends Registry {
      */
     async asyncFire(event, ...args) {
         for(let emitter of this) {
-            emitter.$.asyncEmit(event, ...args);
+            if(emitter instanceof Emitter) {
+                emitter.$.asyncEmit(event, ...args);
+            }
         }
 
         return this;
     }
+
 
     /**
      * A convenience getter to easily access a default <Network>
@@ -147,6 +172,9 @@ export class Network extends Registry {
 
         return Network.Instances.default;
     }
+    static $$(networkIdOrSyn) {
+        return Network.Instances[ networkIdOrSyn ];
+    }
     
     /**
      * Recreate the .Instances registry with optional seeding
@@ -155,8 +183,8 @@ export class Network extends Registry {
         Network.Instances = new Registry({ Registry: { entries: networks }});
 
         if(createDefault) {
-            Network.Instances.register(new Network(), "default");
             Network.Instances.register(new Network(), "agency");
+            Network.Instances.register(new Network(), "default");
         }
     }
 };

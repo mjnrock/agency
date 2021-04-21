@@ -45,12 +45,12 @@ export class Context extends Registry {
      * The interception function that is used to route an event
      *  to a <Context>
      */
-    bus(payload, args) {
+    bus(payload) {
         if(this.config.isBatchProcess) {
-            return this.enqueue([ payload, args ]);
+            return this.enqueue(payload);
         }
 
-        return this.invokeHandlers(payload, args);
+        return this.invokeHandlers(payload);
     }
 
 
@@ -73,9 +73,9 @@ export class Context extends Registry {
     process() {
         let i = 0;
         while(!this.isEmpty && i < this.config.maxBatchSize) {
-            const [ payload, args ] = this.dequeue();
+            const payload = this.dequeue();
 
-            this.invokeHandlers(payload, args);
+            this.invokeHandlers(payload);
             ++i;
         }
 
@@ -92,7 +92,7 @@ export class Context extends Registry {
      * An extracted invocation method so that << .bus >> can
      *  bypass the queue if in real-time mode.
      */
-    invokeHandlers(payload, args) {        
+    invokeHandlers(payload) {        
         const optionArgs = {
             ...this.globals,
             enqueue: this.enqueue.bind(this),
@@ -102,14 +102,14 @@ export class Context extends Registry {
         const receivers = this.handlers.get("*") || [];
         for(let receiver of receivers) {
             if(typeof receiver === "function") {
-                receiver.call(payload, payload.type, args, optionArgs);
+                receiver.call(payload, payload.type, payload.data, optionArgs);
             }
         }
 
         const handlers = this.handlers.get(payload.type) || [];
         for(let handler of handlers) {
             if(typeof handler === "function") {
-                handler.call(payload, args, optionArgs);
+                handler.call(payload, payload.data, optionArgs);
             }
         }
 

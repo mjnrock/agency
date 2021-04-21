@@ -15,7 +15,7 @@ require = require("esm")(module/*, options*/)
 // module.exports = require("./tests/v4/ba.js");
 
 // module.exports = require("./tests/event/emitter.js");
-module.exports = require("./tests/event/emitter-2.js");
+// module.exports = require("./tests/event/emitter-2.js");
 // module.exports = require("./tests/event/network.js");
 // module.exports = require("./tests/event/network-2.js");
 
@@ -28,5 +28,5 @@ module.exports = require("./tests/event/emitter-2.js");
 
 // module.exports = require("./tests/graph/node.js");
 
-// module.exports = require("./tests/logic/proposition.js");
+module.exports = require("./tests/logic/proposition.js");
 // module.exports = require("./tests/logic/condition.js");

@@ -1,12 +1,20 @@
 import Bitwise from "../util/Bitwise";
 
+/**
+ * If the masks XOR and NOT are both active, .test will interpret as XNOR
+ */
 export class Proposition {
     static EnumFlags = {
-        NOT: 2 << 1,
-        AND: 2 << 2,
+        NOT: 1 << 0,
+        AND: 1 << 1,
+        XOR: 1 << 2,
     };
 
     constructor(props = [], flags = []) {
+        if(!Array.isArray(props)) {
+            props = [ props ];
+        }
+
         this.mask = Bitwise.add(0, ...flags);
         this.props = props;
     }
@@ -24,6 +32,49 @@ export class Proposition {
                     bool = bool && !!prop;
                 }
             }
+        } else if(Bitwise.has(this.mask, Proposition.EnumFlags.XOR)) {        
+            if(Bitwise.has(this.mask, Proposition.EnumFlags.NOT)) {
+                //! This is interpreted as XNOR instead of !(XOR)--wrap this <Proposition> if !(XOR) is desired
+                bool = [];
+                for(let prop of this.props) {
+                    let nextBool;
+                    if(typeof prop === "function") {
+                        nextBool = prop(...args);
+                    } else if(prop instanceof Proposition) {
+                        nextBool = prop.test(...args);
+                    } else {
+                        nextBool = !!prop;
+                    }
+    
+                    bool.push(nextBool);
+                }
+
+                let first = !!bool[ 0 ];
+                if(bool.every(b => b === first)) {
+                    return true;
+                }
+
+                return false;
+            } else {
+                for(let prop of this.props) {
+                    let nextBool;
+                    if(typeof prop === "function") {
+                        nextBool = prop(...args);
+                    } else if(prop instanceof Proposition) {
+                        nextBool = prop.test(...args);
+                    } else {
+                        nextBool = !!prop;
+                    }
+    
+                    if(bool === true && nextBool === true) {
+                        return false;
+                    }
+
+                    bool = bool || nextBool;
+                }
+            }
+    
+            return bool;
         } else {
             bool = false;
             for(let prop of this.props) {
@@ -115,6 +166,23 @@ export class Proposition {
         }
     }
 
+    static get TRUE() {
+        return new Proposition(true);
+    }
+    static get FALSE() {
+        return new Proposition(false);
+    }
+    static get NTRUE() {
+        return new Proposition(true, [
+            Proposition.EnumFlags.NOT,
+        ]);
+    }
+    static get NFALSE() {
+        return new Proposition(false, [
+            Proposition.EnumFlags.NOT,
+        ]);
+    }
+
     static OR(...props) {
         return new Proposition(props);
     }
@@ -131,6 +199,36 @@ export class Proposition {
     static NAND(...props) {
         return new Proposition(props, [
             Proposition.EnumFlags.AND,
+            Proposition.EnumFlags.NOT,
+        ]);
+    }
+    static XOR(...props) {
+        return new Proposition(props, [
+            Proposition.EnumFlags.XOR,
+        ]);
+    }
+    static XNOR(...props) {
+        return new Proposition(props, [
+            Proposition.EnumFlags.XOR,
+            Proposition.EnumFlags.NOT,
+        ]);
+    }
+    static NXOR(...props) {
+        return new Proposition([
+            new Proposition(props, [
+                Proposition.EnumFlags.XOR,
+            ])
+        ], [
+            Proposition.EnumFlags.NOT,
+        ]);
+    }
+    static NXNOR(...props) {
+        return new Proposition([
+            new Proposition(props, [
+                Proposition.EnumFlags.XOR,
+                Proposition.EnumFlags.NOT,
+            ])
+        ], [
             Proposition.EnumFlags.NOT,
         ]);
     }
