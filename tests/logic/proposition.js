@@ -5,44 +5,60 @@ console.warn("------------ NEW EXECUTION CONTEXT ------------");
 console.group(`Basic`);
 console.log(`T`, Proposition.TRUE.test());
 console.log(`F`, Proposition.FALSE.test());
-console.log(`~T`, Proposition.NTRUE.test());
-console.log(`~F`, Proposition.NFALSE.test());
+console.log(`~T`, Proposition.NOT_TRUE.test());
+console.log(`~F`, Proposition.NOT_FALSE.test());
 console.groupEnd();
 
 console.warn("-----");
 
 console.group(`AND`);
-console.log(`FxF`, Proposition.AND(false, false).test());
-console.log(`FxT`, Proposition.AND(false, true).test());
-console.log(`TxF`, Proposition.AND(true, false).test());
-console.log(`TxT`, Proposition.AND(true, true).test());
+console.log(`FxFxF`, Proposition.AND(false, false, false).test());
+console.log(`FxFxT`, Proposition.AND(false, false, true).test());
+console.log(`FxTxF`, Proposition.AND(false, true, false).test());
+console.log(`FxTxT`, Proposition.AND(false, true, true).test());
+console.log(`TxFxF`, Proposition.AND(true, false, false).test());
+console.log(`TxFxT`, Proposition.AND(true, false, true).test());
+console.log(`TxTxF`, Proposition.AND(true, true, false).test());
+console.log(`TxTxT`, Proposition.AND(true, true, true).test());
 console.groupEnd();
 
 console.warn("-----");
 
 console.group(`OR`);
-console.log(`FxF`, Proposition.OR(false, false).test());
-console.log(`FxT`, Proposition.OR(false, true).test());
-console.log(`TxF`, Proposition.OR(true, false).test());
-console.log(`TxT`, Proposition.OR(true, true).test());
+console.log(`FxFxF`, Proposition.OR(false, false, false).test());
+console.log(`FxFxT`, Proposition.OR(false, false, true).test());
+console.log(`FxTxF`, Proposition.OR(false, true, false).test());
+console.log(`FxTxT`, Proposition.OR(false, true, true).test());
+console.log(`TxFxF`, Proposition.OR(true, false, false).test());
+console.log(`TxFxT`, Proposition.OR(true, false, true).test());
+console.log(`TxTxF`, Proposition.OR(true, true, false).test());
+console.log(`TxTxT`, Proposition.OR(true, true, true).test());
 console.groupEnd();
 
 console.warn("-----");
 
 console.group(`NAND`);
-console.log(`FxF`, Proposition.NAND(false, false).test());
-console.log(`FxT`, Proposition.NAND(false, true).test());
-console.log(`TxF`, Proposition.NAND(true, false).test());
-console.log(`TxT`, Proposition.NAND(true, true).test());
+console.log(`FxFxF`, Proposition.NAND(false, false, false).test());
+console.log(`FxFxT`, Proposition.NAND(false, false, true).test());
+console.log(`FxTxF`, Proposition.NAND(false, true, false).test());
+console.log(`FxTxT`, Proposition.NAND(false, true, true).test());
+console.log(`TxFxF`, Proposition.NAND(true, false, false).test());
+console.log(`TxFxT`, Proposition.NAND(true, false, true).test());
+console.log(`TxTxF`, Proposition.NAND(true, true, false).test());
+console.log(`TxTxT`, Proposition.NAND(true, true, true).test());
 console.groupEnd();
 
 console.warn("-----");
 
 console.group(`NOR`);
-console.log(`FxF`, Proposition.NOR(false, false).test());
-console.log(`FxT`, Proposition.NOR(false, true).test());
-console.log(`TxF`, Proposition.NOR(true, false).test());
-console.log(`TxT`, Proposition.NOR(true, true).test());
+console.log(`FxFxF`, Proposition.NOR(false, false, false).test());
+console.log(`FxFxT`, Proposition.NOR(false, false, true).test());
+console.log(`FxTxF`, Proposition.NOR(false, true, false).test());
+console.log(`FxTxT`, Proposition.NOR(false, true, true).test());
+console.log(`TxFxF`, Proposition.NOR(true, false, false).test());
+console.log(`TxFxT`, Proposition.NOR(true, false, true).test());
+console.log(`TxTxF`, Proposition.NOR(true, true, false).test());
+console.log(`TxTxT`, Proposition.NOR(true, true, true).test());
 console.groupEnd();
 
 console.warn("-----");

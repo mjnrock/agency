@@ -172,12 +172,12 @@ export class Proposition {
     static get FALSE() {
         return new Proposition(false);
     }
-    static get NTRUE() {
+    static get NOT_TRUE() {
         return new Proposition(true, [
             Proposition.EnumFlags.NOT,
         ]);
     }
-    static get NFALSE() {
+    static get NOT_FALSE() {
         return new Proposition(false, [
             Proposition.EnumFlags.NOT,
         ]);
@@ -191,6 +191,17 @@ export class Proposition {
             Proposition.EnumFlags.AND,
         ]);
     }
+    static NOT(...props) {
+        return new Proposition(props, [
+            Proposition.EnumFlags.NOT,
+        ]);
+    }
+    static XOR(...props) {
+        return new Proposition(props, [
+            Proposition.EnumFlags.XOR,
+        ]);
+    }
+
     static NOR(...props) {
         return new Proposition(props, [
             Proposition.EnumFlags.NOT,
@@ -200,11 +211,6 @@ export class Proposition {
         return new Proposition(props, [
             Proposition.EnumFlags.AND,
             Proposition.EnumFlags.NOT,
-        ]);
-    }
-    static XOR(...props) {
-        return new Proposition(props, [
-            Proposition.EnumFlags.XOR,
         ]);
     }
     static XNOR(...props) {

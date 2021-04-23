@@ -187,6 +187,17 @@ export class Network extends Registry {
             Network.Instances.register(new Network(), "default");
         }
     }
+
+    static Create(...names) {
+        for(let name of names) {
+            Network.Instances.register(new Network(), name);
+        }
+    }
+    static Destroy(...names) {
+        for(let name of names) {
+            Network.Instances.unregister(name);
+        }
+    }
 };
 
 export default Network;

@@ -1,10 +1,11 @@
 import Registry from "../Registry";
 
 export class Context extends Registry {
-    constructor({ globals = {}, handlers = {}, ...config } = {}) {
+    constructor({ globals = {}, handlers = {}, hooks = {}, ...config } = {}) {
         super();
 
         this.globals = globals;
+        this.hooks = hooks;
         this.queue = [];
         this.handlers = new Map([
             [ "*", new Set() ],
@@ -71,6 +72,10 @@ export class Context extends Registry {
 
 
     process() {
+        if(typeof this.hooks.pre === "function") {
+            this.hooks.pre(this);
+        }
+
         let i = 0;
         while(!this.isEmpty && i < this.config.maxBatchSize) {
             const payload = this.dequeue();
@@ -79,10 +84,29 @@ export class Context extends Registry {
             ++i;
         }
 
+        if(typeof this.hooks.post === "function") {
+            this.hooks.post(this);
+        }
+
         return this;
     }
     empty() {
         this.queue = [];
+
+        return this;
+    }
+
+    setPreHook(fn) {
+        if(typeof fn === "function") {
+            this.hooks.pre = fn;
+        }
+
+        return this;
+    }
+    setPostHook(fn) {
+        if(typeof fn === "function") {
+            this.hooks.post = fn;
+        }
 
         return this;
     }
@@ -164,6 +188,19 @@ export class Context extends Registry {
         for(let [ event, ...fns ] of addHandlerArgs) {
             this.removeHandler(event, ...fns);
         }
+
+        return this;
+    }
+
+    /**
+     * This is similar to .addHandlers, but will erase any existing handlers, first.
+     */
+    reassignHandlers(addHandlerArgs = []) {
+        this.handlers = new Map([
+            [ "*", new Set() ],
+        ]);
+
+        this.addHandlers(addHandlerArgs);
 
         return this;
     }
