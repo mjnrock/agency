@@ -1,6 +1,6 @@
 import Proposition from "./Proposition";
 
-export class Condition {
+export class Implication {
     constructor(prop, fn) {
         this.antecedent = prop;
         this.consequent = fn;
@@ -50,10 +50,10 @@ export class Condition {
         }
         
         if(obj.antecedent instanceof Proposition) {
-            return new Condition(obj.antecedent, obj.consequent);
+            return new Implication(obj.antecedent, obj.consequent);
         }
 
-        return new Condition(
+        return new Implication(
             Proposition.FromObject(obj.antecedent),
             obj.consequent,
         );
@@ -65,7 +65,7 @@ export class Condition {
                 obj = JSON.parse(obj);
             }
 
-            return Condition.FromObject(obj);
+            return Implication.FromObject(obj);
         } catch(e) {
             console.log(e)
             return false;
@@ -73,4 +73,4 @@ export class Condition {
     }
 };
 
-export default Condition;
+export default Implication;

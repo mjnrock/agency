@@ -1,7 +1,7 @@
 import Proposition from "./Proposition";
-import Condition from "./Condition";
+import Implication from "./Implication";
 
 export default {
     Proposition,
-    Condition,
+    Implication,
 };
