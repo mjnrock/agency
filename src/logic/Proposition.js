@@ -8,6 +8,7 @@ export class Proposition {
         NOT: 1 << 0,
         AND: 1 << 1,
         XOR: 1 << 2,
+        IMPLICATION: 1 << 3,
     };
 
     constructor(props = [], flags = []) {
@@ -75,6 +76,26 @@ export class Proposition {
             }
     
             return bool;
+        } else if(Bitwise.has(this.mask, Proposition.EnumFlags.IMPLICATION)) {
+            let [ left, right ] = this.props;
+
+            if(typeof left === "function") {
+                left = left(...args);
+            } else if(left instanceof Proposition) {
+                left = left.test(...args);
+            } else {
+                left = !!left;
+            }
+
+            if(typeof right === "function") {
+                right = right(...args);
+            } else if(right instanceof Proposition) {
+                right = right.test(...args);
+            } else {
+                right = !!right;
+            }
+
+            bool = !(left === true && right === false);
         } else {
             bool = false;
             for(let prop of this.props) {
@@ -107,8 +128,19 @@ export class Proposition {
     }
 
     toObject() {
+        let type;
+        if(Bitwise.has(this.mask, Proposition.EnumFlags.AND)) {
+            type = "and";
+        } else if(Bitwise.has(this.mask, Proposition.EnumFlags.XOR)) {
+            type = "xor";
+        } else if(Bitwise.has(this.mask, Proposition.EnumFlags.IMPLICATION)) {
+            type = "imply";
+        } else {
+            type = "or";
+        }
+
         let obj = {
-            type: Bitwise.has(this.mask, Proposition.EnumFlags.AND) ? "and" : "or",
+            type: type,
             props: this.props.map(p => {
                 if(p instanceof Proposition) {
                     return p.toObject();
@@ -116,9 +148,8 @@ export class Proposition {
 
                 return p;
             }),
+            isNegation: Bitwise.has(this.mask, Proposition.EnumFlags.NOT),
         };
-        
-        obj.type = Bitwise.has(this.mask, Proposition.EnumFlags.NOT) ? `n${ obj.type }` : obj.type;
 
         return obj;
     }
@@ -129,14 +160,18 @@ export class Proposition {
     static FromObject(obj = {}) {
         const proposition = new Proposition();
 
-        if(obj.type === "or") {
-            proposition.mask = 0;
-        } else if(obj.type === "and") {
+        if(obj.type === "and") {
             proposition.mask = Bitwise.add(0, Proposition.EnumFlags.AND);
-        } else if(obj.type === "nor") {
-            proposition.mask = Bitwise.add(0, Proposition.EnumFlags.NOT);
-        } else if(obj.type === "nand") {
-            proposition.mask = Bitwise.add(0, Proposition.EnumFlags.AND, Proposition.EnumFlags.NOT);
+        } else if(obj.type === "xor") {
+            proposition.mask = Bitwise.add(0, Proposition.EnumFlags.XOR);
+        } else if(obj.type === "imply") {
+            proposition.mask = Bitwise.add(0, Proposition.EnumFlags.IMPLICATION);
+        } else {
+            proposition.mask = 0;
+        }
+
+        if(obj.isNegation === true) {
+            proposition.mask = Bitwise.add(proposition.mask, Proposition.EnumFlags.NOT);
         }
 
         for(let prop of obj.props) {
@@ -191,6 +226,11 @@ export class Proposition {
             Proposition.EnumFlags.AND,
         ]);
     }
+    static IMPLY(p, q) {
+        return new Proposition([ p, q ], [
+            Proposition.EnumFlags.IMPLICATION,
+        ]);
+    }
     static NOT(...props) {
         return new Proposition(props, [
             Proposition.EnumFlags.NOT,
@@ -218,6 +258,9 @@ export class Proposition {
             Proposition.EnumFlags.XOR,
             Proposition.EnumFlags.NOT,
         ]);
+    }
+    static IFF(left, right) {
+        return Proposition.XNOR(left, right);
     }
     static NXOR(...props) {
         return new Proposition([

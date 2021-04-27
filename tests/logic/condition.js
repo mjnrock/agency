@@ -1,5 +1,5 @@
 import Proposition from "../../src/logic/Proposition";
-import Implication from "../../src/logic/Implication";
+import Conditional from "../../src/logic/Conditional";
 
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
@@ -9,7 +9,7 @@ const p1 = Proposition.OR(
         1,
     ),
 );
-const c1 = new Implication(
+const c1 = new Conditional(
     p1,
     () => {
         console.log("Hello")
@@ -22,5 +22,5 @@ console.log(c1.attempt());
 
 console.log(c1.toObject());
 console.log(c1.toJson());
-console.log(Implication.FromObject(c1.toObject()).test());
-console.log(Implication.FromJson(c1.toJson()).attempt());
+console.log(Conditional.FromObject(c1.toObject()).test());
+console.log(Conditional.FromJson(c1.toJson()).attempt());

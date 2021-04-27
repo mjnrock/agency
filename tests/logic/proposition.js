@@ -37,6 +37,15 @@ console.groupEnd();
 
 console.warn("-----");
 
+console.group(`IMPLY`);
+console.log(`FxF`, Proposition.IMPLY(false, false).test());
+console.log(`FxT`, Proposition.IMPLY(false, true).test());
+console.log(`TxF`, Proposition.IMPLY(true, false).test());
+console.log(`TxT`, Proposition.IMPLY(true, true).test());
+console.groupEnd();
+
+console.warn("-----");
+
 console.group(`NAND`);
 console.log(`FxFxF`, Proposition.NAND(false, false, false).test());
 console.log(`FxFxT`, Proposition.NAND(false, false, true).test());
@@ -59,6 +68,15 @@ console.log(`TxFxF`, Proposition.NOR(true, false, false).test());
 console.log(`TxFxT`, Proposition.NOR(true, false, true).test());
 console.log(`TxTxF`, Proposition.NOR(true, true, false).test());
 console.log(`TxTxT`, Proposition.NOR(true, true, true).test());
+console.groupEnd();
+
+console.warn("-----");
+
+console.group(`NIMPLY`);
+console.log(`FxF`, Proposition.NOT(Proposition.IMPLY(false, false)).test());
+console.log(`FxT`, Proposition.NOT(Proposition.IMPLY(false, true)).test());
+console.log(`TxF`, Proposition.NOT(Proposition.IMPLY(true, false)).test());
+console.log(`TxT`, Proposition.NOT(Proposition.IMPLY(true, true)).test());
 console.groupEnd();
 
 console.warn("-----");
