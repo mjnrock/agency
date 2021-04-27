@@ -1,5 +1,8 @@
 import Proposition from "./Proposition";
 
+/**
+ * This class probably doesn't need to exist, but here we are.
+ */
 export class Predicate extends Proposition {
     constructor(fn, constants = []) {
         super(fn instanceof Proposition ? fn.props[ 0 ] : fn);
