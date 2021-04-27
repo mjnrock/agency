@@ -2,6 +2,7 @@ import Proposition from "./Proposition";
 
 /**
  * This class probably doesn't need to exist, but here we are.
+ * It serves a purpose in its own way.
  */
 export class Predicate extends Proposition {
     constructor(fn, constants = []) {
