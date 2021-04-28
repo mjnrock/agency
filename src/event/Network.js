@@ -37,43 +37,6 @@ export class Network extends Registry {
     }
 
     /**
-     * This will register the <Emitter> with the <Network>,
-     *  create a routing function, and subscriber that function
-     *  to the <Emitter>.  That function routes *all* events to
-     *  the <Router>, where you can create routes to handle them.
-     */
-    join(...emitters) {
-        for(let emitter of emitters) {
-            this.register(emitter);
-
-            const _this = this;
-            const fn = function(...args) {
-                _this.route(this, ...args);
-            };
-
-            this.cache.set(emitter, fn);
-
-            emitter.addSubscriber(fn);
-        }
-
-        return this;
-    }
-    /**
-     * This undoes and cleans up everything that .join does
-     */
-    leave(...emitters) {
-        for(let emitter of emitters) {
-            const fn = this.cache.get(emitter);
-
-            emitter.removeSubscriber(fn);
-            this.unregister(emitter);
-        }
-
-        return this;
-    }
-
-
-    /**
      * Invoke << .process >> on all <Context(s)>
      */
     processAll() {
@@ -132,6 +95,45 @@ export class Network extends Registry {
 
         return this;
     }
+
+
+
+
+    /**
+     * This will register the <Emitter> with the <Network>,
+     *  create a routing function, and subscriber that function
+     *  to the <Emitter>.  That function routes *all* events to
+     *  the <Router>, where you can create routes to handle them.
+     */
+    join(...emitters) {
+        for(let emitter of emitters) {
+            this.register(emitter);
+
+            const _this = this;
+            const fn = function(...args) {
+                _this.route(this, ...args);
+            };
+
+            this.cache.set(emitter, fn);
+
+            emitter.addSubscriber(fn);
+        }
+
+        return this;
+    }
+    /**
+     * This undoes and cleans up everything that .join does
+     */
+    leave(...emitters) {
+        for(let emitter of emitters) {
+            const fn = this.cache.get(emitter);
+
+            emitter.removeSubscriber(fn);
+            this.unregister(emitter);
+        }
+
+        return this;
+    }
     
     /**
      * Cause every <Emitter> member of the <Network> to
@@ -161,6 +163,8 @@ export class Network extends Registry {
     }
 
 
+
+
     /**
      * A convenience getter to easily access a default <Network>
      *  when a multi-network setup is unnecessary.
@@ -188,16 +192,30 @@ export class Network extends Registry {
         }
     }
 
-    static Create(...names) {
+    static Register(...names) {
         for(let name of names) {
             Network.Instances.register(new Network(), name);
         }
     }
-    static Destroy(...names) {
+    static Unregister(...names) {
         for(let name of names) {
             Network.Instances.unregister(name);
         }
     }
+};
+
+/**
+ * Create a "default", single-context <Network>
+ * @args <Context> constructor args
+ * @name The name of the created <Context> in this.router
+ */
+export function BasicNetwork(handlers = {}, { name = "default", ...rest } = {}) {
+    const network = new Network();
+    
+    network.router.createContext(name, { handlers, ...rest });
+    network.router.createRoute(() => name);
+
+    return network;
 };
 
 export default Network;
