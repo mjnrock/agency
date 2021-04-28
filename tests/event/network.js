@@ -22,9 +22,6 @@ console.log(Network.$.router.id);
 const e1 = new Emitter();
 const e2 = new Emitter();
 
-Network.$.join(e1);
-Network.$.join(e2);
-
 const map = new Map();
 map.set(e1.id, 1);
 map.set(e2.id, 2);

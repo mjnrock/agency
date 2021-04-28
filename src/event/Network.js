@@ -202,6 +202,10 @@ export class Network extends Registry {
             Network.Instances.unregister(name);
         }
     }
+
+    static BasicNetwork(handlers = {}, opts = {}) {
+        return new BasicNetwork(handlers, opts);
+    }
 };
 
 /**
@@ -209,13 +213,13 @@ export class Network extends Registry {
  * @args <Context> constructor args
  * @name The name of the created <Context> in this.router
  */
-export function BasicNetwork(handlers = {}, { name = "default", ...rest } = {}) {
-    const network = new Network();
+export class BasicNetwork extends Network {
+    constructor(handlers = {}, { name = "default", ...rest } = {}) {
+        super();
     
-    network.router.createContext(name, { handlers, ...rest });
-    network.router.createRoute(() => name);
-
-    return network;
-};
+        this.router.createContext(name, { handlers, ...rest });
+        this.router.createRoute(() => name);
+    }
+}
 
 export default Network;

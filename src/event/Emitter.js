@@ -4,7 +4,6 @@ import $EventReceiver from "./$EventReceiver";
 import $EventSender from "./$EventSender";
 
 import AgencyBase from "./../AgencyBase";
-import Network from "./Network";
 
 import { compose } from "./../util/helper";
 
@@ -20,7 +19,7 @@ export class Emitter extends EmitterBase() {
         return Emitter.Instance;
     }
 
-    constructor(handlers = {}, { relay, filter, injectMiddleware = false } = {}) {
+    constructor(handlers = {}, { relay, filter, network } = {}) {
         super({
             EventReceiver: {
                 filter,
@@ -31,9 +30,9 @@ export class Emitter extends EmitterBase() {
             },
         });
 
-        if(injectMiddleware) {
-            Network.Middleware(this);
-            this.__deconstructor = () => Network.Cleanup(this);
+        if(network) {
+            network.join(this);
+            this.__deconstructor = () => network.leave(this);
         }
     }
 
