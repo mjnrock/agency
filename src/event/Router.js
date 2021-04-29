@@ -36,6 +36,8 @@ export const $Router = $super => class extends $super {
                     context.bus(payload);
 
                     hasResult = true;
+                } else if(typeof context === "function") {
+                    context(payload);
                 }
             }            
                     
@@ -80,7 +82,7 @@ export const $Router = $super => class extends $super {
 };
 
 export class Router extends compose($Registry, $Router)(AgencyBase) {
-    constructor() {
+    constructor(contexts = [], routes = []) {
         super({
             Router: {
                 routes: [],
@@ -91,6 +93,9 @@ export class Router extends compose($Registry, $Router)(AgencyBase) {
         this.config = {
             isBatchProcess: true,
         };
+
+        this.createContexts(contexts);
+        this.createRoutes(routes);
     }
 
     /**

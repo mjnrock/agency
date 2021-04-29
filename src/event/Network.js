@@ -27,13 +27,13 @@ export class Network extends Registry {
     static Middleware = emitter => Network.$.join(emitter);
     static Cleanup = emitter => Network.$.leave(emitter);
 
-    constructor() {
+    constructor(contexts = [], routes = []) {
         super();
         
         // store the modified routing functions for all member <Emitter(s)> so that leaving can properly clean them up
         this.cache = new WeakMap();
         // create event routing contexts with qualifier functions to in/exclude events
-        this.router = new Router();
+        this.router = new Router(contexts, routes);
     }
 
     /**
