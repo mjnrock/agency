@@ -10,15 +10,6 @@ import { compose } from "./../util/helper";
 export const EmitterBase = (...mixins) => compose(...mixins, $EventReceiver, $EventSender)(AgencyBase);
 
 export class Emitter extends EmitterBase() {
-    static Instance = new Emitter();
-    static get $() {
-        if(!Emitter.Instance) {
-            Emitter.Instance = new Emitter();
-        }
-
-        return Emitter.Instance;
-    }
-
     constructor(handlers = {}, { relay, filter, network } = {}) {
         super({
             EventReceiver: {

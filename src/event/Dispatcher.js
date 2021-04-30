@@ -9,15 +9,20 @@ export const $Dispatcher = $super => class extends $super {
         
         // << this >> is trapped here, but is @target in the getters/setters --> initialize to set property descriptors from << AgencyBase >>
         this._network = null;
-        this._subject = null;
         this._dispatch = null;
-        this._asyncDispatch = null;
+        this._send = null;
+        this._share = null;
+        this._subject = null;
         
 
         this.network = Dispatcher.network;
         this.subject = Dispatcher.subject;
     }
 
+    /**
+     * ? Convenience Method
+     * Reassign the @network and @subject in one call
+     */
     reassign(network, subject) {
         this.network = network;
         this.subject = subject;
@@ -25,6 +30,9 @@ export const $Dispatcher = $super => class extends $super {
         return this;
     }
 
+    /**
+     * The <Network> to use as the messaging system.
+     */
     get network() {
         return this._network;
     }
@@ -33,10 +41,15 @@ export const $Dispatcher = $super => class extends $super {
             this._network = network;
     
             this.dispatch = network.emit;
-            this.asyncDispatch = network.asyncEmit;
+            this.send = network.send;
+            this.share = network.share;
         }
     }
 
+    /**
+     * The << subject >> allows a default emitter to
+     *  be bound to the <Dispatcher> invocations.
+     */
     get subject() {
         return this._subject;
     }
@@ -46,6 +59,12 @@ export const $Dispatcher = $super => class extends $super {
         }
     }
 
+
+    /**
+     * The dispatch methods allow for a message to be sent
+     *  directly to << this.network >> via << .emit >>.  As such,
+     *  routing is utilized.
+     */
     get dispatch() {
         return this._dispatch;
     }
@@ -61,12 +80,41 @@ export const $Dispatcher = $super => class extends $super {
         }
     }
 
-    get asyncDispatch() {
-        return this._asyncDispatch;
+
+    /**
+     * The send methods allow for a message to be sent
+     *  directly to each <Network> connection.  This, if used
+     *  in a network hierarchy, can be used as a bubbler.  It
+     *  will invoke the << .route >> function, ensuring that
+     *  the (connected) <Network(s)> routing is utilized.
+     */
+    get send() {
+        return this._send;
     }
-    set asyncDispatch(fn) {
+    set send(fn) {
         if(typeof fn === "function") {
-            this._asyncDispatch = (...args) => {
+            this._send = (...args) => {
+                if(this.subject) {
+                    fn.call(this.network, this.subject, ...args);
+                } else {
+                    fn.call(this.network, ...args);
+                }
+            };
+        }
+    }
+
+
+    /**
+     * The share methods allow for a message to be sent
+     *  directly to a <Context>, **bypassing** the <Router>.
+     *  As such, routing is **not** utilized.
+     */
+    get share() {
+        return this._share;
+    }
+    set share(fn) {
+        if(typeof fn === "function") {
+            this._share = (...args) => {
                 if(this.subject) {
                     fn.call(this.network, this.subject, ...args);
                 } else {
@@ -78,14 +126,15 @@ export const $Dispatcher = $super => class extends $super {
 };
 
 /**
- * Wrapper class to directly emit to a previously assigned <Network>.
- * If a @subject is passed, use as the emitter.
+ * This class extracts the message invocation functions from <Network>
+ *  and allows a @subject and @network to be bound, so that this class
+ *  can act as a proxy or conduit to invoke that functionality.
  * 
- * This is, in some sense, a flyweight <Emitter>, for simplifying cases
- * where a <Network> handles everything, but events need to get routed
- * to that network.  While <Network> exposes this, <Dispatcher> allows
- * for a @subject to be bound, so as to be functionally similar to an
- * <Emitter>.
+ * If a @subject is present, then it will be injected as the first argument
+ *  in a given function invocation.  All invocations will be given the
+ *  <Network> as its << this >> binding.
+ *
+ *  << <Network> .emit | .send | .share >> are all exposed.
  */
 export class Dispatcher extends compose($Dispatcher)(AgencyBase) {
     constructor(network, subject, opts = {}) {

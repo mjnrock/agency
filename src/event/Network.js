@@ -6,30 +6,14 @@ import Emitter from "./Emitter";
 import Router from "./Router";
 
 export class Network extends Registry {
-    /**
-     * For single-network usage, accessing the static $ property
-     *      will create a "default" network automatically, if one does
-     *      not exist with the synonym "default".  As such, a generic,
-     *      default network can always be referenced via $.
-     * 
-     * In order to properly utilize a multi-network system, overwrite
-     *      the << Network.Middleware >> method to introduce qualifying
-     *      behavior that will appropriately register each newly
-     *      instantiated <Emitter> to its appropriate <Network>.
-     * 
-     * NOTE:    By default, the << Emitter.$ >> global will join the default
-     *      <Network>, and as such, there will always be a global <Emitter>
-     *      that can be used for whatever purpose.  If this is problematic,
-     *      invoke << Network.Recreate(); >> before any meaningful additions.
-     *      This will recreate the default <Network> and thus drop the <Emitter>.
-     */
     static Instances = new Registry();
-    static Middleware = emitter => Network.$.join(emitter);
-    static Cleanup = emitter => Network.$.leave(emitter);
 
-    constructor(contexts = [], routes = []) {
+    constructor(contexts = [], routes = [], connections = []) {
         super();
         
+        // allow the <Network> to send messages to other connected <Network(s)>
+        this.connections = new Set(connections);    //? Connect children to parents for a hierarchy
+
         // store the modified routing functions for all member <Emitter(s)> so that leaving can properly clean them up
         this.cache = new WeakMap();
         // create event routing contexts with qualifier functions to in/exclude events
@@ -60,7 +44,7 @@ export class Network extends Registry {
         return this;
     }
     /**
-     * Create and route an event with @emitter
+     * Create and route an event with specified @emitter
      */
     emit(emitter, event, ...args) {
         this.route({
@@ -73,24 +57,22 @@ export class Network extends Registry {
 
         return this;
     }
-    async asyncEmit(emitter, event, ...args) {
-        return Promise.resolve(this.route({
-            id: uuidv4(),
-            type: event,
-            data: args,
-            emitter: emitter,
-            provenance: new Set(),
-        }));
-    }
 
     /**
-     * Send the payload to another <Context> directly (i.e. bypass route)
+     * Create and/or route an event to all << .connections >>
+     *  attached to the <Network>.  If @emitter looks like
+     *  a payload and args.length === 1, @emitter will
+     *  be sent via << .route >>, instead of << .emit >>.
      */
-    share(nameOrContext, payload) {
-        const context = this.router[ nameOrContext ];
-
-        if(context instanceof Context) {
-            context.bus(payload);
+    send(emitter, event, ...args) {
+        for(let connection of this.connections) {
+            if(connection instanceof Network) {
+                if(arguments.length === 1 && typeof emitter === "object" && "type" in emitter) {
+                    connection.route(emitter);
+                } else {
+                    connection.emit(emitter, event, ...args);
+                }
+            }
         }
 
         return this;
@@ -134,6 +116,49 @@ export class Network extends Registry {
 
         return this;
     }
+
+    /**
+     * Connect <Network(s)> for use with << .send >>
+     */
+    link(...networks) {
+        for(let network of networks) {
+            this.connections.add(network);
+        }
+
+        return this;
+    }
+    /**
+     * Disconnect <Network(s)>
+     */
+    unlink(...networks) {
+        for(let network of networks) {
+            this.connections.delete(network);
+        }
+        
+        return this;
+    }
+    /**
+     * Link << this >> from @network and vice-versa.
+     */
+    dualLink(...networks) {
+        for(let network of networks) {
+            this.connections.add(network);
+            network.connections.add(this);
+        }
+
+        return this;
+    }
+    /**
+     * Unlink << this >> from @network and vice-versa.
+     */
+    dualUnlink(...networks) {
+        for(let network of networks) {
+            this.connections.delete(network);
+            network.connections.delete(this);
+        }
+        
+        return this;
+    }
     
     /**
      * Cause every <Emitter> member of the <Network> to
@@ -155,8 +180,22 @@ export class Network extends Registry {
     async asyncFire(event, ...args) {
         for(let emitter of this) {
             if(emitter instanceof Emitter) {
-                emitter.$.asyncEmit(event, ...args);
+                await emitter.$.asyncEmit(event, ...args);
             }
+        }
+
+        return Promise.resolve(this);
+    }
+    
+
+    /**
+     * Send the payload to another <Context> directly (i.e. bypass route)
+     */
+    share(nameOrContext, payload) {
+        const context = this.router[ nameOrContext ];
+
+        if(context instanceof Context) {
+            context.bus(payload);
         }
 
         return this;
