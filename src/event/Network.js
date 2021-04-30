@@ -11,7 +11,7 @@ export class Network extends Registry {
     constructor(contexts = [], routes = [], connections = []) {
         super();
         
-        // allow the <Network> to send messages to other connected <Network(s)>
+        // allow the <Network> to broadcast messages to other connected <Network(s)>
         this.connections = new Set(connections);    //? Connect children to parents for a hierarchy
 
         // store the modified routing functions for all member <Emitter(s)> so that leaving can properly clean them up
@@ -39,6 +39,10 @@ export class Network extends Registry {
      *  to the routing system
      */
     route(payload) {
+        try {
+            payload.provenance.add(this);
+        } catch(e) {}
+
         this.router.route(payload);
 
         return this;
@@ -52,7 +56,7 @@ export class Network extends Registry {
             type: event,
             data: args,
             emitter: emitter,
-            provenance: new Set(),
+            provenance: new Set([ emitter ]),
         });
 
         return this;
@@ -64,7 +68,7 @@ export class Network extends Registry {
      *  a payload and args.length === 1, @emitter will
      *  be sent via << .route >>, instead of << .emit >>.
      */
-    send(emitter, event, ...args) {
+    broadcast(emitter, event, ...args) {
         for(let connection of this.connections) {
             if(connection instanceof Network) {
                 if(arguments.length === 1 && typeof emitter === "object" && "type" in emitter) {
@@ -118,7 +122,7 @@ export class Network extends Registry {
     }
 
     /**
-     * Connect <Network(s)> for use with << .send >>
+     * Connect <Network(s)> for use with << .broadcast >>
      */
     link(...networks) {
         for(let network of networks) {
@@ -159,6 +163,21 @@ export class Network extends Registry {
         
         return this;
     }
+
+
+    /**
+     * Send the payload to another <Context> directly (i.e. bypass route)
+     */
+    sendToContext(nameOrContext, payload) {
+        const context = this.router[ nameOrContext ];
+
+        if(context instanceof Context) {
+            context.bus(payload);
+        }
+
+        return this;
+    }
+
     
     /**
      * Cause every <Emitter> member of the <Network> to
@@ -185,20 +204,6 @@ export class Network extends Registry {
         }
 
         return Promise.resolve(this);
-    }
-    
-
-    /**
-     * Send the payload to another <Context> directly (i.e. bypass route)
-     */
-    share(nameOrContext, payload) {
-        const context = this.router[ nameOrContext ];
-
-        if(context instanceof Context) {
-            context.bus(payload);
-        }
-
-        return this;
     }
 
 
@@ -248,16 +253,30 @@ export class Network extends Registry {
 };
 
 /**
- * Create a "default", single-context <Network>
+ * Create a "default", single-context <Network>, that processes in **real-time**
  * @args <Context> constructor args
  * @name The name of the created <Context> in this.router
  */
 export class BasicNetwork extends Network {
-    constructor(handlers = {}, { name = "default", ...rest } = {}) {
+    static Relay = (network) => function(...args) {
+        network.broadcast(this);
+    }
+
+    constructor(handlers = {}, { name = "default", useBatch = false, ...rest } = {}) {
         super();
+
+        for(let [ key, value ] of Object.entries(handlers)) {
+            if(value === BasicNetwork.Relay) {
+                handlers[ key ] = value(this);
+            }
+        }
     
         this.router.createContext(name, { handlers, ...rest });
         this.router.createRoute(() => name);
+
+        if(useBatch === false) {
+            this.router.useRealTimeProcess();
+        }
     }
 }
 

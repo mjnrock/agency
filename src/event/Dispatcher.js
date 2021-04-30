@@ -11,12 +11,16 @@ export const $Dispatcher = $super => class extends $super {
         this._network = null;
         this._dispatch = null;
         this._send = null;
-        this._share = null;
+        this._sendToContext = null;
         this._subject = null;
         
 
         this.network = Dispatcher.network;
         this.subject = Dispatcher.subject;
+        
+        if(Dispatcher.subject === true) {
+            this.subject = Dispatcher.network;  //  sic
+        }
     }
 
     /**
@@ -41,8 +45,8 @@ export const $Dispatcher = $super => class extends $super {
             this._network = network;
     
             this.dispatch = network.emit;
-            this.send = network.send;
-            this.share = network.share;
+            this.broadcast = network.broadcast;
+            this.sendToContext = network.sendToContext;
         }
     }
 
@@ -82,16 +86,16 @@ export const $Dispatcher = $super => class extends $super {
 
 
     /**
-     * The send methods allow for a message to be sent
+     * The broadcast methods allow for a message to be sent
      *  directly to each <Network> connection.  This, if used
      *  in a network hierarchy, can be used as a bubbler.  It
      *  will invoke the << .route >> function, ensuring that
      *  the (connected) <Network(s)> routing is utilized.
      */
-    get send() {
+    get broadcast() {
         return this._send;
     }
-    set send(fn) {
+    set broadcast(fn) {
         if(typeof fn === "function") {
             this._send = (...args) => {
                 if(this.subject) {
@@ -105,16 +109,16 @@ export const $Dispatcher = $super => class extends $super {
 
 
     /**
-     * The share methods allow for a message to be sent
+     * The sendToContext methods allow for a message to be sent
      *  directly to a <Context>, **bypassing** the <Router>.
      *  As such, routing is **not** utilized.
      */
-    get share() {
-        return this._share;
+    get sendToContext() {
+        return this._sendToContext;
     }
-    set share(fn) {
+    set sendToContext(fn) {
         if(typeof fn === "function") {
-            this._share = (...args) => {
+            this._sendToContext = (...args) => {
                 if(this.subject) {
                     fn.call(this.network, this.subject, ...args);
                 } else {
@@ -134,7 +138,7 @@ export const $Dispatcher = $super => class extends $super {
  *  in a given function invocation.  All invocations will be given the
  *  <Network> as its << this >> binding.
  *
- *  << <Network> .emit | .send | .share >> are all exposed.
+ *  << <Network> .emit | .broadcast | .sendToContext >> are all exposed.
  */
 export class Dispatcher extends compose($Dispatcher)(AgencyBase) {
     constructor(network, subject, opts = {}) {
