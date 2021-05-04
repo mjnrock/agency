@@ -10,7 +10,7 @@ export const $Dispatcher = $super => class extends $super {
         // << this >> is trapped here, but is @target in the getters/setters --> initialize to set property descriptors from << AgencyBase >>
         this._network = null;
         this._dispatch = null;
-        this._send = null;
+        this._broadcast = null;
         this._sendToContext = null;
         this._subject = null;
         
@@ -93,11 +93,11 @@ export const $Dispatcher = $super => class extends $super {
      *  the (connected) <Network(s)> routing is utilized.
      */
     get broadcast() {
-        return this._send;
+        return this._broadcast;
     }
     set broadcast(fn) {
         if(typeof fn === "function") {
-            this._send = (...args) => {
+            this._broadcast = (...args) => {
                 if(this.subject) {
                     fn.call(this.network, this.subject, ...args);
                 } else {

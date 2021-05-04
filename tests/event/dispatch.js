@@ -3,7 +3,7 @@ import Dispatcher from "../../src/event/Dispatcher";
 
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
-const network = Network.BasicNetwork({
+const network = Network.SimpleSetup({
     cat: function(args) {
         console.log(`[Emitter]:`, this.emitter);
         console.log(`[args]:`, ...args);

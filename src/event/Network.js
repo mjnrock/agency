@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import Registry from "../Registry";
 import Context from "./Context";
-import Emitter from "./Emitter";
+import Dispatcher from "./Dispatcher";
 import Router from "./Router";
 
 export class Network extends Registry {
@@ -12,10 +12,7 @@ export class Network extends Registry {
         super();
         
         // allow the <Network> to broadcast messages to other connected <Network(s)>
-        this.connections = new Set(connections);    //? Connect children to parents for a hierarchy
-
-        // store the modified routing functions for all member <Emitter(s)> so that leaving can properly clean them up
-        this.cache = new WeakMap();
+        this.connections = new Set(connections);    //? e.g. Connect children to parents for a hierarchy
         // create event routing contexts with qualifier functions to in/exclude events
         this.router = new Router(contexts, routes);
     }
@@ -57,6 +54,7 @@ export class Network extends Registry {
             data: args,
             emitter: emitter,
             provenance: new Set([ emitter ]),
+            timestamp: Date.now(),
         });
 
         return this;
@@ -77,45 +75,6 @@ export class Network extends Registry {
                     connection.emit(emitter, event, ...args);
                 }
             }
-        }
-
-        return this;
-    }
-
-
-
-
-    /**
-     * This will register the <Emitter> with the <Network>,
-     *  create a routing function, and subscriber that function
-     *  to the <Emitter>.  That function routes *all* events to
-     *  the <Router>, where you can create routes to handle them.
-     */
-    join(...emitters) {
-        for(let emitter of emitters) {
-            this.register(emitter);
-
-            const _this = this;
-            const fn = function(...args) {
-                _this.route(this, ...args);
-            };
-
-            this.cache.set(emitter, fn);
-
-            emitter.addSubscriber(fn);
-        }
-
-        return this;
-    }
-    /**
-     * This undoes and cleans up everything that .join does
-     */
-    leave(...emitters) {
-        for(let emitter of emitters) {
-            const fn = this.cache.get(emitter);
-
-            emitter.removeSubscriber(fn);
-            this.unregister(emitter);
         }
 
         return this;
@@ -178,76 +137,93 @@ export class Network extends Registry {
         return this;
     }
 
+
+    /**
+     * Join the <Network>, wrapping and returning a map
+     *  of the emitters and dispatchers.  If a <Dispatcher>
+     *  is passed, << this >> will be assigned to its << .network >>
+     */
+    join(subject) {
+        let dispatcher;
+        if(subject instanceof Dispatcher) {
+            subject.network = this;
+            dispatcher = subject;
+        } else if(typeof subject === "object") {
+            dispatcher = new Dispatcher(this, subject);
+        } else {
+            return false;
+        }
+
+        this.register(dispatcher);
+
+        return dispatcher;
+    }
+    joinMany(...subjects) {
+        let dispatchers = new Map();
+
+        for(let subject of subjects) {
+            dispatchers.set(subject, this.join(subject));
+        }
+
+        return dispatchers;
+    }
     
     /**
-     * Cause every <Emitter> member of the <Network> to
-     *  invoke an event via << Emitter.$.emit >>
+     * This undoes and cleans up everything that .join does
      */
-    fire(event, ...args) {
-        for(let emitter of this) {
-            if(emitter instanceof Emitter) {
-                emitter.$.emit(event, ...args);
+    leave(...dispatchers) {
+        for(let dispatcher of dispatchers) {
+            if(dispatcher instanceof Dispatcher) {
+                this.unregister(dispatcher);
+            } else {
+                let subject = dispatcher,
+                    result;
+
+                if(this.has(subject, (entry, value) => {
+                    if(entry === value.subject) {
+                        result = value;
+
+                        return true;
+                    }
+
+                    return false;
+                })) {
+                    this.unregister(result);
+                }
             }
         }
 
         return this;
     }
+
     /**
-     * Cause every <Emitter> member of the <Network> to
-     *  invoke an async event via << Emitter.$.asyncEmit >>
+     * Cause every <Dispatcher> member of the <Network> to
+     *  invoke the << @command >> network function.
+     * 
+     * @param command 'dispatch'|'broadcast'|'sendToContext'
      */
-    async asyncFire(event, ...args) {
-        for(let emitter of this) {
-            if(emitter instanceof Emitter) {
-                await emitter.$.asyncEmit(event, ...args);
+    fire(event, args = [], command = "dispatch") {
+        for(let dispatcher of this) {
+            if(dispatcher instanceof Dispatcher) {
+                dispatcher[ command ](event, ...args);
             }
         }
 
-        return Promise.resolve(this);
+        return this;
     }
 
-
-
+    static $(name = "default") {
+        if(name === "default" && !Network.Instances[ name ]) {
+            Network.Instances[ name ] = new BasicNetwork();
+        }
+        
+        return Network.Instances[ name ];
+    }
 
     /**
-     * A convenience getter to easily access a default <Network>
-     *  when a multi-network setup is unnecessary.
+     * A convenience factory method for <BasicNetwork>
      */
-    static get $() {
-        if(!(Network.Instances || {}).default) {
-            Network.Recreate();
-        }
-
-        return Network.Instances.default;
-    }
-    static $$(networkIdOrSyn) {
-        return Network.Instances[ networkIdOrSyn ];
-    }
-    
-    /**
-     * Recreate the .Instances registry with optional seeding
-     */
-    static Recreate(networks = [], createDefault = true) {
-        Network.Instances = new Registry({ Registry: { entries: networks }});
-
-        if(createDefault) {
-            Network.Instances.register(new Network(), "agency");
-            Network.Instances.register(new Network(), "default");
-        }
-    }
-
-    static Register(...names) {
-        for(let name of names) {
-            Network.Instances.register(new Network(), name);
-        }
-    }
-    static Unregister(...names) {
-        for(let name of names) {
-            Network.Instances.unregister(name);
-        }
-    }
-
-    static BasicNetwork(handlers = {}, opts = {}) {
+    static SimpleSetup(handlers = {}, opts = {}) {
         return new BasicNetwork(handlers, opts);
     }
 };
@@ -262,7 +238,7 @@ export class BasicNetwork extends Network {
         network.broadcast(this);
     }
 
-    constructor(handlers = {}, { name = "default", useBatch = false, ...rest } = {}) {
+    constructor(handlers = {}, { contextName = "default", useBatch = false, ...rest } = {}) {
         super();
 
         for(let [ key, value ] of Object.entries(handlers)) {
@@ -271,10 +247,12 @@ export class BasicNetwork extends Network {
             }
         }
     
-        this.router.createContext(name, { handlers, ...rest });
-        this.router.createRoute(() => name);
+        this.router.createContext(contextName, { handlers, ...rest });
+        this.router.createRoute(() => contextName);
 
-        if(useBatch === false) {
+        if(useBatch === true) {
+            this.router.useBatchProcess();
+        } else {
             this.router.useRealTimeProcess();
         }
     }

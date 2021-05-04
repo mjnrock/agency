@@ -88,10 +88,18 @@ export const $Registry = $super => class extends $super {
         return Object.keys(this).length;
     }
 
-    has(entry) {
-        for(let value of this) {
-            if(value === entry) {
-                return true;
+    has(entry, comparator) {
+        if(typeof comparator === "function") {
+            for(let value of this) {
+                if(comparator(entry, value) === true) {
+                    return true;
+                }
+            }
+        } else {
+            for(let value of this) {
+                if(value === entry) {
+                    return true;
+                }
             }
         }
 
