@@ -256,6 +256,30 @@ export class BasicNetwork extends Network {
             this.router.useRealTimeProcess();
         }
     }
+
+    storeGlobal(name, value, { contextName = "default" } = {}) {
+        if(typeof name === "object") {
+            this.router[ contextName ].globals = {
+                ...this.router[ contextName ].globals,
+                ...name,
+            };
+        } else {
+            this.router[ contextName ].globals[ name ] = value;
+        }
+
+        return this;
+    }
+    unstoreGlobal(input, { contextName = "default" } = {}) {
+        if(Array.isArray(input)) {
+            for(let key of input) {
+                delete this.router[ contextName ].globals[ key ];
+            }
+        } else {
+            delete this.router[ contextName ].globals[ input ];
+        }
+
+        return this;
+    }
 }
 
 export default Network;

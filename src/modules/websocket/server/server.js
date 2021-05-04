@@ -23,7 +23,17 @@ const network = new BasicNetwork({
     [ WebSocketServer.Signal.Client.MESSAGE ]: ([ data, client, req ]) => console.log(data),
     [ WebSocketServer.Signal.Client.DISCONNECT ]: ([ code, reason ]) => console.log(`Client left with code ${ code }`),
 });
-const wss = new WebSocketServer(expressWs(app), network);
+const wss = new WebSocketServer(expressWs(app), network, {
+    // unpacker: function(json) {        
+    //     let obj = JSON.parse(json);
+
+    //     while(typeof obj === "string" || obj instanceof String) {
+    //         obj = JSON.parse(obj);
+    //     }
+
+    //     return obj;
+    // }
+});
 
 /**
  * This is a newer way to do the work commonly seen with `bodyParser`

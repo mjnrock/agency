@@ -1,6 +1,6 @@
 import { BasicNetwork } from "./../../../event/Network";
 
-import Client from "./../Client";
+import WebSocketClient from "./../Client";
 
 console.clear();
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
@@ -11,22 +11,45 @@ console.warn("------------ NEW EXECUTION CONTEXT ------------");
  *  with real-time processing.
  */
 const network = new BasicNetwork({
-    [ Client.Signal.CLOSE ]: ([ code, reason ]) => {},
-    [ Client.Signal.ERROR ]: ([ error ]) => {},
-    [ Client.Signal.MESSAGE ]: ([ data ]) => {},
-    [ Client.Signal.OPEN ]: () => { 
-        // client.binaryType = BinaryType.ArrayBuffer;
-        client.send("test", "Hello");
+    [ WebSocketClient.Signal.CLOSE ]: ([ code, reason ]) => {
+        console.log("Toodles");
     },
-    [ Client.Signal.PING ]: ([ data ]) => {},
-    [ Client.Signal.PONG ]: ([ data ]) => {},
-    [ Client.Signal.UNEXPECTED_RESPONSE ]: ([ req, res ]) => {},
-    [ Client.Signal.UPGRADE ]: ([ res ]) => {},
+    [ WebSocketClient.Signal.ERROR ]: ([ error ]) => {},
+    [ WebSocketClient.Signal.MESSAGE ]: ([ data ]) => {},
+    [ WebSocketClient.Signal.OPEN ]: ([], { client }) => { 
+        client.send("test", "Hello", 1,2, 4,4,4);
+    },
+    [ WebSocketClient.Signal.PING ]: ([ data ]) => {},
+    [ WebSocketClient.Signal.PONG ]: ([ data ]) => {},
+    [ WebSocketClient.Signal.UNEXPECTED_RESPONSE ]: ([ req, res ]) => {},
+    [ WebSocketClient.Signal.UPGRADE ]: ([ res ]) => {},
 });
 
-const client = new Client(network, {
+/**
+ * Create the client and connect to the 
+ */
+const client = new WebSocketClient(network, {
+    connect: true,
+    // packer: function(event, ...args) {
+    //     return JSON.stringify({
+    //         from: this.id,
+    //         payload: {
+    //             type: event,
+    //             data: args,
+    //         },
+    //         timestamp: Date.now(),
+    //     });
+    // },
+
     // url: `ws://localhost:3001`,
     protocol: `ws`,
     host: `localhost`,
     port: 3001,
+});
+
+/**
+ * Load @client into the global store
+ */
+network.storeGlobal({
+    client: client,
 });

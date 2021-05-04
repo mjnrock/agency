@@ -20,19 +20,30 @@ export class Client extends Dispatcher {
         Fragments: "fragments",
     };
 
-    constructor(network, { url, host, protocol = "http", port = 3001, opts = {} } = {}) {
+    constructor(network, opts = {}) {
         super(network);
 
         this.subject = this;
 
+        if(typeof opts.packer === "function") {
+            this._packer = opts.packer;
+        }
+        
+        if(opts.connect === true) {
+            this.connect(opts);
+        }
+    }
+
+    connect({ url, host, protocol = "http", port, opts = {} } = {}) {
         if(host && protocol && port) {
             this.connection = new WebSocket(`${ protocol }://${ host }:${ port }`, opts);
         } else {
             this.connection = new WebSocket(url, opts);
         }
 
-        // this.connection.binaryType = Client.BinaryType.NodeBuffer;
         this._bind(this.connection);
+
+        return this;
     }
 
     _bind(client) {
@@ -79,19 +90,23 @@ export class Client extends Dispatcher {
     }
 
     send(event, ...args) {
-        let json = JSON.stringify({
-            from: this.id,
-            payload: {
-                type: event,
-                data: args,
-            },
-            timestamp: Date.now(),
-        });
+        if(this.isOpen) {
+            let payload
+            if(typeof this._packer === "function") {
+                payload = this._packer.call(this, event, ...args);
+            } else {
+                payload = [ event, ...args ];
+            }
+    
+            this.connection.send(payload);
 
-        this.connection.send(json);
+            return true;
+        }
+
+        return false;
     }
 
-    close(code, reason, timeout = false) {
+    disconnect(code, reason, timeout = false) {
         this.connection.close(code, reason);
 
         if(typeof timeout === "number" && timeout > 0) {

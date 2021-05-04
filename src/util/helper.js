@@ -152,6 +152,32 @@ export function extendJavascript() {
     
         }
     });
+};
+
+/**
+ * Create/return multiple instances/evaluations of a passed class/function.
+ * 
+ * @mutator(@i, @args) will be executed at the end of each loop.
+ */
+export function factory(fnOrClass, qty, args = [], mutator) {
+    let results = [];
+    for(let i = 0; i < qty; i++) {
+        if(typeof fnOrClass === "function") {
+            results.push(fnOrClass(...args));
+        } else {
+            results.push(new fnOrClass(...args));
+        }
+
+        if(typeof mutator === "function") {
+            args = mutator(i, args);
+        }
+    }
+
+    if(results.length) {
+        return results;
+    }
+
+    return results[ 0 ];
 }
 
 export default {
@@ -168,4 +194,5 @@ export default {
     clamp,
 
     extendJavascript,
+    factory,
 };
