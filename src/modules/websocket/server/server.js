@@ -4,15 +4,15 @@ import expressWs from "express-ws";
 import { BasicNetwork } from "./../../../event/Network";
 import WebSocketServer from "./../Server";
 
-const App = express();
-const Port = 3001;
+const app = express();
+const port = 3001;
 
 /**
  * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
  *  as a single-route (firstMatch), single-context (named "default") network
  *  with real-time processing.
  */
-const Network = new BasicNetwork({
+const network = new BasicNetwork({
     [ WebSocketServer.Signal.LISTENING ]: () => {},
     [ WebSocketServer.Signal.CLOSE ]: () => {},
     [ WebSocketServer.Signal.CONNECTION ]: ([ client ]) => {},
@@ -20,39 +20,48 @@ const Network = new BasicNetwork({
     [ WebSocketServer.Signal.Client.MESSAGE ]: ([ data, client, req ]) => console.log(data),
     [ WebSocketServer.Signal.Client.DISCONNECT ]: ([ code, reason ]) => console.log(`Client left with code ${ code }`),
 });
-const wss = new WebSocketServer(expressWs(App), Network);
+const wss = new WebSocketServer(expressWs(app), network);
 
 /**
  * This is a newer way to do the work commonly seen with `bodyParser`
  */
-App.use(express.urlencoded({ extended: true }));
-App.use(express.json());
-App.use(express.raw());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.raw());
 
 /**
  * This activates CORS
  */
-App.use((req, res, next) => {
+app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     //? Whatever middleware work .next() is doing is ESSENTIAL to actually making this work
     return next();
 });
     
-App.use(function (req, res, next) {
+/**
+ * A basic middleware example
+ */
+app.use(function (req, res, next) {
     console.log("middleware");
     req.testing = "testing";
 
     return next();
 });
 
-App.get("/", function(req, res, next){
+/**
+ * A basic routing example
+ */
+app.get("/", function(req, res, next){
     console.log("get route", req.testing);
     res.end();
 });
 
-App.listen(Port, () =>
-    console.log(`WebSocket server is listening on port ${ Port }!`),
+/**
+ * Start the server
+ */
+app.listen(port, () =>
+    console.log(`WebSocket server is listening on port ${ port }!`),
 );
 
 
