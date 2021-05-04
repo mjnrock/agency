@@ -40,7 +40,7 @@ export class Server extends Dispatcher {
 
                     this.dispatch(Server.Signal.Client.MESSAGE, obj, client, req);
                 } catch(e) {
-                    this.dispatch(Server.Signal.Client.MESSAGE_ERROR, json, client, req);
+                    this.dispatch(Server.Signal.Client.MESSAGE_ERROR, e, json, client, req);
                 }
             });
             client.on("close", (code, reason) => this.dispatch(Server.Signal.Client.DISCONNECT, code, reason));
