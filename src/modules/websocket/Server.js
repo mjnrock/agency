@@ -2,14 +2,15 @@ import Dispatcher from "../../event/Dispatcher";
 
 export class Server extends Dispatcher {
     static Signal = {
-        LISTENING: "WebSocket.Listening",
-        CLOSE: "WebSocket.Close",
-        CONNECTION: "WebSocket.Connection",
-        HEADERS: "WebSocket.Headers",
+        LISTENING: "WebSocketServer.Listening",
+        CLOSE: "WebSocketServer.Close",
+        CONNECTION: "WebSocketServer.Connection",
+        HEADERS: "WebSocketServer.Headers",
 
         Client: {
-            MESSAGE: "WebSocket.Client.Message",
-            DISCONNECT: "WebSocket.Client.Disconnect",
+            MESSAGE: "WebSocketServer.Client.Message",
+            MESSAGE_ERROR: "WebSocketServer.Client.MessageError",
+            DISCONNECT: "WebSocketServer.Client.Disconnect",
         }
     };
 
@@ -29,7 +30,19 @@ export class Server extends Dispatcher {
         wss.on("headers", (headers, req) => this.dispatch(Server.Signal.HEADERS, headers, req));
 
         app.ws("/", (client, req) => {
-            client.on("message", (data) => this.dispatch(Server.Signal.Client.MESSAGE, data, client, req));
+            client.on("message", (json) => {
+                try {
+                    let obj = JSON.parse(json);
+
+                    while(typeof obj === "string" || obj instanceof String) {
+                        obj = JSON.parse(obj);
+                    }
+
+                    this.dispatch(Server.Signal.Client.MESSAGE, obj, client, req);
+                } catch(e) {
+                    this.dispatch(Server.Signal.Client.MESSAGE_ERROR, json, client, req);
+                }
+            });
             client.on("close", (code, reason) => this.dispatch(Server.Signal.Client.DISCONNECT, code, reason));
         });
     }
