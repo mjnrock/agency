@@ -1,24 +1,11 @@
-import WebSocket from "ws";
+import Client from "./../Client";
 
-const client = new WebSocket(`ws://localhost:3001`);
+console.clear();
+console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
-const BinaryType = {
-    NodeBuffer: "nodebuffer",
-    ArrayBuffer: "arraybuffer",
-    Fragments: "fragments",
-};
-
-
-client.on("open", () => {
-    // client.binaryType = BinaryType.ArrayBuffer;
-    client.send("Hello");
-});
-client.on("message", (...args) => {
-    console.log(...args);
-});
-client.on("error", (...args) => {
-    console.log("Error");
-});
-client.on("close", (...args) => {
-    console.log("Goodbye");
+const client = new Client({
+    url: `ws://localhost:3001`,
+    // protocol: `ws`,
+    // host: `localhost`,
+    // port: 3001,
 });

@@ -4,6 +4,9 @@ import expressWs from "express-ws";
 import { BasicNetwork } from "./../../../event/Network";
 import WebSocketServer from "./../Server";
 
+console.clear();
+console.warn("------------ NEW EXECUTION CONTEXT ------------");
+
 const app = express();
 const port = 3001;
 
@@ -35,6 +38,7 @@ app.use(express.raw());
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+
     //? Whatever middleware work .next() is doing is ESSENTIAL to actually making this work
     return next();
 });
