@@ -46,6 +46,38 @@ export class Client extends Dispatcher {
         client.on("upgrade", (res) => this.dispatch(Client.Signal.UPGRADE, res));
     }
 
+    get readiness() {
+        return this.connection.readyState;
+    }
+    get isConnecting() {
+        return this.connection.readyState === WebSocket.CONNECTING;
+    }
+    get isOpen() {
+        return this.connection.readyState === WebSocket.OPEN;
+    }
+    get isClosing() {
+        return this.connection.readyState === WebSocket.CLOSING;
+    }
+    get isClosed() {
+        return this.connection.readyState === WebSocket.CLOSED;
+    }
+
+    useNodeBuffer() {
+        this.connection.binaryType = Client.BinaryType.NodeBuffer;
+
+        return this;
+    }
+    useArrayBuffer() {
+        this.connection.binaryType = Client.BinaryType.ArrayBuffer;
+
+        return this;
+    }
+    useFragments() {
+        this.connection.binaryType = Client.BinaryType.Fragments;
+
+        return this;
+    }
+
     send(event, ...args) {
         let json = JSON.stringify({
             from: this.id,
@@ -57,6 +89,25 @@ export class Client extends Dispatcher {
         });
 
         this.connection.send(json);
+    }
+
+    close(code, reason, timeout = false) {
+        this.connection.close(code, reason);
+
+        if(typeof timeout === "number" && timeout > 0) {
+            setTimeout(() => {
+                try {
+                    if(!this.isClosed) {
+                        this.kill();
+                    }
+                } catch(e) {
+                    this.dispatch(Client.Signal.ERROR, e);
+                }
+            }, timeout);
+        }
+    }
+    kill() {
+        this.connection.terminate();
     }
 };
 

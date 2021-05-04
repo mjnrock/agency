@@ -31,6 +31,7 @@ export class Server extends Dispatcher {
 
         app.ws("/", (client, req) => {
             client.on("message", (json) => {
+                //TODO  This won't handle anything other than JSON right now (e.g. No buffers)
                 try {
                     let obj = JSON.parse(json);
 
