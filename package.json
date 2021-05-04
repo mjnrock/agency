@@ -46,7 +46,8 @@
         "express": "^4.17.1",
         "express-ws": "^4.0.0",
         "grunt": "^1.1.0",
-        "grunt-contrib-copy": "^1.0.0"
+        "grunt-contrib-copy": "^1.0.0",
+        "ws": "^7.4.5"
     },
     "babel": {
         "presets": [
