@@ -175,7 +175,7 @@ export class Client extends Dispatcher {
     }
 };
 
-export function BasicSetup(opts = {}, handlers = {}) {
+export function QuickSetup(opts = {}, handlers = {}) {
     /**
      * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
      *  as a single-route (firstMatch), single-context (named "default") network

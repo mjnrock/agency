@@ -1,6 +1,4 @@
-import { BasicNetwork } from "./../../../event/Network";
-
-import WebSocketClient, { BasicSetup as SetupWSClient } from "./../Client";
+import { QuickSetup as SetupWSClient } from "./../Client";
 
 console.clear();
 console.warn("------------ NEW EXECUTION CONTEXT ------------");

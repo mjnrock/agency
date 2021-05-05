@@ -109,7 +109,7 @@ export class Server extends Dispatcher {
     }
 };
 
-export function BasicSetup(server, handlers = {}) {  
+export function QuickSetup(server, handlers = {}) {  
     /**
      * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
      *  as a single-route (firstMatch), single-context (named "default") network

@@ -1,8 +1,7 @@
 import express from "express";
 import expressWs from "express-ws";
 
-import { BasicNetwork } from "./../../../event/Network";
-import WebSocketServer, { BasicSetup as SetupWSServer} from "./../Server";
+import { QuickSetup as SetupWSServer} from "./../Server";
 
 console.clear();
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
