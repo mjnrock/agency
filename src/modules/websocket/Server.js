@@ -1,3 +1,4 @@
+import Packets from "./Packets";
 import { BasicNetwork } from "../../event/Network";
 import Dispatcher from "../../event/Dispatcher";
 
@@ -15,30 +16,6 @@ export class Server extends Dispatcher {
         }
     };
 
-    /**
-     * A basic un/packer that utilized JSON
-     */
-    static JsonPackets = {        
-        packer: function(event, ...args) {
-            return JSON.stringify({
-                payload: {
-                    type: event,
-                    data: args,
-                },
-                timestamp: Date.now(),
-            });
-        },
-        unpacker: function(json) {        
-            let obj = JSON.parse(json);
-
-            while(typeof obj === "string" || obj instanceof String) {
-                obj = JSON.parse(obj);
-            }
-
-            return obj.payload;
-        },
-    };
-
     constructor(wss, network, { packer, unpacker } = {}) {
         super(network);
 
@@ -48,12 +25,12 @@ export class Server extends Dispatcher {
         if(typeof packer === "function") {
             this._packer = packer;
         } else {
-            this._packer = Server.JsonPackets.packer;
+            this._packer = Packets.Json.packer;
         }
         if(typeof unpacker === "function") {
             this._unpacker = unpacker;
         } else {
-            this._unpacker = Server.JsonPackets.unpacker;
+            this._unpacker = Packets.Json.unpacker;
         }
 
         this._bind(this.wss.getWss(), this.wss.app);
@@ -115,10 +92,10 @@ export class Server extends Dispatcher {
  *  via << server.network >>.
  * 
  * The main convenience is that this setup will use the
- *  << Server.JsonPackets >> paradigm and setup the local
+ *  << Packets.JSON >> paradigm and setup the local
  *  message routing from packets received and unpackaged
  *  by the <Server>.  As such, the @handlers are those
- *  that should receive those unpackaged packets.
+ *  that should receive the unpackaged packets.
  */
 export function QuickSetup(server, handlers = {}) {  
     /**

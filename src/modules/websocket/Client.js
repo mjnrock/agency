@@ -1,5 +1,6 @@
 import WebSocket from "ws";
 
+import Packets from "./Packets";
 import { BasicNetwork } from "../../event/Network";
 import Dispatcher from "../../event/Dispatcher";
 
@@ -22,30 +23,6 @@ export class Client extends Dispatcher {
         Fragments: "fragments",
     };
 
-    /**
-     * A basic un/packer that utilized JSON
-     */
-    static JsonPackets = {        
-        packer: function(event, ...args) {
-            return JSON.stringify({
-                payload: {
-                    type: event,
-                    data: args,
-                },
-                timestamp: Date.now(),
-            });
-        },
-        unpacker: function(json) {        
-            let obj = JSON.parse(json);
-
-            while(typeof obj === "string" || obj instanceof String) {
-                obj = JSON.parse(obj);
-            }
-
-            return obj.payload;
-        },
-    };
-
     constructor(network, opts = {}) {
         super(network);
 
@@ -54,12 +31,12 @@ export class Client extends Dispatcher {
         if(typeof opts.packer === "function") {
             this._packer = opts.packer;
         } else {
-            this._packer = Client.JsonPackets.packer;
+            this._packer = Packets.Json.packer;
         }
         if(typeof opts.unpacker === "function") {
             this._unpacker = opts.unpacker;
         } else {
-            this._unpacker = Client.JsonPackets.unpacker;
+            this._unpacker = Packets.Json.unpacker;
         }
         
         if(opts.connect === true) {
@@ -181,10 +158,10 @@ export class Client extends Dispatcher {
  *  via << client.network >>.
  * 
  * The main convenience is that this setup will use the
- *  << Client.JsonPackets >> paradigm and setup the local
+ *  << Packets.JSON >> paradigm and setup the local
  *  message routing from packets received and unpackaged
  *  by the <Client>.  As such, the @handlers are those 
- *  that should receive those unpackaged packets.
+ *  that should receive the unpackaged packets.
  */
 export function QuickSetup(opts = {}, handlers = {}) {
     /**
