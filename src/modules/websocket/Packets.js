@@ -19,14 +19,18 @@ export const Json = () => ({
 
 /**
  * NOTE:    **ALL** arguments will get cast as a string
+ * This will encode the inner data according to the @encoding,
+ *  but will convert the result into a UTF-8 buffer.  On the
+ *  other side, the UTF-8 buffer will be converted to a string,
+ *  then enc
  */
 export const StringBuffer = ({ encoding = "utf8", spacer = ":" } = {}) => ({
     packer: function(event, ...args) {
-        return Buffer.from([ event, ...args ].join(spacer).toString(encoding), "utf8");
+        return Buffer.from([ event, ...args ].join(spacer).toString(), encoding);
     },
     unpacker: function(buffer) {
         if(buffer instanceof Buffer) {
-            const str = Buffer.from(buffer, encoding).toString("utf8");
+            const str = Buffer.from(buffer, encoding).toString(encoding);
             const [ event, ...args ] = str.split(spacer);
 
             return {
