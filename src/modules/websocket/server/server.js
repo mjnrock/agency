@@ -19,21 +19,11 @@ const network = new BasicNetwork({
     [ WebSocketServer.Signal.LISTENING ]: () => {},
     [ WebSocketServer.Signal.CLOSE ]: () => {},
     [ WebSocketServer.Signal.CONNECTION ]: ([ client ]) => {},
-    [ WebSocketServer.Signal.HEADERS ]: ([ headers, req]) => {},
+    [ WebSocketServer.Signal.HEADERS ]: ([ headers, req ]) => {},
     [ WebSocketServer.Signal.Client.MESSAGE ]: ([ data, client, req ]) => console.log(data),
     [ WebSocketServer.Signal.Client.DISCONNECT ]: ([ code, reason ]) => console.log(`Client left with code ${ code }`),
 });
-const wss = new WebSocketServer(expressWs(app), network, {
-    // unpacker: function(json) {        
-    //     let obj = JSON.parse(json);
-
-    //     while(typeof obj === "string" || obj instanceof String) {
-    //         obj = JSON.parse(obj);
-    //     }
-
-    //     return obj;
-    // }
-});
+const wss = new WebSocketServer(expressWs(app), network);
 
 /**
  * This is a newer way to do the work commonly seen with `bodyParser`
@@ -77,6 +67,11 @@ app.get("/", function(req, res, next){
 app.listen(port, () =>
     console.log(`WebSocket server is listening on port ${ port }!`),
 );
+
+
+setInterval(() => {
+    wss.sendToAll("test", 1, 2, 3, 4, 5);
+}, 2500)
 
 
 

@@ -15,14 +15,26 @@ const network = new BasicNetwork({
         console.log("Toodles");
     },
     [ WebSocketClient.Signal.ERROR ]: ([ error ]) => {},
-    [ WebSocketClient.Signal.MESSAGE ]: ([ data ]) => {},
+    [ WebSocketClient.Signal.MESSAGE ]: ([{ type, data }], { client }) => {
+        if(!Array.isArray(data)) {
+            data = [ data ];
+        }
+
+        network.emit(client, type, ...data);
+    },
     [ WebSocketClient.Signal.OPEN ]: ([], { client }) => { 
-        client.send("test", "Hello", 1,2, 4,4,4);
+        console.log("Greetings");
     },
     [ WebSocketClient.Signal.PING ]: ([ data ]) => {},
     [ WebSocketClient.Signal.PONG ]: ([ data ]) => {},
     [ WebSocketClient.Signal.UNEXPECTED_RESPONSE ]: ([ req, res ]) => {},
     [ WebSocketClient.Signal.UPGRADE ]: ([ res ]) => {},
+
+    test: function(data) {
+        console.log("Test")
+        // console.log(this)
+        console.log(...data)
+    }
 });
 
 /**
@@ -30,16 +42,6 @@ const network = new BasicNetwork({
  */
 const client = new WebSocketClient(network, {
     connect: true,
-    // packer: function(event, ...args) {
-    //     return JSON.stringify({
-    //         from: this.id,
-    //         payload: {
-    //             type: event,
-    //             data: args,
-    //         },
-    //         timestamp: Date.now(),
-    //     });
-    // },
 
     // url: `ws://localhost:3001`,
     protocol: `ws`,

@@ -212,6 +212,30 @@ export class Network extends Registry {
         return this;
     }
 
+    storeGlobal(contextName, name, value) {
+        if(typeof name === "object") {
+            this.router[ contextName ].globals = {
+                ...this.router[ contextName ].globals,
+                ...name,
+            };
+        } else {
+            this.router[ contextName ].globals[ name ] = value;
+        }
+
+        return this;
+    }
+    unstoreGlobal(contextName, input) {
+        if(Array.isArray(input)) {
+            for(let key of input) {
+                delete this.router[ contextName ].globals[ key ];
+            }
+        } else {
+            delete this.router[ contextName ].globals[ input ];
+        }
+
+        return this;
+    }
+
     static $(name = "default") {
         if(name === "default" && !Network.Instances[ name ]) {
             Network.Instances[ name ] = new BasicNetwork();
@@ -257,28 +281,11 @@ export class BasicNetwork extends Network {
         }
     }
 
-    storeGlobal(name, value, { contextName = "default" } = {}) {
-        if(typeof name === "object") {
-            this.router[ contextName ].globals = {
-                ...this.router[ contextName ].globals,
-                ...name,
-            };
-        } else {
-            this.router[ contextName ].globals[ name ] = value;
-        }
-
-        return this;
+    storeGlobal(name, key, { contextName = "default" } = {}) {
+        return super.storeGlobal(contextName, name, key);
     }
-    unstoreGlobal(input, { contextName = "default" } = {}) {
-        if(Array.isArray(input)) {
-            for(let key of input) {
-                delete this.router[ contextName ].globals[ key ];
-            }
-        } else {
-            delete this.router[ contextName ].globals[ input ];
-        }
-
-        return this;
+    unstoreGlobal(name, key, { contextName = "default" } = {}) {
+        return super.unstoreGlobal(contextName, name, key);
     }
 }
 

@@ -7,6 +7,7 @@ export class Client extends Dispatcher {
         CLOSE: "WebSocketClient.Close",
         ERROR: "WebSocketClient.Error",
         MESSAGE: "WebSocketClient.Message",
+        MESSAGE_ERROR: "WebSocketClient.MessageError",
         OPEN: "WebSocketClient.Open",
         PING: "WebSocketClient.Ping",
         PONG: "WebSocketClient.Pong",
@@ -20,6 +21,30 @@ export class Client extends Dispatcher {
         Fragments: "fragments",
     };
 
+    /**
+     * A basic un/packer that utilized JSON
+     */
+    static JsonPackets = {        
+        packer: function(event, ...args) {
+            return JSON.stringify({
+                payload: {
+                    type: event,
+                    data: args,
+                },
+                timestamp: Date.now(),
+            });
+        },
+        unpacker: function(json) {        
+            let obj = JSON.parse(json);
+
+            while(typeof obj === "string" || obj instanceof String) {
+                obj = JSON.parse(obj);
+            }
+
+            return obj.payload;
+        },
+    };
+
     constructor(network, opts = {}) {
         super(network);
 
@@ -27,6 +52,13 @@ export class Client extends Dispatcher {
 
         if(typeof opts.packer === "function") {
             this._packer = opts.packer;
+        } else {
+            this._packer = Client.JsonPackets.packer;
+        }
+        if(typeof opts.unpacker === "function") {
+            this._unpacker = opts.unpacker;
+        } else {
+            this._unpacker = Client.JsonPackets.unpacker;
         }
         
         if(opts.connect === true) {
@@ -49,7 +81,20 @@ export class Client extends Dispatcher {
     _bind(client) {
         client.on("close", (code, reason) => this.dispatch(Client.Signal.CLOSE, code, reason));
         client.on("error", (error) => this.dispatch(Client.Signal.ERROR, error));
-        client.on("message", (data) => this.dispatch(Client.Signal.MESSAGE, data));
+        client.on("message", (data) => {
+            try {
+                let payload;
+                if(typeof this._unpacker === "function") {
+                    payload = this._unpacker.call(this, data);
+                } else {
+                    payload = data;
+                }
+                
+                this.dispatch(Client.Signal.MESSAGE, payload);
+            } catch(e) {
+                this.dispatch(Client.Signal.MESSAGE_ERROR, e, data);
+            }
+        });
         client.on("open", () => this.dispatch(Client.Signal.OPEN));
         client.on("ping", (data) => this.dispatch(Client.Signal.PING, data));
         client.on("pong", (data) => this.dispatch(Client.Signal.PONG, data));

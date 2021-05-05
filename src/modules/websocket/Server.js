@@ -14,14 +14,45 @@ export class Server extends Dispatcher {
         }
     };
 
-    constructor(wss, network, { unpacker } = {}) {
+    /**
+     * A basic un/packer that utilized JSON
+     */
+    static JsonPackets = {        
+        packer: function(event, ...args) {
+            return JSON.stringify({
+                payload: {
+                    type: event,
+                    data: args,
+                },
+                timestamp: Date.now(),
+            });
+        },
+        unpacker: function(json) {        
+            let obj = JSON.parse(json);
+
+            while(typeof obj === "string" || obj instanceof String) {
+                obj = JSON.parse(obj);
+            }
+
+            return obj.payload;
+        },
+    };
+
+    constructor(wss, network, { packer, unpacker } = {}) {
         super(network);
 
         this.subject = this;
         this.wss = wss;
 
+        if(typeof packer === "function") {
+            this._packer = packer;
+        } else {
+            this._packer = Server.JsonPackets.packer;
+        }
         if(typeof unpacker === "function") {
             this._unpacker = unpacker;
+        } else {
+            this._unpacker = Server.JsonPackets.unpacker;
         }
 
         this._bind(this.wss.getWss(), this.wss.app);
@@ -54,6 +85,26 @@ export class Server extends Dispatcher {
 
     get clients() {
         return this.wss.getWss().clients;
+    }
+
+    sendToClient(client, type, ...data) {
+        let payload;
+        if(typeof this._packer === "function") {
+            payload = this._packer.call(this, type, ...data);
+        } else {
+            payload = data;
+        }
+
+        client.send(payload);
+
+        return this;
+    }
+    sendToAll(type, ...data) {
+        for(let client of this.clients) {
+            this.sendToClient(client, type, ...data);
+        }
+
+        return this;
     }
 };
 
