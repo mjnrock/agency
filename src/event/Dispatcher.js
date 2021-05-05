@@ -1,5 +1,5 @@
 import AgencyBase from "../AgencyBase";
-import Network from "./Network";
+import Network, { BasicNetwork } from "./Network";
 
 import { compose } from "../util/helper";
 
@@ -149,6 +149,18 @@ export class Dispatcher extends compose($Dispatcher)(AgencyBase) {
             },
             ...opts,
         });
+    }
+
+    /**
+     * This is a basic helper function to create a new <BasicNetwork>
+     *  and attach a newly created <Dispatcher> to that network.
+     * 
+     * A @subject and @handlers can be passed to seed these.
+     */
+    static CreateNetwork(subject, handlers = {}) {
+        const network = new BasicNetwork(handlers);
+
+        return new Dispatcher(network, subject);
     }
 }
 

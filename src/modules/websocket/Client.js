@@ -175,6 +175,17 @@ export class Client extends Dispatcher {
     }
 };
 
+/**
+ * Create a new <BasicNetwork> and a new <Client>, returning
+ *  the newly created client.  The network can be accessed
+ *  via << client.network >>.
+ * 
+ * The main convenience is that this setup will use the
+ *  << Client.JsonPackets >> paradigm and setup the local
+ *  message routing from packets received and unpackaged
+ *  by the <Client>.  As such, the @handlers are those 
+ *  that should receive those unpackaged packets.
+ */
 export function QuickSetup(opts = {}, handlers = {}) {
     /**
      * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured

@@ -109,6 +109,17 @@ export class Server extends Dispatcher {
     }
 };
 
+/**
+ * Create a new <BasicNetwork> and a new <Server>, returning
+ *  the newly created server.  The network can be accessed
+ *  via << server.network >>.
+ * 
+ * The main convenience is that this setup will use the
+ *  << Server.JsonPackets >> paradigm and setup the local
+ *  message routing from packets received and unpackaged
+ *  by the <Server>.  As such, the @handlers are those
+ *  that should receive those unpackaged packets.
+ */
 export function QuickSetup(server, handlers = {}) {  
     /**
      * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
