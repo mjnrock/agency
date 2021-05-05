@@ -1,3 +1,4 @@
+import { BasicNetwork } from "../../event/Network";
 import Dispatcher from "../../event/Dispatcher";
 
 export class Server extends Dispatcher {
@@ -106,6 +107,36 @@ export class Server extends Dispatcher {
 
         return this;
     }
+};
+
+export function BasicSetup(server, handlers = {}) {  
+    /**
+     * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
+     *  as a single-route (firstMatch), single-context (named "default") network
+     *  with real-time processing.
+     */  
+    const network = new BasicNetwork({
+        /**
+         * WebSocketClient handlers
+         */
+        [ Server.Signal.LISTENING ]: () => {},
+        [ Server.Signal.CLOSE ]: () => {},
+        [ Server.Signal.CONNECTION ]: ([ client ]) => {},
+        [ Server.Signal.HEADERS ]: ([ headers, req ]) => {},
+        [ Server.Signal.Client.MESSAGE ]: ([ { type, data }, client, req ]) => {
+            if(!Array.isArray(data)) {
+                data = [ data ];
+            }
+
+            network.emit(client, type, ...data);
+        },
+        [ Server.Signal.Client.DISCONNECT ]: ([ code, reason ]) => console.log(`Client left with code ${ code }`),
+        
+        ...handlers,
+    });
+    const wss = new Server(server, network);
+
+    return wss;
 };
 
 export default Server;

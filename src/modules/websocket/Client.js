@@ -1,5 +1,6 @@
 import WebSocket from "ws";
 
+import { BasicNetwork } from "../../event/Network";
 import Dispatcher from "../../event/Dispatcher";
 
 export class Client extends Dispatcher {
@@ -102,6 +103,9 @@ export class Client extends Dispatcher {
         client.on("upgrade", (res) => this.dispatch(Client.Signal.UPGRADE, res));
     }
 
+    get url() {
+        return this.connection._url;
+    }
     get readiness() {
         return this.connection.readyState;
     }
@@ -170,5 +174,50 @@ export class Client extends Dispatcher {
         this.connection.terminate();
     }
 };
+
+export function BasicSetup(opts = {}, handlers = {}) {
+    /**
+     * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
+     *  as a single-route (firstMatch), single-context (named "default") network
+     *  with real-time processing.
+     */
+    const network = new BasicNetwork({
+        /**
+         * Client handlers
+         */
+        [ Client.Signal.CLOSE ]: ([ code, reason ]) => console.warn(`Client has disconnected [${ code }] from`, client.url),
+        [ Client.Signal.ERROR ]: ([ error ]) => {},
+        [ Client.Signal.MESSAGE ]: ([{ type, data }], { client }) => {
+            if(!Array.isArray(data)) {
+                data = [ data ];
+            }
+    
+            network.emit(client, type, ...data);
+        },
+        [ Client.Signal.OPEN ]: ([], { client }) => {
+            console.warn(`Client has connected to`, client.url)
+        },
+        [ Client.Signal.PING ]: ([ data ]) => {},
+        [ Client.Signal.PONG ]: ([ data ]) => {},
+        [ Client.Signal.UNEXPECTED_RESPONSE ]: ([ req, res ]) => {},
+        [ Client.Signal.UPGRADE ]: ([ res ]) => {},
+    
+        /**
+         * Unpacked Client.Signal.MESSAGE handlers
+         */
+        ...handlers,
+    });
+
+    const client = new Client(network, opts);
+
+    /**
+     * Load @client into the global store for use in handlers
+     */
+    network.storeGlobal({
+        client: client,
+    });
+
+    return client;
+}
 
 export default Client;

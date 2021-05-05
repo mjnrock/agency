@@ -2,28 +2,20 @@ import express from "express";
 import expressWs from "express-ws";
 
 import { BasicNetwork } from "./../../../event/Network";
-import WebSocketServer from "./../Server";
+import WebSocketServer, { BasicSetup as SetupWSServer} from "./../Server";
 
 console.clear();
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
 const app = express();
 const port = 3001;
-
-/**
- * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
- *  as a single-route (firstMatch), single-context (named "default") network
- *  with real-time processing.
- */
-const network = new BasicNetwork({
-    [ WebSocketServer.Signal.LISTENING ]: () => {},
-    [ WebSocketServer.Signal.CLOSE ]: () => {},
-    [ WebSocketServer.Signal.CONNECTION ]: ([ client ]) => {},
-    [ WebSocketServer.Signal.HEADERS ]: ([ headers, req ]) => {},
-    [ WebSocketServer.Signal.Client.MESSAGE ]: ([ data, client, req ]) => console.log(data),
-    [ WebSocketServer.Signal.Client.DISCONNECT ]: ([ code, reason ]) => console.log(`Client left with code ${ code }`),
+const wss = SetupWSServer(expressWs(app), {
+    test: function(data) {
+        console.log("Test")
+        // console.log(this)
+        console.log(...data)
+    },
 });
-const wss = new WebSocketServer(expressWs(app), network);
 
 /**
  * This is a newer way to do the work commonly seen with `bodyParser`
@@ -84,3 +76,39 @@ setInterval(() => {
  * iOS Trust Store
  * https://apple.stackexchange.com/questions/123988/how-to-add-a-crt-certificate-to-iphones-keychain
  */
+
+
+
+
+// /**
+//  * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
+//  *  as a single-route (firstMatch), single-context (named "default") network
+//  *  with real-time processing.
+//  */
+// const network = new BasicNetwork({
+//     /**
+//      * WebSocketClient handlers
+//      */
+//     [ WebSocketServer.Signal.LISTENING ]: () => {},
+//     [ WebSocketServer.Signal.CLOSE ]: () => {},
+//     [ WebSocketServer.Signal.CONNECTION ]: ([ client ]) => {},
+//     [ WebSocketServer.Signal.HEADERS ]: ([ headers, req ]) => {},
+//     [ WebSocketServer.Signal.Client.MESSAGE ]: ([ { type, data }, client, req ]) => {
+//         if(!Array.isArray(data)) {
+//             data = [ data ];
+//         }
+
+//         network.emit(client, type, ...data);
+//     },
+//     [ WebSocketServer.Signal.Client.DISCONNECT ]: ([ code, reason ]) => console.log(`Client left with code ${ code }`),
+    
+//     /**
+//      * Unpacked WebSocketClient.Signal.MESSAGE handlers
+//      */
+//     test: function(data) {
+//         console.log("Test")
+//         // console.log(this)
+//         console.log(...data)
+//     },
+// });
+// const wss = new WebSocketServer(expressWs(app), network);
