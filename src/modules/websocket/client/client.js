@@ -19,9 +19,9 @@ const client = SetupWSClient({
 });
 
 
-// setInterval(() => {
-//     client.send("test", 6, 7, 8, 9, 0);
-// }, 2500);
+setInterval(() => {
+    client.send("test", 6, 7, 8, 9, 0);
+}, 2500);
 
 // /**
 //  * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured

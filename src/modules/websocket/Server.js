@@ -24,13 +24,9 @@ export class Server extends Dispatcher {
 
         if(typeof packer === "function") {
             this._packer = packer;
-        } else {
-            this._packer = Packets.Json.packer;
         }
         if(typeof unpacker === "function") {
             this._unpacker = unpacker;
-        } else {
-            this._unpacker = Packets.Json.unpacker;
         }
 
         this._bind(this.wss.getWss(), this.wss.app);
@@ -97,7 +93,7 @@ export class Server extends Dispatcher {
  *  by the <Server>.  As such, the @handlers are those
  *  that should receive the unpackaged packets.
  */
-export function QuickSetup(server, handlers = {}) {  
+export function QuickSetup(server, handlers = {}, { packets = Packets.Json() } = {}) {  
     /**
      * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
      *  as a single-route (firstMatch), single-context (named "default") network
@@ -122,7 +118,9 @@ export function QuickSetup(server, handlers = {}) {
         
         ...handlers,
     });
-    const wss = new Server(server, network);
+    const wss = new Server(server, network, {
+        ...packets,
+    });
 
     return wss;
 };

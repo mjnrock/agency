@@ -30,13 +30,9 @@ export class Client extends Dispatcher {
 
         if(typeof opts.packer === "function") {
             this._packer = opts.packer;
-        } else {
-            this._packer = Packets.Json.packer;
         }
         if(typeof opts.unpacker === "function") {
             this._unpacker = opts.unpacker;
-        } else {
-            this._unpacker = Packets.Json.unpacker;
         }
         
         if(opts.connect === true) {
@@ -163,7 +159,7 @@ export class Client extends Dispatcher {
  *  by the <Client>.  As such, the @handlers are those 
  *  that should receive the unpackaged packets.
  */
-export function QuickSetup(opts = {}, handlers = {}) {
+export function QuickSetup(opts = {}, handlers = {}, { packets = Packets.Json() } = {}) {
     /**
      * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
      *  as a single-route (firstMatch), single-context (named "default") network
@@ -196,7 +192,10 @@ export function QuickSetup(opts = {}, handlers = {}) {
         ...handlers,
     });
 
-    const client = new Client(network, opts);
+    const client = new Client(network, {
+        ...packets,
+        ...opts,
+    });
 
     /**
      * Load @client into the global store for use in handlers

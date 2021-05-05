@@ -60,9 +60,9 @@ app.listen(port, () =>
 );
 
 
-// setInterval(() => {
-//     wss.sendToAll("test", 1, 2, 3, 4, 5);
-// }, 2500)
+setInterval(() => {
+    wss.sendToAll("test", 1, 2, 3, 4, 5);
+}, 2500)
 
 
 
