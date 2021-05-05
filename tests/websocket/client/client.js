@@ -1,4 +1,4 @@
-import { QuickSetup as SetupWSClient } from "./../Client";
+import { QuickSetup as SetupWSClient } from "./../../../src/modules/websocket/Client";
 
 console.clear();
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
@@ -16,12 +16,19 @@ const client = SetupWSClient({
         // console.log(this)
         console.log(...data)
     },
+    cycle: function(data, { network }) {
+        network.emit("cycle");
+        
+        setTimeout(() => {
+            client.send("cycle", ...data);
+        }, 1000);
+    },
 });
 
 
-setInterval(() => {
-    client.send("test", 6, 7, 8, 9, 0);
-}, 2500);
+// setInterval(() => {
+//     client.send("test", 6, 7, 8, 9, 0);
+// }, 2500);
 
 // /**
 //  * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured

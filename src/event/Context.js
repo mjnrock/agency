@@ -1,8 +1,10 @@
 import Registry from "../Registry";
 
 export class Context extends Registry {
-    constructor({ globals = {}, handlers = {}, hooks = {}, ...config } = {}) {
+    constructor(network, { globals = {}, handlers = {}, hooks = {}, ...config } = {}) {
         super();
+
+        this.network = network;
 
         this.globals = globals;
         this.hooks = hooks;
@@ -119,8 +121,11 @@ export class Context extends Registry {
     invokeHandlers(payload) {        
         const optionArgs = {
             ...this.globals,
-            enqueue: this.enqueue.bind(this),
             context: this,
+            state: Object.assign({}, this.network.getState()),
+            setState: state => this.network.setState(state, false),
+            mergeState: state => this.network.setState(state, true),
+            network: this.network,
         };
 
         const receivers = this.handlers.get("*") || [];

@@ -175,11 +175,15 @@ export function QuickSetup(opts = {}, handlers = {}, { packets = Packets.Json() 
             if(!Array.isArray(data)) {
                 data = [ data ];
             }
+
+            console.log(type, data)
     
             network.emit(client, type, ...data);
         },
         [ Client.Signal.OPEN ]: ([], { client }) => {
-            console.warn(`Client has connected to`, client.url)
+            console.warn(`Client has connected to`, client.url);
+
+            client.send("cycle", Date.now());
         },
         [ Client.Signal.PING ]: ([ data ]) => {},
         [ Client.Signal.PONG ]: ([ data ]) => {},
@@ -202,6 +206,7 @@ export function QuickSetup(opts = {}, handlers = {}, { packets = Packets.Json() 
      */
     network.storeGlobal({
         client: client,
+        network: network,
     });
 
     return client;

@@ -8,13 +8,31 @@ import Router from "./Router";
 export class Network extends Registry {
     static Instances = new Registry();
 
-    constructor(contexts = [], routes = [], connections = []) {
+    constructor(contexts = [], routes = [], { connections = [], state = {} } = {}) {
         super();
         
         // allow the <Network> to broadcast messages to other connected <Network(s)>
         this.connections = new Set(connections);    //? e.g. Connect children to parents for a hierarchy
         // create event routing contexts with qualifier functions to in/exclude events
-        this.router = new Router(contexts, routes);
+        this.router = new Router(this, contexts, routes);
+
+        this._state = state;
+    }
+
+    getState() {
+        return this._state;
+    }
+    setState(state = {}, isMerge = true) {
+        if(isMerge) {
+            this._state = {
+                ...this._state,
+                ...state,
+            };
+        } else {
+            this._state = state;
+        }
+
+        return this._state;
     }
 
     /**

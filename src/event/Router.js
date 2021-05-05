@@ -82,13 +82,15 @@ export const $Router = $super => class extends $super {
 };
 
 export class Router extends compose($Registry, $Router)(AgencyBase) {
-    constructor(contexts = [], routes = []) {
+    constructor(network, contexts = [], routes = []) {
         super({
             Router: {
                 routes: [],
                 type: EnumRouteType.MatchFirst
             },
         });
+
+        this.network = network;
         
         this.config = {
             isBatchProcess: true,
@@ -155,7 +157,7 @@ export class Router extends compose($Registry, $Router)(AgencyBase) {
      *  and handled in an isolated scope.
      */
     createContext(name, ...args) {
-        const context = new Context(...args);
+        const context = new Context(this.network, ...args);
 
         this.register(context, name);
 

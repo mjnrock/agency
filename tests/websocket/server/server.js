@@ -1,7 +1,7 @@
 import express from "express";
 import expressWs from "express-ws";
 
-import { QuickSetup as SetupWSServer} from "./../Server";
+import { QuickSetup as SetupWSServer} from "./../../../src/modules/websocket/Server";
 
 console.clear();
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
@@ -13,6 +13,11 @@ const wss = SetupWSServer(expressWs(app), {
         console.log("Test")
         // console.log(this)
         console.log(...data)
+    },
+    cycle: function(data, { server }) {
+        setTimeout(() => {
+            server.sendToAll("cycle", ...data);
+        }, 1000);
     },
 });
 
@@ -60,9 +65,9 @@ app.listen(port, () =>
 );
 
 
-setInterval(() => {
-    wss.sendToAll("test", 1, 2, 3, 4, 5);
-}, 2500)
+// setInterval(() => {
+//     wss.sendToAll("test", 1, 2, 3, 4, 5);
+// }, 2500);
 
 
 

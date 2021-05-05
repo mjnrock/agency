@@ -112,6 +112,8 @@ export function QuickSetup(server, handlers = {}, { packets = Packets.Json() } =
                 data = [ data ];
             }
 
+            console.log(type, data)
+
             network.emit(client, type, ...data);
         },
         [ Server.Signal.Client.DISCONNECT ]: ([ code, reason ]) => console.log(`Client left with code ${ code }`),
@@ -120,6 +122,11 @@ export function QuickSetup(server, handlers = {}, { packets = Packets.Json() } =
     });
     const wss = new Server(server, network, {
         ...packets,
+    });
+
+    network.storeGlobal({
+        server: wss,
+        network: network,
     });
 
     return wss;
