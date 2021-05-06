@@ -1,13 +1,9 @@
-import { v4 as uuidv4 } from "uuid";
-
 import AgencyBase from "./AgencyBase";
 import $DispatchState from "./$DispatchState";
 import { compose } from "./util/helper";
 
-import Channel from "./Channel";
-import Router from "./Router";
-import Message from "./Message";
 import Registry from "./../Registry";
+import MessageBus from "./MessageBus";
 
 export class Network extends compose($DispatchState)(AgencyBase) {
     static Signals = {
@@ -24,43 +20,12 @@ export class Network extends compose($DispatchState)(AgencyBase) {
         
         this.connections = new Set(connections);   // Connected <Network(s)>
         this.members = new Registry();
-        this.channels = new Registry();
-        this.router = new Router();
+        this.bus = new MessageBus();
 
-        this.__dispatcher.reassign(this, this);
+        this.__dispatcher.reassign(this.bus, this);
     }
 
-    emit(emitter, event, ...args) {
-        if(Message.Conforms(emitter)) {
-            this.receive(emitter);
-        } else {
-            this.receive(new Message(emitter, event, ...args));
-        }
-
-        return this;
-    }
-    receive(message) {
-        this.router.route(message);
-    }
-
-    process(...channels) {
-        for(let nameOrChannel of channels) {
-            let channel;
-            if(typeof nameOrChannel === "string" || nameOrChannel instanceof String) {
-                channel = this.channels[ nameOrChannel ];
-            } else {
-                channel = nameOrChannel;
-            }
-
-            if(channel instanceof Channel) {
-                channel.process();
-            }
-        }
-
-        return this;
-    }
-
-    broadcast()
+    broadcast() {}
 };
 
 export default Network;

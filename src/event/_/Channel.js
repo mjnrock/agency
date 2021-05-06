@@ -1,4 +1,4 @@
-import Registry from "../../Registry";
+import Registry from "../Registry";
 import Dispatcher from "./Dispatcher";
 
 export class Channel extends Registry {
