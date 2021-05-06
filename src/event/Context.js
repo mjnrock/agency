@@ -118,7 +118,7 @@ export class Context extends Registry {
      * An extracted invocation method so that << .bus >> can
      *  bypass the queue if in real-time mode.
      */
-    invokeHandlers(payload) {        
+    invokeHandlers(payload) {
         const optionArgs = {
             ...this.globals,
             context: this,

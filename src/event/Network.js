@@ -8,6 +8,10 @@ import Router from "./Router";
 export class Network extends Registry {
     static Instances = new Registry();
 
+    static Signals = {
+        UPDATE: "Network.Update",
+    };
+
     constructor(contexts = [], routes = [], { connections = [], state = {} } = {}) {
         super();
         
@@ -22,17 +26,31 @@ export class Network extends Registry {
     getState() {
         return this._state;
     }
-    setState(state = {}, isMerge = true) {
+    setState(state = {}, isMerge = false) {
+        let newState = {};
+
         if(isMerge) {
-            this._state = {
+            newState = {
                 ...this._state,
                 ...state,
             };
         } else {
-            this._state = state;
+            newState = state;
         }
 
+        let args = [
+            Object.assign({}, newState),
+            Object.assign({}, this._state),
+            Object.assign({}, state),
+        ];
+        setTimeout(() => this.emit(this, Network.Signals.UPDATE, ...args), 0);
+
+        this._state = newState;
+
         return this._state;
+    }
+    mergeState(state = {}) {
+        return this.setState(state, true);
     }
 
     /**
@@ -305,6 +323,6 @@ export class BasicNetwork extends Network {
     unstoreGlobal(name, key, { contextName = "default" } = {}) {
         return super.unstoreGlobal(contextName, name, key);
     }
-}
+};
 
 export default Network;

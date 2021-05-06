@@ -1,37 +1,56 @@
 /* eslint-disable */
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 
-import Watcher from "../watchable/Watcher";
-import Watchable from "../watchable/Watchable";
+import Network from "./../event/Network";
+import Dispatcher from "./../event/Dispatcher";
+import Context from "./../event/Context";
 
-export function useWatchable(context, prop) {
-    const ctx = useContext(context);
-    const subject = prop ? ctx[ prop ] : ctx;
+export function useNetwork(network, contexts = [ "default" ], emitter) {    
+    const [ state, setState ] = useState(() => network.getState());
+    const [ dispatcher, setDispatcher ] = useState(() => new Dispatcher(network, emitter || network));
     
-    const [ watcher, setWatcher ] = useState(new Watcher([ subject ]));
-    const [ data, setData ] = useState(subject instanceof Watchable ? subject.$.toData() : {});
+    useEffect(() => {
+        if(emitter && dispatcher.subject !== emitter) {
+            setDispatcher(new Dispatcher(network, emitter));
+        }
+    }, [ emitter ]);
 
     useEffect(() => {
-        const fn = function(prop, value) {
-            if(subject) {
-                setData({
-                    ...data,
-                    [ prop ]: value,
-                });
+        // const handler = function([ state, oldState, changes ]) {
+        const handler = function([ state ]) {
+            setState(state);
+        };
+        
+        for(let context of contexts) {
+            if(context instanceof Context) {
+                context.addHandler(Network.Signals.UPDATE, handler);
+            } else {
+                const ctx = network.router[ context ];
+                
+                if(ctx instanceof Context) {
+                    ctx.addHandler(Network.Signals.UPDATE, handler);
+                }
+            }
+        }
+        
+        return () => {
+            for(let context of contexts) {
+                if(context instanceof Context) {
+                    context.removeHandler(Network.Signals.UPDATE, handler);
+                } else {
+                    const ctx = network.router[ context ];
+                    
+                    if(ctx instanceof Context) {
+                        ctx.removeHandler(Network.Signals.UPDATE, handler);
+                    }
+                }
             }
         };
-
-        watcher.$.subscribe(fn);
-
-        return () => {
-            watcher.$.unsubscribe(fn);
-            setWatcher(null);
-        };
-    }, [ subject ]);
-
-    return { data, subject, watcher };
+    }, [ network, contexts ]);
+    
+    return [ state, dispatcher.dispatch, dispatcher.broadcast ];
 };
 
 export default {
-    useWatchable,
+    useNetwork,
 };

@@ -1,3 +1,4 @@
+import Network from "./../../../src/event/Network";
 import { QuickSetup as SetupWSClient } from "./../../../src/modules/websocket/Client";
 
 console.clear();
@@ -23,6 +24,20 @@ const client = SetupWSClient({
             client.send("cycle", ...data);
         }, 1000);
     },
+    [ Network.Signals.UPDATE ]: function(data) {
+        console.log(data);
+    },
+});
+
+client.network.setState({
+    cats: 2,
+});
+client.network.setState({
+    catz: 5,
+});
+client.network.mergeState({
+    cats: 3,
+    catz: 5,
 });
 
 

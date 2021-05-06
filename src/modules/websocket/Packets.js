@@ -2,7 +2,7 @@ export const Json = () => ({
     packer: function(event, ...args) {
         return JSON.stringify({
             type: event,
-            data: args,
+            payload: args,
             timestamp: Date.now(),
         });
     },

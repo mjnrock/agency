@@ -55,18 +55,18 @@ export class Client extends Dispatcher {
     _bind(client) {
         client.on("close", (code, reason) => this.dispatch(Client.Signal.CLOSE, code, reason));
         client.on("error", (error) => this.dispatch(Client.Signal.ERROR, error));
-        client.on("message", (data) => {
+        client.on("message", (packet) => {
             try {
-                let payload;
+                let msg;
                 if(typeof this._unpacker === "function") {
-                    payload = this._unpacker.call(this, data);
+                    msg = this._unpacker.call(this, packet);
                 } else {
-                    payload = data;
+                    msg = packet;
                 }
                 
-                this.dispatch(Client.Signal.MESSAGE, payload);
+                this.dispatch(Client.Signal.MESSAGE, msg);
             } catch(e) {
-                this.dispatch(Client.Signal.MESSAGE_ERROR, e, data);
+                this.dispatch(Client.Signal.MESSAGE_ERROR, e, packet);
             }
         });
         client.on("open", () => this.dispatch(Client.Signal.OPEN));
@@ -171,14 +171,14 @@ export function QuickSetup(opts = {}, handlers = {}, { packets = Packets.Json() 
          */
         [ Client.Signal.CLOSE ]: ([ code, reason ]) => console.warn(`Client has disconnected [${ code }] from`, client.url),
         [ Client.Signal.ERROR ]: ([ error ]) => {},
-        [ Client.Signal.MESSAGE ]: ([{ type, data }], { client }) => {
-            if(!Array.isArray(data)) {
-                data = [ data ];
+        [ Client.Signal.MESSAGE ]: ([{ type, payload }], { client }) => {
+            if(!Array.isArray(payload)) {
+                payload = [ payload ];
             }
 
-            console.log(type, data)
+            console.log(type, payload)
     
-            network.emit(client, type, ...data);
+            network.emit(client, type, ...payload);
         },
         [ Client.Signal.OPEN ]: ([], { client }) => {
             console.warn(`Client has connected to`, client.url);

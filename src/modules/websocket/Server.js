@@ -39,18 +39,18 @@ export class Server extends Dispatcher {
         wss.on("headers", (headers, req) => this.dispatch(Server.Signal.HEADERS, headers, req));
 
         app.ws("/", (client, req) => {
-            client.on("message", (data) => {
+            client.on("message", (packet) => {
                 try {
-                    let payload;
+                    let msg;
                     if(typeof this._unpacker === "function") {
-                        payload = this._unpacker.call(this, data);
+                        msg = this._unpacker.call(this, packet);
                     } else {
-                        payload = data;
+                        msg = packet;
                     }
 
-                    this.dispatch(Server.Signal.Client.MESSAGE, payload, client, req);
+                    this.dispatch(Server.Signal.Client.MESSAGE, msg, client, req);
                 } catch(e) {
-                    this.dispatch(Server.Signal.Client.MESSAGE_ERROR, e, data, client, req);
+                    this.dispatch(Server.Signal.Client.MESSAGE_ERROR, e, packet, client, req);
                 }
             });
             client.on("close", (code, reason) => this.dispatch(Server.Signal.Client.DISCONNECT, code, reason));
@@ -61,21 +61,21 @@ export class Server extends Dispatcher {
         return this.wss.getWss().clients;
     }
 
-    sendToClient(client, type, ...data) {
-        let payload;
+    sendToClient(client, type, ...payload) {
+        let msg;
         if(typeof this._packer === "function") {
-            payload = this._packer.call(this, type, ...data);
+            msg = this._packer.call(this, type, ...payload);
         } else {
-            payload = data;
+            msg = payload;
         }
 
-        client.send(payload);
+        client.send(msg);
 
         return this;
     }
-    sendToAll(type, ...data) {
+    sendToAll(type, ...payload) {
         for(let client of this.clients) {
-            this.sendToClient(client, type, ...data);
+            this.sendToClient(client, type, ...payload);
         }
 
         return this;
@@ -107,14 +107,14 @@ export function QuickSetup(server, handlers = {}, { packets = Packets.Json() } =
         [ Server.Signal.CLOSE ]: () => {},
         [ Server.Signal.CONNECTION ]: ([ client ]) => {},
         [ Server.Signal.HEADERS ]: ([ headers, req ]) => {},
-        [ Server.Signal.Client.MESSAGE ]: ([ { type, data }, client, req ]) => {
-            if(!Array.isArray(data)) {
-                data = [ data ];
+        [ Server.Signal.Client.MESSAGE ]: ([ { type, payload }, client, req ]) => {
+            if(!Array.isArray(payload)) {
+                payload = [ payload ];
             }
 
-            console.log(type, data)
+            console.log(type, payload)
 
-            network.emit(client, type, ...data);
+            network.emit(client, type, ...payload);
         },
         [ Server.Signal.Client.DISCONNECT ]: ([ code, reason ]) => console.log(`Client left with code ${ code }`),
         
