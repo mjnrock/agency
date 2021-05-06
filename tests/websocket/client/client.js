@@ -29,9 +29,6 @@ const client = SetupWSClient({
     },
 });
 
-console.log(client.network.router)
-console.log(client.network.router.records)
-console.log(client.network.router.synonyms)
 client.network.router.default.setState({
     cats: 2,
 });
