@@ -8,11 +8,10 @@ export const $Dispatcher = $super => class extends $super {
         super({ ...rest });
         
         // << this >> is trapped here, but is @target in the getters/setters --> initialize to set property descriptors from << AgencyBase >>
+        this._subject = null;
         this._network = null;
         this._dispatch = null;
         this._broadcast = null;
-        this._sendToContext = null;
-        this._subject = null;
         
 
         this.network = Dispatcher.network;
@@ -46,7 +45,6 @@ export const $Dispatcher = $super => class extends $super {
     
             this.dispatch = network.emit;
             this.broadcast = network.broadcast;
-            this.sendToContext = network.sendToContext;
         }
     }
 
@@ -106,27 +104,6 @@ export const $Dispatcher = $super => class extends $super {
             };
         }
     }
-
-
-    /**
-     * The sendToContext methods allow for a message to be sent
-     *  directly to a <Context>, **bypassing** the <Router>.
-     *  As such, routing is **not** utilized.
-     */
-    get sendToContext() {
-        return this._sendToContext;
-    }
-    set sendToContext(fn) {
-        if(typeof fn === "function") {
-            this._sendToContext = (...args) => {
-                if(this.subject) {
-                    fn.call(this.network, this.subject, ...args);
-                } else {
-                    fn.call(this.network, ...args);
-                }
-            };
-        }
-    }
 };
 
 /**
@@ -138,7 +115,7 @@ export const $Dispatcher = $super => class extends $super {
  *  in a given function invocation.  All invocations will be given the
  *  <Network> as its << this >> binding.
  *
- *  << <Network> .emit | .broadcast | .sendToContext >> are all exposed.
+ *  << <Network> .emit | .broadcast | .sendToChannel >> are all exposed.
  */
 export class Dispatcher extends compose($Dispatcher)(AgencyBase) {
     constructor(network, subject, opts = {}) {

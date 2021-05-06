@@ -1,4 +1,4 @@
-import Context from "../../../src/event/Context";
+import Channel from "../../../src/event/Channel";
 import { QuickSetup as SetupWSClient } from "./../../../src/modules/websocket/Client";
 
 console.clear();
@@ -24,7 +24,7 @@ const client = SetupWSClient({
             client.send("bounce", ...data);
         }, 1000);
     },
-    [ Context.Signals.UPDATE ]: function(data) {
+    [ Channel.Signals.UPDATE ]: function(data) {
         console.log(data);
     },
 });
@@ -47,7 +47,7 @@ client.network.router.default.mergeState({
 
 // /**
 //  * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
-//  *  as a single-route (firstMatch), single-context (named "default") network
+//  *  as a single-route (firstMatch), single-channel (named "default") network
 //  *  with real-time processing.
 //  */
 // const network = new BasicNetwork({

@@ -1,5 +1,5 @@
 import Emitter from "./Emitter";
-import Context from "./Context";
+import Channel from "./Channel";
 import Router from "./Router";
 
 import Network, { BasicNetwork } from "./Network";
@@ -10,7 +10,7 @@ import $EventSender from "./$EventSender";
 
 export default {
     Emitter,
-    Context,
+    Channel,
     Router,
 
     Network,

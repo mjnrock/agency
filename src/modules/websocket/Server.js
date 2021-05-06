@@ -96,7 +96,7 @@ export class Server extends Dispatcher {
 export function QuickSetup(server, handlers = {}, { packets = Packets.Json() } = {}) {  
     /**
      * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
-     *  as a single-route (firstMatch), single-context (named "default") network
+     *  as a single-route (firstMatch), single-channel (named "default") network
      *  with real-time processing.
      */  
     const network = new BasicNetwork({

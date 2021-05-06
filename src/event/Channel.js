@@ -1,8 +1,9 @@
 import Registry from "../Registry";
+import Dispatcher from "./Dispatcher";
 
-export class Context extends Registry {
+export class Channel extends Registry {
     static Signals = {
-        UPDATE: "Agency.Event.Context.Update",
+        UPDATE: "Agency.Event.Channel.Update",
     };
 
     constructor(network, { globals = {}, handlers = {}, hooks = {}, state = {}, ...config } = {}) {
@@ -27,38 +28,8 @@ export class Context extends Registry {
             this.addHandler(event, fns);
         }
 
-        this._state = state;
-    }
-
-    getState() {
-        return this._state;
-    }
-    setState(state = {}, isMerge = false) {
-        let newState = {};
-
-        if(isMerge) {
-            newState = {
-                ...this._state,
-                ...state,
-            };
-        } else {
-            newState = state;
-        }
-
-        let args = [
-            Object.assign({}, newState),
-            Object.assign({}, this._state),
-            Object.assign({}, state),
-        ];
-        setTimeout(() => this.network.emit(this, Context.Signals.UPDATE, ...args), 0);
-        // () => this.network.emit(this, Context.Signals.UPDATE, ...args);
-
-        this._state = newState;
-
-        return this._state;
-    }
-    mergeState(state = {}) {
-        return this.setState(state, true);
+        this._channelState = state;
+        this._channelStateDispatcher = new Dispatcher(network, this);
     }
 
 
@@ -82,19 +53,6 @@ export class Context extends Registry {
     }
 
 
-    /**
-     * The interception function that is used to route an event
-     *  to a <Context>
-     */
-    bus(payload) {
-        if(this.config.isBatchProcess) {
-            return this.enqueue(payload);
-        }
-
-        return this.invokeHandlers(payload);
-    }
-
-
     get isEmpty() {
         return !this.state.queue.length;
     }
@@ -109,8 +67,24 @@ export class Context extends Registry {
             return this.queue.shift();
         }
     }
+    empty() {
+        this.queue = [];
+
+        return this;
+    }
 
 
+    /**
+     * The interception function that is used to route an event
+     *  to a <Channel>
+     */
+    bus(payload) {
+        if(this.config.isBatchProcess) {
+            return this.enqueue(payload);
+        }
+
+        return this.invokeHandlers(payload);
+    }
     process() {
         if(typeof this.hooks.pre === "function") {
             this.hooks.pre(this);
@@ -130,26 +104,6 @@ export class Context extends Registry {
 
         return this;
     }
-    empty() {
-        this.queue = [];
-
-        return this;
-    }
-
-    setPreHook(fn) {
-        if(typeof fn === "function") {
-            this.hooks.pre = fn;
-        }
-
-        return this;
-    }
-    setPostHook(fn) {
-        if(typeof fn === "function") {
-            this.hooks.post = fn;
-        }
-
-        return this;
-    }
 
 
     /**
@@ -159,7 +113,7 @@ export class Context extends Registry {
     invokeHandlers(payload) {
         const optionArgs = {
             ...this.globals,
-            context: this,
+            channel: this,
             state: Object.assign({}, this.getState()),
             setState: state => this.setState(state, false),
             mergeState: state => this.setState(state, true),
@@ -247,6 +201,52 @@ export class Context extends Registry {
 
         return this;
     }
+
+
+    getState() {
+        return this._channelState;
+    }
+    setState(state = {}, isMerge = false) {
+        let newState = {};
+
+        if(isMerge) {
+            newState = {
+                ...this._channelState,
+                ...state,
+            };
+        } else {
+            newState = state;
+        }
+
+        let args = [
+            Object.assign({}, newState),
+            Object.assign({}, this._channelState),
+            Object.assign({}, state),
+        ];
+        setTimeout(() => this._channelStateDispatcher.dispatch(Channel.Signals.UPDATE, ...args), 0);
+
+        this._channelState = newState;
+
+        return this._channelState;
+    }
+    mergeState(state = {}) {
+        return this.setState(state, true);
+    }
+
+    setPreHook(fn) {
+        if(typeof fn === "function") {
+            this.hooks.pre = fn;
+        }
+
+        return this;
+    }
+    setPostHook(fn) {
+        if(typeof fn === "function") {
+            this.hooks.post = fn;
+        }
+
+        return this;
+    }
 };
 
-export default Context;
+export default Channel;

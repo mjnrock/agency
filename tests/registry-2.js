@@ -29,6 +29,12 @@ for(let key of reg.synonyms) {
     console.log(reg[ key ])
 }
 
+// let obj = { cat: 1 }
+// reg.register(obj, "cat");
+
+// console.log(reg.cat)
+// console.log(reg[ obj ])
+
 
 
 // const reg = new Registry();
