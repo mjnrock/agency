@@ -12,8 +12,8 @@ const reg = new Registry({
     }
 });
 
-reg.register(1, "a");
-reg.register("2", "b");
+reg.register(1, "a", "a2");
+reg.register(+"2", "b");
 
 console.log(111, reg.a)
 console.log(111, reg.b)
@@ -24,7 +24,10 @@ for(let value of reg) {
     console.log(value)
 }
 
-
+console.log(reg.synonyms);
+for(let key of reg.synonyms) {
+    console.log(reg[ key ])
+}
 
 
 

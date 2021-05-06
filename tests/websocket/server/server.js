@@ -14,9 +14,9 @@ const wss = SetupWSServer(expressWs(app), {
         // console.log(this)
         console.log(...data)
     },
-    cycle: function(data, { server }) {
+    bounce: function(data, { server }) {
         setTimeout(() => {
-            server.sendToAll("cycle", ...data);
+            server.sendToAll("bounce", ...data);
         }, 1000);
     },
 });

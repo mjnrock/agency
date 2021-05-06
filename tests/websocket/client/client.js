@@ -1,5 +1,4 @@
 import Context from "../../../src/event/Context";
-import Network from "./../../../src/event/Network";
 import { QuickSetup as SetupWSClient } from "./../../../src/modules/websocket/Client";
 
 console.clear();
@@ -18,24 +17,21 @@ const client = SetupWSClient({
         // console.log(this)
         console.log(...data)
     },
-    cycle: function(data, { network }) {
-        network.emit("cycle");
+    bounce: function(data, { network }) {
+        network.emit("bounce");
         
         setTimeout(() => {
-            client.send("cycle", ...data);
+            client.send("bounce", ...data);
         }, 1000);
     },
     [ Context.Signals.UPDATE ]: function(data) {
         console.log(data);
     },
-    [ Network.Signals.UPDATE ]: function(data) {
-        console.log(data);
-    },
 });
 
-client.network.setState({
-    dogs: 2,
-});
+console.log(client.network.router)
+console.log(client.network.router.records)
+console.log(client.network.router.synonyms)
 client.network.router.default.setState({
     cats: 2,
 });

@@ -183,7 +183,7 @@ export function QuickSetup(opts = {}, handlers = {}, { packets = Packets.Json() 
         [ Client.Signal.OPEN ]: ([], { client }) => {
             console.warn(`Client has connected to`, client.url);
 
-            client.send("cycle", Date.now());
+            client.send("bounce", Date.now());
         },
         [ Client.Signal.PING ]: ([ data ]) => {},
         [ Client.Signal.PONG ]: ([ data ]) => {},

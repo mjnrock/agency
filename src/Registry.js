@@ -40,8 +40,8 @@ export const $Registry = $super => class extends $super {
 
                 return Reflect.get(target.__state, prop);
             },
-            set(target, prop, value) {
-                if (validate(prop)) {        // assignment
+            set(target, prop, value) {                
+                if (validate(prop)) {        // assignment                    
                     if(typeof Registry.typed === "function" && Registry.typed(prop, value, target[ prop ]) !== true) {
                         return target;
                     }
@@ -53,6 +53,10 @@ export const $Registry = $super => class extends $super {
                         enumerable: true,
                     });
                 } else if (validate(value)) {    // sic | synonym assignment
+                    if(target[ value ] === void 0) {    // short circuit if a potential synonym doesn't have an anchor entry
+                        return target;
+                    }
+
                     return Reflect.defineProperty(target, prop, {
                         configurable: true,
                         enumerable: false,
@@ -120,34 +124,12 @@ export const $Registry = $super => class extends $super {
         
     get synonyms() {
         return Reflect.ownKeys(this).reduce((a, k) => {
-            if ((k[ 0 ] !== "_" || (k[ 0 ] === "_" && k[ 1 ] !== "_")) && validate(this[ k ])) {
+            if ((k[ 0 ] !== "_" || (k[ 0 ] === "_" && k[ 1 ] !== "_")) && !validate(k)) {
                 return [ ...a, k ];
             }
 
             return a;
         }, []);
-    }
-    get records() {
-        const obj = {};
-        for (let key of Reflect.ownKeys(this)) {
-            if (key[ 0 ] !== "_" || (key[ 0 ] === "_" && key[ 1 ] !== "_")) {
-                const entry = this[ key ];
-
-                if (validate(entry)) {
-                    obj[ entry ] = [
-                        ...((obj || [])[ entry ] || []),
-                        key,
-                    ];
-                } else if (validate(key)) {
-                    obj[ key ] = [
-                        ...((obj || [])[ key ] || []),
-                        entry,
-                    ];
-                }
-            }
-        }
-
-        return obj;
     }
 
     register(entry, ...synonyms) {

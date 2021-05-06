@@ -18,13 +18,13 @@ require = require("esm")(module/*, options*/)
 // module.exports = require("./tests/event/emitter-2.js");
 // module.exports = require("./tests/event/network.js");
 // module.exports = require("./tests/event/network-2.js");
-module.exports = require("./tests/event/network-3.js");
+// module.exports = require("./tests/event/network-3.js");
 // module.exports = require("./tests/event/dispatch.js");
 
 // module.exports = require("./tests/agency-base.js");
 // module.exports = require("./tests/multiton.js");
 // module.exports = require("./tests/registry.js");
-// module.exports = require("./tests/registry-2.js");
+module.exports = require("./tests/registry-2.js");
 
 // module.exports = require("./tests/util/helper.js");
 
