@@ -1,5 +1,5 @@
-import Network from "../../src/event/Network";
-import Dispatcher from "../../src/event/Dispatcher";
+import Network from "../../../src/event/Network";
+import Dispatcher from "../../../src/event/Dispatcher";
 
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 

@@ -175,8 +175,16 @@ export const $Registry = $super => class extends $super {
 
 export class Registry extends compose($Registry)(AgencyBase) {
     static Instances = new Registry();
-    constructor(opts = {}) {
+    constructor(registerArgs = [], opts = {}) {
         super(opts);
+
+        for(let args of registerArgs) {
+            if(!Array.isArray(args)) {
+                args = [ args ];
+            }
+            
+            this.register(...args);
+        }
     }
     
     /**
