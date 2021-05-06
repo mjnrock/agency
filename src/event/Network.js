@@ -5,53 +5,56 @@ import Context from "./Context";
 import Dispatcher from "./Dispatcher";
 import Router from "./Router";
 
+/**
+ * In a network, <Context> instances have an associated internal state.
+ *  If a either updates its state, it will emit an UPDATE event.  State
+ *  events are intended to be fired by other handlers acting as reducers
+ *  and invoking the << setState|mergeState >> commands.
+ * 
+ * If a state event has a <Context> emitter, then the network's <Router>
+ *  will short-circuit the route and pass the message to that <Context>
+ *  directly for handling, if any further action is necessary (i.e. effects).
+ *  [WARNING]: This happens by invoking << payload.emitter.bus >>, NOT by
+ *  a context lookup, as in the normal routing scenario.
+ */
 export class Network extends Registry {
     static Instances = new Registry();
 
-    static Signals = {
-        UPDATE: "Network.Update",
-    };
-
-    constructor(contexts = [], routes = [], { connections = [], state = {} } = {}) {
+    constructor(contexts = [], routes = [], { connections = [] } = {}) {
         super();
         
         // allow the <Network> to broadcast messages to other connected <Network(s)>
         this.connections = new Set(connections);    //? e.g. Connect children to parents for a hierarchy
         // create event routing contexts with qualifier functions to in/exclude events
         this.router = new Router(this, contexts, routes);
-
-        this._state = state;
     }
 
-    getState() {
-        return this._state;
+    //  Convenience functions to more easily access <Context> state management functions
+    ctx(context = "default") {
+        return this.router[ context ];
     }
-    setState(state = {}, isMerge = false) {
-        let newState = {};
+    getState(context = "default") {
+        const ctx = this.ctx(context);
 
-        if(isMerge) {
-            newState = {
-                ...this._state,
-                ...state,
-            };
-        } else {
-            newState = state;
+        if(ctx instanceof Context) {
+            return ctx.getState();
         }
-
-        let args = [
-            Object.assign({}, newState),
-            Object.assign({}, this._state),
-            Object.assign({}, state),
-        ];
-        setTimeout(() => this.emit(this, Network.Signals.UPDATE, ...args), 0);
-
-        this._state = newState;
-
-        return this._state;
     }
-    mergeState(state = {}) {
-        return this.setState(state, true);
+    setState(context = "default", state = {}, isMerge = false) {
+        const ctx = this.ctx(context);
+
+        if(ctx instanceof Context) {
+            return ctx.setState(state, isMerge);
+        }
     }
+    mergeState(context = "default", state = {}) {
+        const ctx = this.ctx(context);
+
+        if(ctx instanceof Context) {
+            return ctx.mergeState(state);
+        }
+    }
+
 
     /**
      * Invoke << .process >> on all <Context(s)>

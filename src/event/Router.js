@@ -22,27 +22,31 @@ export const $Router = $super => class extends $super {
     route(payload) {
         let hasResult = false;
 
-        for(let fn of this.__routes) {
-            let results = fn(payload);
-
-            if(!Array.isArray(results)) {
-                results = [ results ];
-            }
-
-            for(let result of results) {
-                const context = this[ result ];
-
-                if(context instanceof Context) {
-                    context.bus(payload);
-
-                    hasResult = true;
-                } else if(typeof context === "function") {
-                    context(payload);
+        if(payload.emitter instanceof Context && payload.type === Context.Signals.UPDATE) {
+            payload.emitter.bus(payload);
+        } else {
+            for(let fn of this.__routes) {
+                let results = fn(payload);
+    
+                if(!Array.isArray(results)) {
+                    results = [ results ];
                 }
-            }            
-                    
-            if(hasResult && this.__type === EnumRouteType.MatchFirst) {
-                return this;
+    
+                for(let result of results) {
+                    const context = this[ result ];
+    
+                    if(context instanceof Context) {
+                        context.bus(payload);
+    
+                        hasResult = true;
+                    } else if(typeof context === "function") {
+                        context(payload);
+                    }
+                }            
+                        
+                if(hasResult && this.__type === EnumRouteType.MatchFirst) {
+                    return this;
+                }
             }
         }
 

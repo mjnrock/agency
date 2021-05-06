@@ -1,7 +1,11 @@
 import Registry from "../Registry";
 
 export class Context extends Registry {
-    constructor(network, { globals = {}, handlers = {}, hooks = {}, ...config } = {}) {
+    static Signals = {
+        UPDATE: "Agency.Event.Context.Update",
+    };
+
+    constructor(network, { globals = {}, handlers = {}, hooks = {}, state = {}, ...config } = {}) {
         super();
 
         this.network = network;
@@ -22,7 +26,41 @@ export class Context extends Registry {
         for(let [ event, fns ] of Object.entries(handlers)) {
             this.addHandler(event, fns);
         }
+
+        this._state = state;
     }
+
+    getState() {
+        return this._state;
+    }
+    setState(state = {}, isMerge = false) {
+        let newState = {};
+
+        if(isMerge) {
+            newState = {
+                ...this._state,
+                ...state,
+            };
+        } else {
+            newState = state;
+        }
+
+        let args = [
+            Object.assign({}, newState),
+            Object.assign({}, this._state),
+            Object.assign({}, state),
+        ];
+        setTimeout(() => this.network.emit(this, Context.Signals.UPDATE, ...args), 0);
+        // () => this.network.emit(this, Context.Signals.UPDATE, ...args);
+
+        this._state = newState;
+
+        return this._state;
+    }
+    mergeState(state = {}) {
+        return this.setState(state, true);
+    }
+
 
     /**
      * Turn off the batching process and process any event
@@ -122,9 +160,9 @@ export class Context extends Registry {
         const optionArgs = {
             ...this.globals,
             context: this,
-            state: Object.assign({}, this.network.getState()),
-            setState: state => this.network.setState(state, false),
-            mergeState: state => this.network.setState(state, true),
+            state: Object.assign({}, this.getState()),
+            setState: state => this.setState(state, false),
+            mergeState: state => this.setState(state, true),
             network: this.network,
         };
 

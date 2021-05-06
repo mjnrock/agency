@@ -1,3 +1,4 @@
+import Context from "../../../src/event/Context";
 import Network from "./../../../src/event/Network";
 import { QuickSetup as SetupWSClient } from "./../../../src/modules/websocket/Client";
 
@@ -24,18 +25,24 @@ const client = SetupWSClient({
             client.send("cycle", ...data);
         }, 1000);
     },
+    [ Context.Signals.UPDATE ]: function(data) {
+        console.log(data);
+    },
     [ Network.Signals.UPDATE ]: function(data) {
         console.log(data);
     },
 });
 
 client.network.setState({
+    dogs: 2,
+});
+client.network.router.default.setState({
     cats: 2,
 });
-client.network.setState({
+client.network.router.default.setState({
     catz: 5,
 });
-client.network.mergeState({
+client.network.router.default.mergeState({
     cats: 3,
     catz: 5,
 });
