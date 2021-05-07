@@ -20,9 +20,10 @@ export class Network extends AgencyBase {
     constructor(state = {}, modify = {}) {
         super();
 
-        this.__bus = new MessageBus([ "_private" ], [ message => message.type === Network.Signals.UPDATE ? "_private" : null ]);
-        this.__bus.channels._private.globals.broadcast = this.broadcast.bind(this);
-        this.__bus.channels._private.addHandler(Network.Signals.UPDATE, function([], { broadcast }) { broadcast(Message.Generate(this)) });
+        //TODO  The "_internal" channel is *NOT* actually private yet, and currently functions as a normal channel
+        this.__bus = new MessageBus([ "_internal" ], [ message => message.type === Network.Signals.UPDATE ? "_internal" : null ]);
+        this.__bus.channels._internal.globals.broadcast = this.broadcast.bind(this);
+        this.__bus.channels._internal.addHandler(Network.Signals.UPDATE, function([], { broadcast }) { broadcast(Message.Generate(this)) });
 
         this.__connections = new Registry();
         this.__cache = new WeakMap();
