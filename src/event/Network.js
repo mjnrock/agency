@@ -17,7 +17,7 @@ export class Network extends AgencyBase {
         UPDATE: `Network.Update`,
     };
 
-    constructor(state = {}) {
+    constructor(state = {}, modify = {}) {
         super();
 
         this.__bus = new MessageBus([ "_private" ], [ message => message.type === Network.Signals.UPDATE ? "_private" : null ]);
@@ -28,6 +28,8 @@ export class Network extends AgencyBase {
         this.__cache = new WeakMap();
 
         this.__state = state;
+
+        this.alter(modify);
     }
 
     get state() {
@@ -42,12 +44,74 @@ export class Network extends AgencyBase {
         this.__bus.emit(this, Network.Signals.UPDATE, newState, oldState);
     }
 
+    /**
+     * A helper function to make broad changes to the network configuration
+     *  within a single argument object.  This accepts new channel arguments,
+     *  new route arguments, and removal arguments for both.
+     * 
+     * * COMMAND LIST
+     * 
+     * *) [ channelName ]: { handlers, globals }
+     * *) $routes: [ ...fns ]
+     * *) $channels: [ ...<Channel> ]
+     * *) $delete: { routes: [ ...fns ], channels: [ ...name|<Channel> ] }
+     * 
+     * Example @obj:
+     *  {
+     *      [ "Cats" ]: { handlers: [ [ "cat", handlerCat ], ... ] },
+     *      $routes: [ routeFn1, routeFn2 ],
+     *      $delete: { channels: [ ChannelDog ] },
+     *      ...
+     *  }
+     */
+    alter(obj = {}) {
+        if(obj.$routes) {
+            this.__bus.router.createRoutes(obj.$routes);
+            delete obj.$routes;
+        }
+
+        if(obj.$delete) {
+            const { routes, channels } = obj.$delete;
+
+            if(routes) {
+                this.__bus.router.destroyRoutes(routes);
+            }
+    
+            if(channels) {
+                this.__bus.destroyChannels(channels);
+            }
+
+            delete obj.$delete;
+        }
+
+        if(obj.$channels && Array.isArray(obj.$channels)) {
+            for(let channel of obj.$channels) {
+                this.__bus.createChannel(channel);
+            }
+
+            delete obj.$channels;
+        }
+
+        for(let [ channelName, { globals = {}, handlers = {} } ] of Object.entries(obj)) {
+            let channel = this.__bus.createChannel(channelName);
+
+            for(let [ key, value ] of Object.entries(globals)) {
+                channel.globals[ key ] = value;
+            }
+            for(let [ name, fn ] of Object.entries(handlers)) {
+                channel.addHandler(name, fn);
+            }
+        }
+
+        return this;
+    }
+
     _emptyJoin() {
         return this.join({
             id: uuidv4(),
         });
     }
-    join(entity, { callback, synonyms = [] } = {}) {
+    join(entity, { callback, filter, synonyms = [] } = {}) {
         if(!arguments.length) {
             return this._emptyJoin();
         }
@@ -56,13 +120,39 @@ export class Network extends AgencyBase {
 
         const cache = {
             dispatcher: new Dispatcher(this, entity),
-            callback,
+            receiver: new Receiver(callback, filter),
             synonyms,
         };
         this.__cache.set(entity, cache);
         
         return {
             dispatch: cache.dispatcher.dispatch,
+            broadcast: cache.dispatcher.broadcast,
+            receiver: ({ callback, filter } = {}) => {
+                const data = this.__cache.get(entity);
+
+                if(!data) {
+                    return -1;  // Cache record does not exist
+                }
+                
+                let wasUpdated = false;
+                if(typeof callback === "function") {
+                    data.receiver.__callback = callback;
+                    wasUpdated = true;
+                }
+                if(typeof filter === "function") {
+                    data.receiver.__filter = filter;
+                    wasUpdated = true;
+                }
+
+                if(wasUpdated) {
+                    this.__cache.set(entity, data);
+
+                    return true;
+                }
+
+                return false;
+            }
         };
     }
     leave(entity) {
@@ -73,10 +163,10 @@ export class Network extends AgencyBase {
 
     broadcast(message) {
         for(let member of this.__connections) {
-            let { callback } = this.__cache.get(member);
+            let { receiver } = this.__cache.get(member);
 
-            if(typeof callback === "function") {
-                callback(message);
+            if(receiver instanceof Receiver) {
+                receiver.receive(message);
             }
         }
     }

@@ -1,40 +1,34 @@
-import { v4 as uuidv4 } from "uuid";
+import AgencyBase from "../AgencyBase";
 
-export class Receiver {
+export class Receiver extends AgencyBase {
     constructor(callback, filter) {
+        super();
 
-        this.callback = callback;
-        this.filter = filter;
+        this.__callback = callback;
+        this.__filter = filter;
     }
 
     receive(message) {
-        console.log(999999)
-        console.log(999999)
-        console.log(999999)
-        console.log(999999)
-        console.log(this.filter)
-        console.log(999999)
-        console.log(999999)
-        if(typeof this.filter === "function") {
-            if(this.filter(message) === true) {
+        if(typeof this.__filter === "function") {
+            if(this.__filter(message) === true) {
                 return;
             }
         }
         
-        if(typeof this.callback === "function") {
-            return this.callback(message);
+        if(typeof this.__callback === "function") {
+            return this.__callback(message);
         }
     }
 
     reassign(callback) {
         if(typeof callback === "function") {
-            this.callback = callback;
+            this.__callback = callback;
         }
     }
 
     refilter(fn) {
         if(typeof fn === "function") {
-            this.filter === fn;
+            this.__filter === fn;
         }
     }
 };

@@ -131,7 +131,13 @@ export class MessageBus {
      *  and handled in an isolated scope.
      */
     createChannel(name, ...args) {
-        const channel = new Channel(...args);
+        let channel;
+        
+        if(name instanceof Channel) {
+            channel = name;
+        } else {
+            channel = new Channel(...args);
+        }
 
         this.channels.register(channel, name);
 
