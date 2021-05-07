@@ -10,7 +10,7 @@ export class Receiver extends AgencyBase {
 
     receive(message) {
         if(typeof this.__filter === "function") {
-            if(this.__filter(message) === true) {
+            if(this.__filter(message) === false) {
                 return;
             }
         }
@@ -29,6 +29,33 @@ export class Receiver extends AgencyBase {
     refilter(fn) {
         if(typeof fn === "function") {
             this.__filter === fn;
+        }
+    }
+
+    static Typed(types = [], include = true) {
+        if(!Array.isArray(types)) {
+            types = [ types ];
+        }
+        
+        return function(message) {
+            if(include === true) {
+                return types.includes(message.type);
+            }
+
+            return !types.includes(message.type);
+        }
+    }
+    static Filtered(fn = [], include = true) {
+        if(!Array.isArray(fn)) {
+            fn = [ fn ];
+        }
+
+        return function(message) {
+            if(include === true) {
+                return fn.every(message);
+            }
+            
+            return !fn.every(message);
         }
     }
 };

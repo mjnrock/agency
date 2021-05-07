@@ -4,13 +4,24 @@ export function pipe(...fns) {
 export function compose(...fns) {
     return args => fns.reduceRight((arg, fn) => fn(arg), args);
 };
+export function curry(fn) {
+    return function curried(...args) {
+        if (args.length >= fn.length) {
+            return fn.apply(this, args);
+        } else {
+            return function (...args2) {
+                return curried.apply(this, args.concat(args2));
+            }
+        }
+    };
+};
 
 export function flatten(obj, { chain = "", asArray = false, joiner = "." } = {}) {
     let result = {};
-    for(let [ key, entry ] of Object.entries(obj)) {
-        let newKey = chain.length ? `${ chain }${ joiner }${ key }` : key;
+    for (let [ key, entry ] of Object.entries(obj)) {
+        let newKey = chain.length ? `${chain}${joiner}${key}` : key;
 
-        if(typeof entry === "object" && !Array.isArray(entry)) {
+        if (typeof entry === "object" && !Array.isArray(entry)) {
             result = {
                 ...result,
                 ...flatten(entry, { chain: newKey }),
@@ -20,15 +31,15 @@ export function flatten(obj, { chain = "", asArray = false, joiner = "." } = {})
         }
     }
 
-    if(asArray) {
+    if (asArray) {
         return Object.entries(result);
     }
 
     return result;
 };
-export function unflatten(obj, { splitter = "." } = {}) {    
+export function unflatten(obj, { splitter = "." } = {}) {
     const nester = (chain = [], parent = {}, entry) => {
-        if(chain.length > 1) {
+        if (chain.length > 1) {
             let newKey = chain.shift();
             parent[ newKey ] = {
                 ...(parent[ newKey ] || {}),
@@ -41,14 +52,14 @@ export function unflatten(obj, { splitter = "." } = {}) {
         return parent;
     };
 
-    if(Array.isArray(obj)) {
+    if (Array.isArray(obj)) {
         obj = Object.fromEntries(obj);
     }
 
-    if(typeof obj === "object") {
+    if (typeof obj === "object") {
         let result = {};
 
-        for(let [ key, entry ] of Object.entries(obj)) {
+        for (let [ key, entry ] of Object.entries(obj)) {
             result = nester(key.split(splitter), result, entry);
         }
 
@@ -78,7 +89,13 @@ export function seedObject(keys = [], fn = () => null) {
 
     return obj;
 };
-// console.log(JSON.stringify(seedObject([ "world", "x", "y", "cat.dog", "cat.fish", "cat.fish.a" ], () => 1)));
+// console.log(seedObject([ "world", "x", "y", "cat.dog", "cat.fish", "cat.fish.a" ], (key) => {
+//     if(key === "world") {
+//         return 14;
+//     }
+    
+//     return 1;
+// }));
 
 /**
  * ! This may produce shallowly-unantipicated rounding calculations.  (cf. Math.round for nuances)
@@ -95,16 +112,16 @@ export function ceil(number, scalar = 10) {
 };
 
 export function between(number, min, max, inclusive = true, scalar) {
-    if(scalar != null) {
+    if (scalar != null) {
         number = round(number, scalar);
         min = round(min, scalar);
         max = round(max, scalar);
     }
 
-    if(inclusive) {
+    if (inclusive) {
         return number >= min && number <= max;
     }
-    
+
     return number > min && number < max;
 };
 export function near(number, anchor, margin = 0, scalar = 1000) {
@@ -140,16 +157,13 @@ export function clamp(value, { min, max } = {}) {
  */
 export function extendJavascript() {
     Array.range = function (n) {
-        // Array.range(5) --> [0,1,2,3,4]
+        // Array.range(5) --> [ 0, 1, 2, 3, 4 ]
         return Array.apply(null, Array(n)).map((x, i) => i);
     };
-    
+
     Object.defineProperty(Array.prototype, "chunk", {
         value: function (n) {
-    
-            // ACTUAL CODE FOR CHUNKING ARRAY:
             return Array.range(Math.ceil(this.length / n)).map((x, i) => this.slice(i * n, i * n + n));
-    
         }
     });
 };
@@ -161,19 +175,19 @@ export function extendJavascript() {
  */
 export function factory(fnOrClass, qty, args = [], mutator) {
     let results = [];
-    for(let i = 0; i < qty; i++) {
-        if(typeof fnOrClass === "function") {
+    for (let i = 0; i < qty; i++) {
+        if (typeof fnOrClass === "function") {
             results.push(fnOrClass(...args));
         } else {
             results.push(new fnOrClass(...args));
         }
 
-        if(typeof mutator === "function") {
+        if (typeof mutator === "function") {
             args = mutator(i, args);
         }
     }
 
-    if(results.length) {
+    if (results.length) {
         return results;
     }
 
@@ -183,6 +197,7 @@ export function factory(fnOrClass, qty, args = [], mutator) {
 export default {
     pipe,
     compose,
+    curry,
     flatten,
     unflatten,
     seedObject,

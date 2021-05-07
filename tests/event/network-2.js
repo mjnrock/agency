@@ -1,4 +1,5 @@
 import Network from "../../src/event/Network";
+import Receiver from "../../src/event/Receiver";
 
 console.warn(`------------ NEW EXECUTION CONTEXT ------------`);
 
@@ -7,6 +8,21 @@ const network = new Network({
 });
 
 const channelName1 = "Cats";
+//? This is an explicit way to do the same thing as << network.alter >> below
+    // network.__bus.createChannel(channelName1);
+    // network.__bus.router.createRoute(message => {
+    //     let list = [
+    //         "meow",
+    //     ];
+
+    //     if(list.includes(message.type)) {
+    //         return channelName1;
+    //     }
+    // });
+    // network.__bus.channels[ channelName1 ].globals.broadcast = network.broadcast.bind(network);
+    // network.__bus.channels[ channelName1 ].addHandler("meow", function([], { broadcast }) {
+    //     broadcast(this);
+    // });
 network.alter({
     //? All keys that are *NOT* prefixed with "$" will be used as the @channelName
     [ channelName1 ]: {
@@ -34,7 +50,7 @@ network.alter({
     ],    
     
     //? Alternative modifier to attach precreated channels directly--elements must be a <Channel>
-    // $channels: [ channel1, channel2 ],
+    // $channels: [ @channel1<Channel>, @channel2<Channel> ],
 
     //? Command verb to delete anything within its scope
     // $delete: {
@@ -68,13 +84,11 @@ network.state = {
 };
 
 e1r({
-    filter(msg) {        
-        return msg.emitter.name === e1.name;
-    }
+    filter: Receiver.Typed("meow", false),
 });
 e2r({
     filter(msg) {
-        return msg.emitter.name === e2.name;
+        return msg.emitter.name !== e2.name;
     }
 });
 
