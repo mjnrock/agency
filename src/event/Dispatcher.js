@@ -43,7 +43,7 @@ export const $Dispatcher = $super => class extends $super {
         if(network instanceof Network) {
             this._network = network;
     
-            this.dispatch = network.bus.emit;
+            this.dispatch = network.__bus.emit;
             this.broadcast = network.broadcast;
         }
     }
@@ -74,9 +74,9 @@ export const $Dispatcher = $super => class extends $super {
         if(typeof fn === "function") {
             this._dispatch = (...args) => {
                 if(this.subject) {
-                    fn.call(this.network, this.subject, ...args);
+                    fn.call(this.network.__bus, this.subject, ...args);
                 } else {
-                    fn.call(this.network, ...args);
+                    fn.call(this.network.__bus, ...args);
                 }
             };
         }

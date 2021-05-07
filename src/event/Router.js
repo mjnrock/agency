@@ -11,7 +11,7 @@ export class Router {
         this.type = type || Router.RuleType.MatchFirst;
 
         this.routes = new Set();
-        this.createRoutes(...routes);
+        this.createRoutes(routes);
     }
 
     /**
@@ -33,7 +33,7 @@ export class Router {
 
     route(message) {
         let hasResult = false;
-
+        
         for(let fn of this.routes) {
             let routes = fn(message);
 
@@ -43,18 +43,18 @@ export class Router {
 
             for(let route of routes) {
                 let channel = route;
-
+                
                 if(typeof route === "string" || route instanceof String) {
                     channel = this.bus.channels[ route ];
                 }
-
+                
                 
                 if(channel instanceof Channel) {
-                    channel.bus(payload);
+                    channel.bus(message);
 
                     hasResult = true;
                 } else if(typeof channel === "function") {
-                    channel(payload);
+                    channel(message);
                 }
             }
                     
@@ -72,8 +72,8 @@ export class Router {
         return this;
     }
     createRoutes(createRouteArgs = []) {
-        for(let fn of createRouteArgs.map(v => Array.isArray(v) ? v : [ v ])) {
-            this.createRoute(fn);
+        for(let args of createRouteArgs.map(v => Array.isArray(v) ? v : [ v ])) {
+            this.createRoute(...args);
         }
 
         return this;
@@ -88,8 +88,8 @@ export class Router {
     }
     destroyRoutes(destroyRouteArgs = []) {
         let results = [];
-        for(let fn of destroyRouteArgs.map(v => Array.isArray(v) ? v : [ v ])) {
-            results.push(this.destroyRoute(fn));
+        for(let args of destroyRouteArgs.map(v => Array.isArray(v) ? v : [ v ])) {
+            results.push(this.destroyRoute(...args));
         }
 
         return results;

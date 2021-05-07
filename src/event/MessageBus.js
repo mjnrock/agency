@@ -1,6 +1,7 @@
 import Registry from "./../Registry";
 import Router from "./Router";
 import Channel from "./Channel";
+import Message from "./Message";
 
 export class MessageBus {
     constructor(channels = [], routes = [], { middleware } = {}) {
@@ -10,15 +11,15 @@ export class MessageBus {
         });
         
         this.config = {
-            isBatchProcess: true,
+            isBatchProcess: false,
             middleware,
         };
 
-        for(let channel of channels) {
-            if(channel instanceof Channel) {
-                this.channels.register(channel);
+        for(let arg of channels) {
+            if(arg instanceof Channel) {
+                this.channels.register(arg);
             } else {
-                let chnl = Array.isArray(v) ? v : [ v ];
+                let chnl = Array.isArray(arg) ? arg : [ arg ];
                 this.createChannel(...chnl);
             }
         }

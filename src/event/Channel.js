@@ -1,9 +1,10 @@
 import AgencyBase from "./../AgencyBase";
 
 export class Channel extends AgencyBase {
-    constructor(config = {}) {
+    constructor({ globals = {}, config = {} } = {}) {
         super();
 
+        this.globals = globals;
         this.handlers = new Map([
             [ "*", new Set() ],
             [ "**", new Set() ],
@@ -11,7 +12,7 @@ export class Channel extends AgencyBase {
         this.queue = [];
 
         this.config = {
-            isBatchProcess: true,
+            isBatchProcess: false,
             maxBatchSize: 1000,
             ...config,
         };
@@ -104,7 +105,7 @@ export class Channel extends AgencyBase {
         const postHandlers = this.handlers.get("**") || [];
         for(let post of postHandlers) {
             if(typeof post === "function") {
-                post.call(payload, payload.type, payload.data, optionArgs);
+                post.call(message, message.type, message.data, optionArgs);
             }
         }
 
