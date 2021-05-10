@@ -1,6 +1,7 @@
 import Client from "./Client";
 import Packets from "./Packets";
 import Network from "../../event/Network";
+import Message from "../../event/Message";
 
 export class BrowserClient extends Client {
     constructor(network, opts = {}) {
