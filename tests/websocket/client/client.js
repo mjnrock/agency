@@ -1,4 +1,3 @@
-import Channel from "../../../src/event/Channel";
 import { QuickSetup as SetupWSClient } from "./../../../src/modules/websocket/Client";
 
 console.clear();
@@ -12,33 +11,19 @@ const client = SetupWSClient({
     host: `localhost`,
     port: 3001,
 }, {
-    test: function(data) {
-        console.log("Test")
-        // console.log(this)
-        console.log(...data)
-    },
-    bounce: function(data, { network }) {
-        network.emit("bounce");
+    bounce: function(msg, { client }) {
+        console.log(msg)
         
         setTimeout(() => {
-            client.send("bounce", ...data);
+            client.send("bounce", Date.now());
         }, 1000);
-    },
-    [ Channel.Signals.UPDATE ]: function(data) {
-        console.log(data);
     },
 });
 
-client.network.router.default.setState({
-    cats: 2,
-});
-client.network.router.default.setState({
-    catz: 5,
-});
-client.network.router.default.mergeState({
-    cats: 3,
-    catz: 5,
-});
+// setTimeout(() => {
+//     console.log(client.readiness)
+//     console.log(client.isConnected)
+// }, 1000)
 
 
 // setInterval(() => {

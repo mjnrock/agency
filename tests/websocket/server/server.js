@@ -9,14 +9,11 @@ console.warn("------------ NEW EXECUTION CONTEXT ------------");
 const app = express();
 const port = 3001;
 const wss = SetupWSServer(expressWs(app), {
-    test: function(data) {
-        console.log("Test")
-        // console.log(this)
-        console.log(...data)
-    },
-    bounce: function(data, { server }) {
+    bounce: function(msg, { server }) {
+        console.log(msg);
+        
         setTimeout(() => {
-            server.sendToAll("bounce", ...data);
+            server.sendToAll("bounce", Date.now());
         }, 1000);
     },
 });

@@ -18,7 +18,7 @@ export class Network extends AgencyBase {
         UPDATE: `Network.Update`,
     };
 
-    constructor(state = {}, modify = {}) {
+    constructor(state = {}, alter = {}) {
         super();
 
         //TODO  The "_internal" channel is *NOT* actually private yet, and currently functions as a normal channel
@@ -31,7 +31,7 @@ export class Network extends AgencyBase {
 
         this.__state = state;
 
-        this.alter(modify);
+        this.alter(alter);
     }
 
     get state() {
@@ -168,8 +168,8 @@ export class Network extends AgencyBase {
         return this.__cache.delete(entity);
     }
 
-    getChannel(name) {
-        return this.__bus.channels[ name ];
+    get ch() {
+        return this.__bus.channels;
     }
 
     /**

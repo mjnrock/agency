@@ -1,7 +1,7 @@
 import WebSocket from "ws";
 
 import Packets from "./Packets";
-import { BasicNetwork } from "../../event/Network";
+import Network from "../../event/Network";
 import Dispatcher from "../../event/Dispatcher";
 
 export class Client extends Dispatcher {
@@ -85,7 +85,7 @@ export class Client extends Dispatcher {
     get isConnecting() {
         return this.connection.readyState === WebSocket.CONNECTING;
     }
-    get isOpen() {
+    get isConnected() {
         return this.connection.readyState === WebSocket.OPEN;
     }
     get isClosing() {
@@ -112,7 +112,7 @@ export class Client extends Dispatcher {
     }
 
     send(event, ...args) {
-        if(this.isOpen) {
+        if(this.isConnected) {
             let payload
             if(typeof this._packer === "function") {
                 payload = this._packer.call(this, event, ...args);
@@ -159,41 +159,44 @@ export class Client extends Dispatcher {
  *  by the <Client>.  As such, the @handlers are those 
  *  that should receive the unpackaged packets.
  */
-export function QuickSetup(opts = {}, handlers = {}, { packets = Packets.Json() } = {}) {
+export function QuickSetup(opts = {}, handlers = {}, { state = {}, packets = Packets.Json() } = {}) {
     /**
      * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
      *  as a single-route (firstMatch), single-channel (named "default") network
      *  with real-time processing.
      */
-    const network = new BasicNetwork({
-        /**
-         * Client handlers
-         */
-        [ Client.Signal.CLOSE ]: ([ code, reason ]) => console.warn(`Client has disconnected [${ code }] from`, client.url),
-        [ Client.Signal.ERROR ]: ([ error ]) => {},
-        [ Client.Signal.MESSAGE ]: ([{ type, payload }], { client }) => {
-            if(!Array.isArray(payload)) {
-                payload = [ payload ];
-            }
-
-            console.log(type, payload)
-    
-            network.emit(client, type, ...payload);
+    const network = new Network(state, {
+        $routes: [
+            message => "default",
+        ],
+        default: {
+            handlers: {
+                /**
+                 * Client handlers
+                 */
+                // [ Client.Signal.CLOSE ]: () => {},
+                // [ Client.Signal.ERROR ]: () => {},
+                [ Client.Signal.MESSAGE ]: ({ data }) => {
+                    const [{ type, payload }] = data;
+                    
+                    network.emit(type, payload);
+                },
+                // [ Client.Signal.OPEN ]: (msg, { client }) => {
+                //     console.warn(`Client has connected to`, client.url);
+        
+                //     client.send("bounce", Date.now());
+                // },
+                // [ Client.Signal.PING ]: () => {},
+                // [ Client.Signal.PONG ]: () => {},
+                // [ Client.Signal.UNEXPECTED_RESPONSE ]: () => {},
+                // [ Client.Signal.UPGRADE ]: () => {},
+            
+                /**
+                 * Unpacked Client.Signal.MESSAGE handlers
+                 */
+                ...handlers,
+            },
         },
-        [ Client.Signal.OPEN ]: ([], { client }) => {
-            console.warn(`Client has connected to`, client.url);
-
-            client.send("bounce", Date.now());
-        },
-        [ Client.Signal.PING ]: ([ data ]) => {},
-        [ Client.Signal.PONG ]: ([ data ]) => {},
-        [ Client.Signal.UNEXPECTED_RESPONSE ]: ([ req, res ]) => {},
-        [ Client.Signal.UPGRADE ]: ([ res ]) => {},
-    
-        /**
-         * Unpacked Client.Signal.MESSAGE handlers
-         */
-        ...handlers,
     });
 
     const client = new Client(network, {
@@ -201,12 +204,13 @@ export function QuickSetup(opts = {}, handlers = {}, { packets = Packets.Json() 
         ...opts,
     });
 
-    /**
-     * Load @client into the global store for use in handlers
-     */
-    network.storeGlobal({
-        client: client,
-        network: network,
+    network.alter({
+        default: {
+            globals: {
+                client: client,
+                network: network,
+            },
+        },
     });
 
     return client;

@@ -1,5 +1,5 @@
 import Packets from "./Packets";
-import { BasicNetwork } from "../../event/Network";
+import Network from "../../event/Network";
 import Dispatcher from "../../event/Dispatcher";
 
 export class Server extends Dispatcher {
@@ -93,40 +93,49 @@ export class Server extends Dispatcher {
  *  by the <Server>.  As such, the @handlers are those
  *  that should receive the unpackaged packets.
  */
-export function QuickSetup(server, handlers = {}, { packets = Packets.Json() } = {}) {  
+export function QuickSetup(server, handlers = {}, { state = {}, packets = Packets.Json() } = {}) {  
     /**
      * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
      *  as a single-route (firstMatch), single-channel (named "default") network
      *  with real-time processing.
-     */  
-    const network = new BasicNetwork({
-        /**
-         * WebSocketClient handlers
-         */
-        [ Server.Signal.LISTENING ]: () => {},
-        [ Server.Signal.CLOSE ]: () => {},
-        [ Server.Signal.CONNECTION ]: ([ client ]) => {},
-        [ Server.Signal.HEADERS ]: ([ headers, req ]) => {},
-        [ Server.Signal.Client.MESSAGE ]: ([ { type, payload }, client, req ]) => {
-            if(!Array.isArray(payload)) {
-                payload = [ payload ];
-            }
+     */
+    const network = new Network(state, {
+        $routes: [
+            message => "default",
+        ],
+        default: {
+            handlers: {
+                /**
+                 * WebSocketClient handlers
+                 */
+                // [ Server.Signal.LISTENING ]: () => {},
+                // [ Server.Signal.CLOSE ]: () => {},
+                // [ Server.Signal.CONNECTION ]: (msg, { network }) => {
+                //     network.emit("bounce", Date.now());
+                // },
+                // [ Server.Signal.HEADERS ]: () => {},
+                [ Server.Signal.Client.MESSAGE ]: ({ data }) => {
+                    const [{ type, payload }] = data;
 
-            console.log(type, payload)
-
-            network.emit(client, type, ...payload);
+                    network.emit(type, payload);
+                },
+                // [ Server.Signal.Client.DISCONNECT ]: () => {},
+                
+                ...handlers,
+            },
         },
-        [ Server.Signal.Client.DISCONNECT ]: ([ code, reason ]) => console.log(`Client left with code ${ code }`),
-        
-        ...handlers,
     });
     const wss = new Server(server, network, {
         ...packets,
     });
 
-    network.storeGlobal({
-        server: wss,
-        network: network,
+    network.alter({
+        default: {
+            globals: {
+                server: wss,
+                network: network,
+            },
+        },
     });
 
     return wss;
