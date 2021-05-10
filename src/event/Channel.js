@@ -91,21 +91,21 @@ export class Channel extends AgencyBase {
         const preHandlers = this.handlers.get("*") || [];
         for(let pre of preHandlers) {
             if(typeof pre === "function") {
-                pre.call(message, message.type, message.data, optionArgs);
+                pre(message, optionArgs);
             }
         }
 
         const handlers = this.handlers.get(message.type) || [];
         for(let handler of handlers) {
             if(typeof handler === "function") {
-                handler.call(message, message.data, optionArgs);
+                handler(message, optionArgs);
             }
         }
 
         const postHandlers = this.handlers.get("**") || [];
         for(let post of postHandlers) {
             if(typeof post === "function") {
-                post.call(message, message.type, message.data, optionArgs);
+                post(message, optionArgs);
             }
         }
 

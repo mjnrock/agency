@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 import AgencyBase from "./../AgencyBase";
 
 import Registry from "./../Registry";
@@ -15,6 +16,7 @@ import Message from "./Message";
 export class Network extends AgencyBase {
     static Signals = {
         UPDATE: `Network.Update`,
+        CONSUME: `Network.Consume`,
     };
 
     constructor(state = {}, modify = {}) {
@@ -23,7 +25,7 @@ export class Network extends AgencyBase {
         //TODO  The "_internal" channel is *NOT* actually private yet, and currently functions as a normal channel
         this.__bus = new MessageBus([ "_internal" ], [ message => message.type === Network.Signals.UPDATE ? "_internal" : null ]);
         this.__bus.channels._internal.globals.broadcast = this.broadcast.bind(this);
-        this.__bus.channels._internal.addHandler(Network.Signals.UPDATE, function([], { broadcast }) { broadcast(Message.Generate(this)) });
+        this.__bus.channels._internal.addHandler(Network.Signals.UPDATE, function(msg, { broadcast }) { broadcast(Message.Generate(this)) });
 
         this.__connections = new Registry();
         this.__cache = new WeakMap();
@@ -94,7 +96,7 @@ export class Network extends AgencyBase {
         }
 
         for(let [ channelName, { globals = {}, handlers = {} } ] of Object.entries(obj)) {
-            let channel = this.__bus.createChannel(channelName);
+            let channel = this.__bus.channels[ channelName ] || this.__bus.createChannel(channelName);
 
             for(let [ key, value ] of Object.entries(globals)) {
                 channel.globals[ key ] = value;
@@ -160,6 +162,13 @@ export class Network extends AgencyBase {
         this.__connections.unregister(entity);
 
         return this.__cache.delete(entity);
+    }
+
+    emit(type, ...args) {
+        this.__bus.emit(this, type, ...args);
+    }
+    consume(msg, globals = {}) {
+        this.emit(Network.Signals.CONSUME, msg, globals);
     }
 
     broadcast(message) {
