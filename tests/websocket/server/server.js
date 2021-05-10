@@ -13,11 +13,11 @@ const wss = SetupWSServer(expressWs(app), {
         network.emit("bounce", Date.now());
     },
     bounce: function(msg, { server }) {
-        console.log(msg);
+        console.log(777, msg.type, msg.data)
 
         setTimeout(() => {
-            server.sendToAll("bounce", Date.now());
-        }, 1000);
+            server.sendToAll(msg);
+        }, 250);
     },
 });
 

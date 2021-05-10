@@ -109,9 +109,10 @@ export class MessageBus {
      *  This will pass the message to << .receive >>
      */
     emit(emitter, event, ...args) {
-        // console.log(emitter)
         if(Message.Conforms(emitter)) {
             this.receive(emitter);
+        } else if(Message.Conforms(event)) {
+            this.receive(event);
         } else {
             this.receive(new Message(emitter, event, ...args));
         }

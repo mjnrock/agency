@@ -1,6 +1,7 @@
 import Packets from "./Packets";
 import Network from "../../event/Network";
 import Dispatcher from "../../event/Dispatcher";
+import Message from "../../event/Message";
 
 export class Server extends Dispatcher {
     static Signal = {
@@ -41,9 +42,11 @@ export class Server extends Dispatcher {
         app.ws("/", (client, req) => {
             client.on("message", (packet) => {
                 try {
-                    let msg;
+                    let msg;                    
                     if(typeof this._unpacker === "function") {
-                        msg = this._unpacker.call(this, packet);
+                        const { type, payload } = this._unpacker.call(this, packet);
+
+                        msg = Message.Generate(this, type, ...payload);
                     } else {
                         msg = packet;
                     }
@@ -64,9 +67,13 @@ export class Server extends Dispatcher {
     sendToClient(client, type, ...payload) {
         let msg;
         if(typeof this._packer === "function") {
-            msg = this._packer.call(this, type, ...payload);
+            if(Message.ConformsBasic(type)) {
+                msg = this._packer.call(this, type.type, ...type.data);
+            } else {
+                msg = this._packer.call(this, type, ...payload);
+            }
         } else {
-            msg = payload;
+            msg = [ type, payload ];
         }
 
         client.send(msg);
@@ -115,9 +122,9 @@ export function QuickSetup(server, handlers = {}, { state = {}, packets = Packet
                 // },
                 // [ Server.Signal.HEADERS ]: () => {},
                 [ Server.Signal.Client.MESSAGE ]: ({ data }) => {
-                    const [{ type, payload }] = data;
+                    const [ msg ] = data;
 
-                    network.emit(type, payload);
+                    network.emit(msg);
                 },
                 // [ Server.Signal.Client.DISCONNECT ]: () => {},
                 

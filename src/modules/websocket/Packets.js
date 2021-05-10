@@ -25,8 +25,7 @@ export const BrowserJson = () => ({
             timestamp: Date.now(),
         });
     },
-    unpacker: function({ data: json }) {        
-        console.log(json)
+    unpacker: function({ data: json }) {
         let obj = JSON.parse(json);
 
         while(typeof obj === "string" || obj instanceof String) {

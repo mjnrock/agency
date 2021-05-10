@@ -1,43 +1,13 @@
 import WebSocket from "ws";
 
+import Client from "./Client";
 import Packets from "./Packets";
 import Network from "../../event/Network";
-import Dispatcher from "../../event/Dispatcher";
+import Message from "../../event/Message";
 
-export class Client extends Dispatcher {
-    static Signal = {
-        CLOSE: "WebSocketClient.Close",
-        ERROR: "WebSocketClient.Error",
-        MESSAGE: "WebSocketClient.Message",
-        MESSAGE_ERROR: "WebSocketClient.MessageError",
-        OPEN: "WebSocketClient.Open",
-        PING: "WebSocketClient.Ping",
-        PONG: "WebSocketClient.Pong",
-        UNEXPECTED_RESPONSE: "WebSocketClient.UnexpectedResponse",
-        UPGRADE: "WebSocketClient.Upgrade",
-    };
-
-    static BinaryType = {
-        NodeBuffer: "nodebuffer",
-        ArrayBuffer: "arraybuffer",
-        Fragments: "fragments",
-    };
-
+export class NodeClient extends Client {
     constructor(network, opts = {}) {
-        super(network);
-
-        this.subject = this;
-
-        if (typeof opts.packer === "function") {
-            this._packer = opts.packer;
-        }
-        if (typeof opts.unpacker === "function") {
-            this._unpacker = opts.unpacker;
-        }
-
-        if (opts.connect === true) {
-            this.connect(opts);
-        }
+        super(network, opts);
     }
 
     connect({ url, host, protocol = "http", port } = {}) {
@@ -59,11 +29,13 @@ export class Client extends Dispatcher {
             try {
                 let msg;
                 if (typeof this._unpacker === "function") {
-                    msg = this._unpacker.call(this, packet);
+                    const { type, payload } = this._unpacker.call(this, packet);
+
+                    msg = Message.Generate(this, type, ...payload);
                 } else {
                     msg = packet;
                 }
-
+                
                 this.dispatch(Client.Signal.MESSAGE, msg);
             } catch (e) {
                 this.dispatch(Client.Signal.MESSAGE_ERROR, e, packet);
@@ -76,12 +48,6 @@ export class Client extends Dispatcher {
         client.on("upgrade", (res) => this.dispatch(Client.Signal.UPGRADE, res));
     }
 
-    get url() {
-        return this.connection._url;
-    }
-    get readiness() {
-        return this.connection.readyState;
-    }
     get isConnecting() {
         return this.connection.readyState === WebSocket.CONNECTING;
     }
@@ -93,58 +59,6 @@ export class Client extends Dispatcher {
     }
     get isClosed() {
         return this.connection.readyState === WebSocket.CLOSED;
-    }
-
-    useNodeBuffer() {
-        this.connection.binaryType = Client.BinaryType.NodeBuffer;
-
-        return this;
-    }
-    useArrayBuffer() {
-        this.connection.binaryType = Client.BinaryType.ArrayBuffer;
-
-        return this;
-    }
-    useFragments() {
-        this.connection.binaryType = Client.BinaryType.Fragments;
-
-        return this;
-    }
-
-    send(event, ...args) {
-        if (this.isConnected) {
-            let payload
-            if (typeof this._packer === "function") {
-                payload = this._packer.call(this, event, ...args);
-            } else {
-                payload = [ event, ...args ];
-            }
-
-            this.connection.send(payload);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    disconnect(code, reason, timeout = false) {
-        this.connection.close(code, reason);
-
-        if (typeof timeout === "number" && timeout > 0) {
-            setTimeout(() => {
-                try {
-                    if (!this.isClosed) {
-                        this.kill();
-                    }
-                } catch (e) {
-                    this.dispatch(Client.Signal.ERROR, e);
-                }
-            }, timeout);
-        }
-    }
-    kill() {
-        this.connection.terminate();
     }
 };
 
@@ -176,10 +90,10 @@ export function QuickSetup(opts = {}, handlers = {}, { state = {}, packets = Pac
                  */
                 // [ Client.Signal.CLOSE ]: () => {},
                 // [ Client.Signal.ERROR ]: () => {},
-                [ Client.Signal.MESSAGE ]: ({ data }) => {
-                    const [ { type, payload } ] = data;
+                [ Client.Signal.MESSAGE ]: ({ data }, { network }) => {
+                    const [ msg ] = data;
 
-                    network.emit(type, payload);
+                    network.emit(msg);
                 },
                 // [ Client.Signal.OPEN ]: (msg, { client }) => {
                 //     console.warn(`Client has connected to`, client.url);
@@ -199,7 +113,7 @@ export function QuickSetup(opts = {}, handlers = {}, { state = {}, packets = Pac
         },
     });
 
-    const client = new Client(network, {
+    const client = new NodeClient(network, {
         ...packets,
         ...opts,
     });
@@ -216,4 +130,4 @@ export function QuickSetup(opts = {}, handlers = {}, { state = {}, packets = Pac
     return client;
 }
 
-export default Client;
+export default NodeClient;

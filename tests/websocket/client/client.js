@@ -12,10 +12,10 @@ const client = SetupWSClient({
     port: 3001,
 }, {
     bounce: function(msg, { client }) {
-        console.log(msg)
+        console.log(777, msg.type, msg.data)
         
         setTimeout(() => {
-            client.send("bounce", Date.now());
+            client.send(msg);
         }, 1000);
     },
 });

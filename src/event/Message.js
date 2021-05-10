@@ -33,7 +33,7 @@ export class Message {
     }
 
     static Generate(emitter, type, ...args) {
-        if(Message.Conforms(emitter)) {
+        if(Message.Conforms(type)) {
             return new Message(emitter.emitter, emitter.type, ...emitter.data);
         }
 
