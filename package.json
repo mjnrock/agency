@@ -30,6 +30,7 @@
         }
     },
     "peerDependencies": {
+        "qrcode": "^1.4.4",
         "react": "^17.0.2",
         "semantic-ui-css": "^2.4.1",
         "semantic-ui-react": "^2.0.3"
@@ -47,6 +48,7 @@
         "express-ws": "^4.0.0",
         "grunt": "^1.1.0",
         "grunt-contrib-copy": "^1.0.0",
+        "qrcode": "^1.4.4",
         "ws": "^7.4.5"
     },
     "babel": {
