@@ -1,7 +1,7 @@
 import express from "express";
 import expressWs from "express-ws";
 
-import { QuickSetup as SetupWSServer} from "./../../../src/modules/websocket/Server";
+import Server, { QuickSetup as SetupWSServer } from "./../../../src/modules/websocket/Server";
 
 console.clear();
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
@@ -9,9 +9,12 @@ console.warn("------------ NEW EXECUTION CONTEXT ------------");
 const app = express();
 const port = 3001;
 const wss = SetupWSServer(expressWs(app), {
+    [ Server.Signal.CONNECTION ]: (msg, { network }) => {
+        network.emit("bounce", Date.now());
+    },
     bounce: function(msg, { server }) {
         console.log(msg);
-        
+
         setTimeout(() => {
             server.sendToAll("bounce", Date.now());
         }, 1000);

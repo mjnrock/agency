@@ -1,5 +1,3 @@
-import WebSocket from "ws";
-
 import Packets from "./Packets";
 import Network from "../../event/Network";
 import Dispatcher from "../../event/Dispatcher";
@@ -28,23 +26,23 @@ export class Client extends Dispatcher {
 
         this.subject = this;
 
-        if(typeof opts.packer === "function") {
+        if (typeof opts.packer === "function") {
             this._packer = opts.packer;
         }
-        if(typeof opts.unpacker === "function") {
+        if (typeof opts.unpacker === "function") {
             this._unpacker = opts.unpacker;
         }
-        
-        if(opts.connect === true) {
+
+        if (opts.connect === true) {
             this.connect(opts);
         }
     }
 
-    connect({ url, host, protocol = "http", port, opts = {} } = {}) {
-        if(host && protocol && port) {
-            this.connection = new WebSocket(`${ protocol }://${ host }:${ port }`, opts);
+    connect({ url, host, protocol = "http", port } = {}) {
+        if (host && protocol && port) {
+            this.connection = new WebSocket(`${ protocol }://${ host }:${ port }`);
         } else {
-            this.connection = new WebSocket(url, opts);
+            this.connection = new WebSocket(url);
         }
 
         this._bind(this.connection);
@@ -53,27 +51,27 @@ export class Client extends Dispatcher {
     }
 
     _bind(client) {
-        client.on("close", (code, reason) => this.dispatch(Client.Signal.CLOSE, code, reason));
-        client.on("error", (error) => this.dispatch(Client.Signal.ERROR, error));
-        client.on("message", (packet) => {
+        client.addEventListener("close", (code, reason) => this.dispatch(Client.Signal.CLOSE, code, reason));
+        client.addEventListener("error", (error) => this.dispatch(Client.Signal.ERROR, error));
+        client.addEventListener("message", (packet) => {
             try {
                 let msg;
-                if(typeof this._unpacker === "function") {
+                if (typeof this._unpacker === "function") {
                     msg = this._unpacker.call(this, packet);
                 } else {
                     msg = packet;
                 }
-                
+
                 this.dispatch(Client.Signal.MESSAGE, msg);
-            } catch(e) {
+            } catch (e) {
                 this.dispatch(Client.Signal.MESSAGE_ERROR, e, packet);
             }
         });
-        client.on("open", () => this.dispatch(Client.Signal.OPEN));
-        client.on("ping", (data) => this.dispatch(Client.Signal.PING, data));
-        client.on("pong", (data) => this.dispatch(Client.Signal.PONG, data));
-        client.on("unexpected-response", (req, res) => this.dispatch(Client.Signal.UNEXPECTED_RESPONSE, req, res));
-        client.on("upgrade", (res) => this.dispatch(Client.Signal.UPGRADE, res));
+        client.addEventListener("open", () => this.dispatch(Client.Signal.OPEN));
+        client.addEventListener("ping", (data) => this.dispatch(Client.Signal.PING, data));
+        client.addEventListener("pong", (data) => this.dispatch(Client.Signal.PONG, data));
+        client.addEventListener("unexpected-response", (req, res) => this.dispatch(Client.Signal.UNEXPECTED_RESPONSE, req, res));
+        client.addEventListener("upgrade", (res) => this.dispatch(Client.Signal.UPGRADE, res));
     }
 
     get url() {
@@ -112,14 +110,14 @@ export class Client extends Dispatcher {
     }
 
     send(event, ...args) {
-        if(this.isConnected) {
+        if (this.isConnected) {
             let payload
-            if(typeof this._packer === "function") {
+            if (typeof this._packer === "function") {
                 payload = this._packer.call(this, event, ...args);
             } else {
                 payload = [ event, ...args ];
             }
-    
+
             this.connection.send(payload);
 
             return true;
@@ -131,13 +129,13 @@ export class Client extends Dispatcher {
     disconnect(code, reason, timeout = false) {
         this.connection.close(code, reason);
 
-        if(typeof timeout === "number" && timeout > 0) {
+        if (typeof timeout === "number" && timeout > 0) {
             setTimeout(() => {
                 try {
-                    if(!this.isClosed) {
+                    if (!this.isClosed) {
                         this.kill();
                     }
-                } catch(e) {
+                } catch (e) {
                     this.dispatch(Client.Signal.ERROR, e);
                 }
             }, timeout);
@@ -177,20 +175,20 @@ export function QuickSetup(opts = {}, handlers = {}, { state = {}, packets = Pac
                 // [ Client.Signal.CLOSE ]: () => {},
                 // [ Client.Signal.ERROR ]: () => {},
                 [ Client.Signal.MESSAGE ]: ({ data }) => {
-                    const [{ type, payload }] = data;
-                    
+                    const [ { type, payload } ] = data;
+
                     network.emit(type, payload);
                 },
                 // [ Client.Signal.OPEN ]: (msg, { client }) => {
                 //     console.warn(`Client has connected to`, client.url);
-        
+
                 //     client.send("bounce", Date.now());
                 // },
                 // [ Client.Signal.PING ]: () => {},
                 // [ Client.Signal.PONG ]: () => {},
                 // [ Client.Signal.UNEXPECTED_RESPONSE ]: () => {},
                 // [ Client.Signal.UPGRADE ]: () => {},
-            
+
                 /**
                  * Unpacked Client.Signal.MESSAGE handlers
                  */

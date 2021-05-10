@@ -1,4 +1,4 @@
-import { QuickSetup as SetupWSClient } from "./../../../src/modules/websocket/Client";
+import { QuickSetup as SetupWSClient } from "../../../src/modules/websocket/NodeClient";
 
 console.clear();
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
