@@ -2,6 +2,7 @@ import express from "express";
 import expressWs from "express-ws";
 
 import Server, { QuickSetup as SetupWSServer } from "./../../../src/modules/websocket/Server";
+import Packets from "./../../../src/modules/websocket/Packets";
 
 console.clear();
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
@@ -19,6 +20,8 @@ const wss = SetupWSServer(expressWs(app), {
             server.sendToAll("bounce", Date.now());
         }, 1000);
     },
+}, {
+    packets: Packets.NodeJson(),
 });
 
 /**

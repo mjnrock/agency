@@ -1,4 +1,4 @@
-export const Json = () => ({
+export const NodeJson = () => ({
     packer: function(event, ...args) {
         return JSON.stringify({
             type: event,
@@ -7,6 +7,25 @@ export const Json = () => ({
         });
     },
     unpacker: function(json) {        
+        let obj = JSON.parse(json);
+
+        while(typeof obj === "string" || obj instanceof String) {
+            obj = JSON.parse(obj);
+        }
+
+        return obj;
+    },
+});
+
+export const BrowserJson = () => ({
+    packer: function(event, ...args) {
+        return JSON.stringify({
+            type: event,
+            payload: args,
+            timestamp: Date.now(),
+        });
+    },
+    unpacker: function({ data: json }) {        
         let obj = JSON.parse(json);
 
         while(typeof obj === "string" || obj instanceof String) {
@@ -44,6 +63,7 @@ export const StringBuffer = ({ encoding = "utf8", spacer = ":" } = {}) => ({
 });
 
 export default {
-    Json,
+    BrowserJson,
+    NodeJson,
     StringBuffer,
 };
