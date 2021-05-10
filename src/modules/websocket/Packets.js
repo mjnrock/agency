@@ -26,6 +26,7 @@ export const BrowserJson = () => ({
         });
     },
     unpacker: function({ data: json }) {        
+        console.log(json)
         let obj = JSON.parse(json);
 
         while(typeof obj === "string" || obj instanceof String) {

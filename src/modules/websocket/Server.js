@@ -93,7 +93,7 @@ export class Server extends Dispatcher {
  *  by the <Server>.  As such, the @handlers are those
  *  that should receive the unpackaged packets.
  */
-export function QuickSetup(server, handlers = {}, { state = {}, packets = Packets.BrowserJson() } = {}) {  
+export function QuickSetup(server, handlers = {}, { state = {}, packets = Packets.NodeJson() } = {}) {  
     /**
      * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
      *  as a single-route (firstMatch), single-channel (named "default") network
