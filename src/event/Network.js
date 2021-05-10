@@ -5,7 +5,7 @@ import Registry from "./../Registry";
 import MessageBus from "./MessageBus";
 import Dispatcher from "./Dispatcher";
 import Receiver from "./Receiver";
-import Message from "./Message";
+import Channel from "./Channel";
 
 /**
  * 
@@ -16,7 +16,6 @@ import Message from "./Message";
 export class Network extends AgencyBase {
     static Signals = {
         UPDATE: `Network.Update`,
-        CONSUME: `Network.Consume`,
     };
 
     constructor(state = {}, modify = {}) {
@@ -25,7 +24,7 @@ export class Network extends AgencyBase {
         //TODO  The "_internal" channel is *NOT* actually private yet, and currently functions as a normal channel
         this.__bus = new MessageBus([ "_internal" ], [ message => message.type === Network.Signals.UPDATE ? "_internal" : null ]);
         this.__bus.channels._internal.globals.broadcast = this.broadcast.bind(this);
-        this.__bus.channels._internal.addHandler(Network.Signals.UPDATE, function(msg, { broadcast }) { broadcast(Message.Generate(this)) });
+        this.__bus.channels._internal.addHandler(Network.Signals.UPDATE, (msg) => this.multiPass(msg, "_internal"));
 
         this.__connections = new Registry();
         this.__cache = new WeakMap();
@@ -109,13 +108,18 @@ export class Network extends AgencyBase {
         return this;
     }
 
+    /**
+     * A helper function for when no other arguments are passed
+     *  besides @entity.  This is used for situations where the
+     *  callback/filter are seeded later.
+     */
     _emptyJoin() {
         return this.join({
             id: uuidv4(),
         });
     }
     join(entity, { callback, filter, synonyms = [] } = {}) {
-        if(!arguments.length) {
+        if(!!entity && !callback && !filter) {
             return this._emptyJoin();
         }
 
@@ -164,13 +168,54 @@ export class Network extends AgencyBase {
         return this.__cache.delete(entity);
     }
 
+    getChannel(name) {
+        return this.__bus.channels[ name ];
+    }
+
+    /**
+     * Create and route a message normally.
+     */
     emit(type, ...args) {
         this.__bus.emit(this, type, ...args);
     }
-    consume(msg, globals = {}) {
-        this.emit(Network.Signals.CONSUME, msg, globals);
+
+    /**
+     * Pass a message from one channel to another.
+     */
+    pass(channel, msg) {
+        if(channel instanceof Channel) {
+            channel.bus(msg);
+        } else {
+            this.__bus.channels[ channel ].bus(msg);
+        }
+    }
+    /**
+     * Pass a message to all channels, with optional exclulsions.
+     */
+    multiPass(msg, exclude = []) {
+        if(exclude.length) {
+            if(!Array.isArray(exclude)) {
+                exclude = [ exclude ];
+            }
+
+            for(let channel of this.__bus.channels) {
+                for(let ignore of exclude) {
+                    if(this.__bus.channels[ ignore ] !== channel) {
+                        channel.bus(msg);
+                    }
+                }
+            }
+        } else {
+            for(let channel of this.__bus.channels) {
+                channel.bus(msg);
+            }
+        }
     }
 
+    /**
+     * Send a message to all connections, invoking the callback
+     *  function on each receiver.
+     */
     broadcast(message) {
         for(let member of this.__connections) {
             let { receiver } = this.__cache.get(member);

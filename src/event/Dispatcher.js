@@ -43,7 +43,7 @@ export const $Dispatcher = $super => class extends $super {
         if(network instanceof Network) {
             this._network = network;
     
-            this.dispatch = network.__bus.emit;
+            this.dispatch = network.emit;
             this.broadcast = network.broadcast;
         }
     }

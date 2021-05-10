@@ -1,4 +1,4 @@
-import ReactNetwork from "../../src/react/ReactNetwork";
+import ReactNetwork from "../../src/modules/react/ReactNetwork";
 
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
