@@ -1,22 +1,19 @@
-import Emitter from "./Emitter";
+import Dispatcher from "./Dispatcher";
+import Receiver from "./Receiver";
 import Channel from "./Channel";
 import Router from "./Router";
+import MessageBus from "./MessageBus";
+import Network from "./Network";
 
-import Network, { BasicNetwork } from "./Network";
-import Dispatcher from "./Dispatcher";
-
-import $EventReceiver from "./$EventReceiver";
-import $EventSender from "./$EventSender";
+import $DispatchState from "./$DispatchState";
 
 export default {
-    Emitter,
+    Dispatcher,
+    Receiver,
     Channel,
     Router,
-
+    MessageBus,
     Network,
-    BasicNetwork,
-    Dispatcher,
 
-    $EventReceiver,
-    $EventSender,
+    $DispatchState,
 };

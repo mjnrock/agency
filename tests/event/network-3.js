@@ -1,8 +1,8 @@
-import Network from "../../src/event/Network";
+import Agency from "./../../src/index";
 
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
-const network = new Network({
+const network = new Agency.Event.Network({
     cat: 2,
 }, {
     default: {
