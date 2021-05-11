@@ -123,15 +123,29 @@ export class Network extends AgencyBase {
         return this;
     }
 
-    join(entity, { callback, filter, synonyms = [] } = {}) {
+    /**
+     * @addSelfToDefaultGlobal | Add << this >> to default channel globals via { [ addSelfToDefaultGlobal ]: this }
+     *      As such, whatever string value is passed will be used as the key
+     */
+    join(entity, { callback, filter, synonyms = [], addSelfToDefaultGlobal = false } = {}) {
         if(!!entity && !callback) {
-            return this.__emptyJoin(entity);
+            return this.__emptyJoin(entity, { filter, synonyms, addSelfToDefaultGlobal });
         }
 
         this.__connections.register(entity, ...synonyms);
 
         const cache = this.__createCacheObject(entity, callback, filter, synonyms);
         this.__cache.set(entity, cache);
+
+        if((typeof addSelfToDefaultGlobal === "string" || addSelfToDefaultGlobal instanceof String) && entity instanceof Network) {
+            entity.alter({
+                default: {
+                    $globals: {
+                        [ addSelfToDefaultGlobal ]: this,
+                    }
+                }
+            });
+        }
         
         return cache.controller;
     }
@@ -271,9 +285,10 @@ export class Network extends AgencyBase {
 
         return cache;
     }
-    __emptyJoin(entity) {
+    __emptyJoin(entity, opts = {}) {
         if(entity instanceof Network) {
             return this.join(entity, {
+                ...opts,
                 callback: entity.__bus.receive.bind(entity.__bus),
             });
         }

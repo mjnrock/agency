@@ -37,16 +37,13 @@ const ws = NodeClient.QuickSetup({
 
 const mainnet = new Network({}, {
     default: {
-        $globals: {
-            ws: ws,
-        },
-        bounce: function(msg, { ws }) {
+        bounce: function(msg, { ws: cats }) {
             console.log("Received Message:", msg.type, msg.data)
 
             setTimeout(() => {
-                ws.sendToServer(msg);
+                cats.sendToServer(msg);
             }, 250);
         },
     },
 });
-ws.join(mainnet);
+ws.join(mainnet, { addSelfToDefaultGlobal: "ws" });

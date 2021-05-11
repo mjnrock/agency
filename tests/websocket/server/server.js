@@ -36,19 +36,16 @@ const wss = Server.QuickSetup(expressWs(app), {
 
 const mainnet = new Network({}, {
     default: {
-        $globals: {
-            wss: wss,
-        },
-        bounce: function(msg, { wss }) {
+        bounce: function(msg, { wss: cqats }) {
             console.log("Received Message:", msg.type, msg.data)
 
             setTimeout(() => {
-                wss.sendToAll(msg);
+                cqats.sendToAll(msg);
             }, 250);
         },
     },
 });
-wss.join(mainnet);
+wss.join(mainnet, { addSelfToDefaultGlobal: "wss" });
 
 
 /**
