@@ -128,14 +128,20 @@ export class Network extends AgencyBase {
      *  besides @entity.  This is used for situations where the
      *  callback/filter are seeded later.
      */
-    _emptyJoin() {
-        return this.join({
-            id: uuidv4(),
+    _emptyJoin(entity) {
+        if(entity instanceof Network) {
+            return this.join(entity, {
+                callback: entity.__bus.receive.bind(entity.__bus),
+            });
+        }
+
+        return this.join(entity, {
+            callback: () => {},
         });
     }
     join(entity, { callback, filter, synonyms = [] } = {}) {
-        if(!!entity && !callback && !filter) {
-            return this._emptyJoin();
+        if(!!entity && !callback) {
+            return this._emptyJoin(entity);
         }
 
         this.__connections.register(entity, ...synonyms);

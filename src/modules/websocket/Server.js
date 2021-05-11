@@ -105,6 +105,15 @@ export class Server extends Network {
         }, {
             ...packets,
         });
+
+        server.alter({
+            default: {
+                $globals: {
+                    sendToClient: server.sendToClient.bind(server),
+                    sendToAll: server.sendToAll.bind(server),
+                },
+            },
+        });
     
         return server;
     };

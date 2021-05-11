@@ -125,7 +125,7 @@ export class Client extends Network {
                     sendToServer: client.send.bind(client),
                 },
             },
-        })
+        });
     
         return client;
     };

@@ -1,9 +1,10 @@
+import Network from "../../../src/event/Network";
 import NodeClient from "../../../src/modules/websocket/NodeClient";
 
 console.clear();
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
-const client = NodeClient.QuickSetup({
+const ws = NodeClient.QuickSetup({
     connect: true,
 
     // url: `ws://localhost:3001`,
@@ -12,13 +13,21 @@ const client = NodeClient.QuickSetup({
     port: 3001,
 }, {
     bounce: function(msg, { sendToServer }) {
-        console.log(777, msg.type, msg.data)
+        console.log("Received Message:", msg.type, msg.data)
         
         setTimeout(() => {
             sendToServer(msg);
         }, 1000);
     },
-}, { broadcastMessages: false });
+// }, { broadcastMessages: false });
+});
+const mainnet = new Network({}, {
+    default: {
+        "*": msg => console.log(msg),
+    },
+});
+
+ws.join(mainnet);
 
 // setTimeout(() => {
 //     console.log(client.readiness)

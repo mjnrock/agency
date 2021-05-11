@@ -1,5 +1,6 @@
 import express from "express";
 import expressWs from "express-ws";
+import Network from "../../../src/event/Network";
 
 import Server from "./../../../src/modules/websocket/Server";
 
@@ -12,14 +13,23 @@ const wss = Server.QuickSetup(expressWs(app), {
     [ Server.Signal.CONNECTION ]: (msg, { emit }) => {
         emit("bounce", Date.now());
     },
-    bounce: function(msg, { network }) {
-        console.log(777, msg.type, msg.data)
+    bounce: function(msg, { sendToAll }) {
+        console.log("Received Message:", msg.type, msg.data)
 
         setTimeout(() => {
-            network.sendToAll(msg);
+            sendToAll(msg);
         }, 250);
     },
-}, { broadcastMessages: false });
+// }, { broadcastMessages: false });
+});
+const mainnet = new Network({}, {
+    default: {
+        "*": msg => console.log(msg),
+    },
+});
+
+wss.join(mainnet);
+
 
 /**
  * This is a newer way to do the work commonly seen with `bodyParser`
