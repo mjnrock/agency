@@ -3,12 +3,14 @@ import Packets from "./Packets";
 import Message from "../../event/Message";
 
 export class BrowserClient extends Client {
-    constructor(network, opts = {}) {
-        super(network, opts);
+    constructor(state = {}, alter = {}, opts = {}) {
+        super(state, alter, opts);
     }
 
-    connect({ url, host, protocol = "http", port } = {}) {
-        if (host && protocol && port) {
+    connect({ url, host, protocol = "http", port, ws } = {}) {
+        if (ws instanceof WebSocket) {
+            this.connection = ws;
+        } else if (host && protocol && port) {
             this.connection = new WebSocket(`${ protocol }://${ host }:${ port }`);
         } else {
             this.connection = new WebSocket(url);
@@ -20,8 +22,8 @@ export class BrowserClient extends Client {
     }
 
     _bind(client) {
-        client.addEventListener("close", (code, reason) => this.dispatch(Client.Signal.CLOSE, code, reason));
-        client.addEventListener("error", (error) => this.dispatch(Client.Signal.ERROR, error));
+        client.addEventListener("close", (code, reason) => this.emit(Client.Signal.CLOSE, code, reason));
+        client.addEventListener("error", (error) => this.emit(Client.Signal.ERROR, error));
         client.addEventListener("message", (packet) => {
             try {
                 let msg;
@@ -32,16 +34,16 @@ export class BrowserClient extends Client {
                     msg = packet;
                 }
 
-                this.dispatch(Client.Signal.MESSAGE, msg);
+                this.emit(Client.Signal.MESSAGE, msg);
             } catch (e) {
-                this.dispatch(Client.Signal.MESSAGE_ERROR, e, packet);
+                this.emit(Client.Signal.MESSAGE_ERROR, e, packet);
             }
         });
-        client.addEventListener("open", () => this.dispatch(Client.Signal.OPEN));
-        client.addEventListener("ping", (data) => this.dispatch(Client.Signal.PING, data));
-        client.addEventListener("pong", (data) => this.dispatch(Client.Signal.PONG, data));
-        client.addEventListener("unexpected-response", (req, res) => this.dispatch(Client.Signal.UNEXPECTED_RESPONSE, req, res));
-        client.addEventListener("upgrade", (res) => this.dispatch(Client.Signal.UPGRADE, res));
+        client.addEventListener("open", () => this.emit(Client.Signal.OPEN));
+        client.addEventListener("ping", (data) => this.emit(Client.Signal.PING, data));
+        client.addEventListener("pong", (data) => this.emit(Client.Signal.PONG, data));
+        client.addEventListener("unexpected-response", (req, res) => this.emit(Client.Signal.UNEXPECTED_RESPONSE, req, res));
+        client.addEventListener("upgrade", (res) => this.emit(Client.Signal.UPGRADE, res));
     }
     
     get isConnecting() {
@@ -57,8 +59,8 @@ export class BrowserClient extends Client {
         return this.connection.readyState === WebSocket.CLOSED;
     }
 
-    static QuickSetup(opts = {}, handlers = {}, { state = {}, packets = Packets.BrowserJson() } = {}) {
-        return super.QuickSetup.call(this, opts, handlers, { state, packets, clientClass: BrowserClient });
+    static QuickSetup(wsOpts = {}, handlers = {}, { state = {}, packets = Packets.BrowserJson(), broadcastMessages } = {}) {
+        return super.QuickSetup.call(this, wsOpts, handlers, { state, packets, clientClass: BrowserClient, broadcastMessages });
     }
 };
 

@@ -26,12 +26,10 @@ const channelName1 = "Cats";
 network.alter({
     //? All keys that are *NOT* prefixed with "$" will be used as the @channelName
     [ channelName1 ]: {
-        handlers: {
-            meow([], { broadcast }) {
-                broadcast(this);
-            },
+        meow([], { broadcast }) {
+            broadcast(this);
         },
-        globals: {
+        $globals: {
             broadcast: network.broadcast.bind(network),
         },
     },

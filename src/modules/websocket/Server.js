@@ -1,9 +1,8 @@
 import Packets from "./Packets";
 import Network from "../../event/Network";
-import Dispatcher from "../../event/Dispatcher";
 import Message from "../../event/Message";
 
-export class Server extends Dispatcher {
+export class Server extends Network {
     static Signal = {
         LISTENING: "WebSocketServer.Listening",
         CLOSE: "WebSocketServer.Close",
@@ -17,27 +16,27 @@ export class Server extends Dispatcher {
         }
     };
 
-    constructor(wss, network, { packer, unpacker } = {}) {
-        super(network);
+    constructor(wss, state = {}, alter = {}, opts = {}) {
+        super(state, alter);
 
-        this.subject = this;
         this.wss = wss;
 
-        if(typeof packer === "function") {
-            this._packer = packer;
+        if (typeof opts.packer === "function") {
+            this._packer = opts.packer;
         }
-        if(typeof unpacker === "function") {
-            this._unpacker = unpacker;
+        if (typeof opts.unpacker === "function") {
+            this._unpacker = opts.unpacker;
         }
 
         this._bind(this.wss.getWss(), this.wss.app);
+
     }
 
     _bind(wss, app) {
-        wss.on("listening", () => this.dispatch(Server.Signal.LISTENING));
-        wss.on("close", () => this.dispatch(Server.Signal.CLOSE));
-        wss.on("connection", (client) => this.dispatch(Server.Signal.CONNECTION, client));
-        wss.on("headers", (headers, req) => this.dispatch(Server.Signal.HEADERS, headers, req));
+        wss.on("listening", () => this.emit(Server.Signal.LISTENING));
+        wss.on("close", () => this.emit(Server.Signal.CLOSE));
+        wss.on("connection", (client) => this.emit(Server.Signal.CONNECTION, client));
+        wss.on("headers", (headers, req) => this.emit(Server.Signal.HEADERS, headers, req));
 
         app.ws("/", (client, req) => {
             client.on("message", (packet) => {
@@ -51,12 +50,12 @@ export class Server extends Dispatcher {
                         msg = packet;
                     }
 
-                    this.dispatch(Server.Signal.Client.MESSAGE, msg, client, req);
+                    this.emit(Server.Signal.Client.MESSAGE, msg, client, req);
                 } catch(e) {
-                    this.dispatch(Server.Signal.Client.MESSAGE_ERROR, e, packet, client, req);
+                    this.emit(Server.Signal.Client.MESSAGE_ERROR, e, packet, client, req);
                 }
             });
-            client.on("close", (code, reason) => this.dispatch(Server.Signal.Client.DISCONNECT, code, reason));
+            client.on("close", (code, reason) => this.emit(Server.Signal.Client.DISCONNECT, code, reason));
         });
     }
 
@@ -88,60 +87,26 @@ export class Server extends Dispatcher {
         return this;
     }
 
-    /**
-     * Create a new <BasicNetwork> and a new <Server>, returning
-     *  the newly created server.  The network can be accessed
-     *  via << server.network >>.
-     * 
-     * The main convenience is that this setup will use the
-     *  << Packets.JSON >> paradigm and setup the local
-     *  message routing from packets received and unpackaged
-     *  by the <Server>.  As such, the @handlers are those
-     *  that should receive the unpackaged packets.
-     */
-    static QuickSetup(server, handlers = {}, { state = {}, packets = Packets.NodeJson() } = {}) {  
-        /**
-         * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
-         *  as a single-route (firstMatch), single-channel (named "default") network
-         *  with real-time processing.
-         */
-        const network = new Network(state, {
+    static QuickSetup(wss, handlers = {}, { state = {}, packets = Packets.NodeJson(), broadcastMessages = true } = {}) {
+        const server = new Server(wss, state, {
             default: {
-                handlers: {
-                    /**
-                     * WebSocketClient handlers
-                     */
-                    // [ Server.Signal.LISTENING ]: () => {},
-                    // [ Server.Signal.CLOSE ]: () => {},
-                    // [ Server.Signal.CONNECTION ]: (msg, { network }) => {
-                    //     network.emit("bounce", Date.now());
-                    // },
-                    // [ Server.Signal.HEADERS ]: () => {},
-                    [ Server.Signal.Client.MESSAGE ]: ({ data }) => {
-                        const [ msg ] = data;
-    
-                        network.emit(msg);
-                    },
-                    // [ Server.Signal.Client.DISCONNECT ]: () => {},
-                    
-                    ...handlers,
+                [ Server.Signal.Client.MESSAGE ]: ({ data }, { emit, broadcast }) => {
+                    const [ msg ] = data;
+
+                    if(broadcastMessages) {
+                        broadcast(msg);
+                    } else {
+                        emit(msg);
+                    }
                 },
+                
+                ...handlers,
             },
-        });
-        const wss = new Server(server, network, {
+        }, {
             ...packets,
         });
     
-        network.alter({
-            default: {
-                globals: {
-                    server: wss,
-                    network: network,
-                },
-            },
-        });
-    
-        return wss;
+        return server;
     };
 };
 

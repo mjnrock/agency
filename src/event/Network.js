@@ -34,10 +34,8 @@ export class Network extends AgencyBase {
                 message => "default",
             ],
             default: {
-                handlers: {
-                    [ Network.Signals.UPDATE ]: (msg, { broadcast }) => broadcast(msg),
-                },
-                globals: {
+                [ Network.Signals.UPDATE ]: (msg, { broadcast }) => broadcast(msg),
+                $globals: {
                     network: this,
                     state: this.state,
                     emit: this.emit.bind(this),
@@ -108,14 +106,17 @@ export class Network extends AgencyBase {
             delete obj.$channels;
         }
 
-        for(let [ channelName, { globals = {}, handlers = {} } ] of Object.entries(obj)) {
+        for(let [ channelName, entries ] of Object.entries(obj)) {
             let channel = this.__bus.channels[ channelName ] || this.__bus.createChannel(channelName);
 
-            for(let [ key, value ] of Object.entries(globals)) {
-                channel.globals[ key ] = value;
-            }
-            for(let [ name, fn ] of Object.entries(handlers)) {
-                channel.addHandler(name, fn);
+            for(let [ key, value ] of Object.entries(entries)) {
+                if(key === "$globals") {
+                    for(let [ name, val ] of Object.entries(value)) {
+                        channel.globals[ name ] = val;
+                    }
+                } else {
+                    channel.addHandler(key, value);
+                }
             }
         }
 
@@ -142,11 +143,11 @@ export class Network extends AgencyBase {
         const cache = {
             dispatcher: new Dispatcher(this, entity),
             receiver: new Receiver(callback, filter),
-            synonyms,
+            synonyms: synonyms,
+            controller: {},
         };
-        this.__cache.set(entity, cache);
-        
-        return {
+
+        cache.controller = {
             dispatch: cache.dispatcher.dispatch,
             broadcast: cache.dispatcher.broadcast,
             receiver: ({ callback, filter } = {}) => {
@@ -175,15 +176,15 @@ export class Network extends AgencyBase {
                 return false;
             }
         };
+
+        this.__cache.set(entity, cache);
+        
+        return cache.controller;
     }
     leave(entity) {
         this.__connections.unregister(entity);
 
         return this.__cache.delete(entity);
-    }
-
-    get ch() {
-        return this.__bus.channels;
     }
 
     /**
@@ -238,6 +239,18 @@ export class Network extends AgencyBase {
                 receiver.receive(message);
             }
         }
+    }
+
+
+    get ch() {
+        return this.__bus.channels;
+    }
+
+    getController(idOrSynonym) {
+        const entity = this.__connections[ idOrSynonym ];
+        const cache = this.__cache.get(entity) || {};
+
+        return cache.controller || {};
     }
 };
 

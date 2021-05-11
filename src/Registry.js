@@ -26,12 +26,7 @@ export const $Registry = $super => class extends $super {
         const proxy = new Proxy(this, {
             get(target, prop) {
                 if(typeof Registry.accessor === "function") {                
-                    if(prop in target) {
-                        return Registry.accessor(Reflect.get(target, prop), Registry.accessorArgs || {});
-                    }
-    
-                    
-                    return Registry.accessor(Reflect.get(target.__state, prop), Registry.accessorArgs || {});
+                    return Registry.accessor(target, prop, Registry.accessorArgs || {});
                 }
                 
                 if(prop in target) {

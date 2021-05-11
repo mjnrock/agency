@@ -9,17 +9,17 @@ console.warn("------------ NEW EXECUTION CONTEXT ------------");
 const app = express();
 const port = 3001;
 const wss = Server.QuickSetup(expressWs(app), {
-    [ Server.Signal.CONNECTION ]: (msg, { network }) => {
-        network.emit("bounce", Date.now());
+    [ Server.Signal.CONNECTION ]: (msg, { emit }) => {
+        emit("bounce", Date.now());
     },
-    bounce: function(msg, { server }) {
+    bounce: function(msg, { network }) {
         console.log(777, msg.type, msg.data)
 
         setTimeout(() => {
-            server.sendToAll(msg);
+            network.sendToAll(msg);
         }, 250);
     },
-});
+}, { broadcastMessages: false });
 
 /**
  * This is a newer way to do the work commonly seen with `bodyParser`

@@ -11,14 +11,14 @@ const client = NodeClient.QuickSetup({
     host: `localhost`,
     port: 3001,
 }, {
-    bounce: function(msg, { client, network }) {
+    bounce: function(msg, { sendToServer }) {
         console.log(777, msg.type, msg.data)
         
         setTimeout(() => {
-            client.send(msg);
+            sendToServer(msg);
         }, 1000);
     },
-});
+}, { broadcastMessages: false });
 
 // setTimeout(() => {
 //     console.log(client.readiness)

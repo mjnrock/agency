@@ -1,9 +1,8 @@
 import Packets from "./Packets";
 import Network from "../../event/Network";
-import Dispatcher from "../../event/Dispatcher";
 import Message from "../../event/Message";
 
-export class Client extends Dispatcher {
+export class Client extends Network {
     static Signal = {
         CLOSE: "WebSocketClient.Close",
         ERROR: "WebSocketClient.Error",
@@ -22,10 +21,8 @@ export class Client extends Dispatcher {
         Fragments: "fragments",
     };
 
-    constructor(network, opts = {}) {
-        super(network);
-
-        this.subject = this;
+    constructor(state = {}, alter = {}, opts = {}) {
+        super(state, alter);
 
         if (typeof opts.packer === "function") {
             this._packer = opts.packer;
@@ -93,7 +90,7 @@ export class Client extends Dispatcher {
                         this.kill();
                     }
                 } catch (e) {
-                    this.dispatch(Client.Signal.ERROR, e);
+                    this.emit(Client.Signal.ERROR, e);
                 }
             }, timeout);
         }
@@ -102,67 +99,33 @@ export class Client extends Dispatcher {
         this.connection.terminate();
     }
 
-    /**
-     * Create a new <BasicNetwork> and a new <Client>, returning
-     *  the newly created client.  The network can be accessed
-     *  via << client.network >>.
-     * 
-     * The main convenience is that this setup will use the
-     *  << Packets.JSON >> paradigm and setup the local
-     *  message routing from packets received and unpackaged
-     *  by the <Client>.  As such, the @handlers are those 
-     *  that should receive the unpackaged packets.
-     */
-    static QuickSetup(opts = {}, handlers = {}, { state = {}, packets = Packets.NodeJson(), clientClass = Client } = {}) {
-        /**
-         * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
-         *  as a single-route (firstMatch), single-channel (named "default") network
-         *  with real-time processing.
-         */
-        const network = new Network(state, {
+    static QuickSetup(wsOpts = {}, handlers = {}, { state = {}, packets = Packets.NodeJson(), clientClass = Client, broadcastMessages = true } = {}) {
+        const client = new clientClass(state, {
             default: {
-                handlers: {
-                    /**
-                     * Client handlers
-                     */
-                    // [ Client.Signal.CLOSE ]: () => {},
-                    // [ Client.Signal.ERROR ]: () => {},
-                    [ Client.Signal.MESSAGE ]: ({ data }, { network }) => {
-                        const [ msg ] = data;
-    
-                        network.emit(msg);
-                    },
-                    // [ Client.Signal.OPEN ]: (msg, { client }) => {
-                    //     console.warn(`Client has connected to`, client.url);
-    
-                    //     client.send("bounce", Date.now());
-                    // },
-                    // [ Client.Signal.PING ]: () => {},
-                    // [ Client.Signal.PONG ]: () => {},
-                    // [ Client.Signal.UNEXPECTED_RESPONSE ]: () => {},
-                    // [ Client.Signal.UPGRADE ]: () => {},
-    
-                    /**
-                     * Unpacked Client.Signal.MESSAGE handlers
-                     */
-                    ...handlers,
+                [ Client.Signal.MESSAGE ]: ({ data }, { emit, broadcast }) => {
+                    const [ msg ] = data;
+
+                    if(broadcastMessages) {
+                        broadcast(msg);
+                    } else {
+                        emit(msg);
+                    }
                 },
+
+                ...handlers,
             },
-        });
-    
-        const client = new clientClass(network, {
+        },  {
+            ...wsOpts,
             ...packets,
-            ...opts,
         });
-    
-        network.alter({
+
+        client.alter({
             default: {
-                globals: {
-                    client: client,
-                    network: network,
+                $globals: {
+                    sendToServer: client.send.bind(client),
                 },
             },
-        });
+        })
     
         return client;
     };
