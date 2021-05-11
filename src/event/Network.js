@@ -16,21 +16,35 @@ import Channel from "./Channel";
 export class Network extends AgencyBase {
     static Signals = {
         UPDATE: `Network.Update`,
+        EXTERNAL: `Network.External`,
     };
 
     constructor(state = {}, alter = {}) {
         super();
 
-        //TODO  The "_internal" channel is *NOT* actually private yet, and currently functions as a normal channel
-        this.__bus = new MessageBus([ "_internal" ], [ message => message.type === Network.Signals.UPDATE ? "_internal" : null ]);
-        this.__bus.channels._internal.globals.broadcast = this.broadcast.bind(this);
-        this.__bus.channels._internal.addHandler(Network.Signals.UPDATE, (msg) => this.multiPass(msg, "_internal"));
+        this.__bus = new MessageBus();
 
         this.__connections = new Registry();
         this.__cache = new WeakMap();
 
         this.__state = state;
 
+        this.alter({
+            $routes: [
+                message => "default",
+            ],
+            default: {
+                handlers: {
+                    [ Network.Signals.UPDATE ]: (msg, { broadcast }) => broadcast(msg),
+                },
+                globals: {
+                    network: this,
+                    state: this.state,
+                    emit: this.emit.bind(this),
+                    broadcast: this.broadcast.bind(this),
+                },
+            },
+        });
         this.alter(alter);
     }
 
@@ -193,20 +207,20 @@ export class Network extends AgencyBase {
      * Pass a message to all channels, with optional exclulsions.
      */
     multiPass(msg, exclude = []) {
-        if(exclude.length) {
-            if(!Array.isArray(exclude)) {
-                exclude = [ exclude ];
-            }
+        if(!Array.isArray(exclude)) {
+            exclude = [ exclude ];
+        }
 
-            for(let channel of this.__bus.channels) {
-                for(let ignore of exclude) {
-                    if(this.__bus.channels[ ignore ] !== channel) {
-                        channel.bus(msg);
-                    }
+        exclude = exclude.map(name => this.ch[ name ]);
+
+        if(exclude.length) {
+            for(let channel of this.ch) {
+                if(!exclude.includes(channel)) {
+                    channel.bus(msg);
                 }
             }
         } else {
-            for(let channel of this.__bus.channels) {
+            for(let channel of this.ch) {
                 channel.bus(msg);
             }
         }

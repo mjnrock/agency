@@ -3,7 +3,7 @@ import qrcode from "qrcode";
 export class QRCode {
     static get Generator() {
         return qrcode;
-    }
+    };
 
     static OutputType = {
         DATA_URL: `toDataURL`,
@@ -14,17 +14,21 @@ export class QRCode {
         BUFFER: `toBuffer`,
     };
 
-    constructor(data, type = QRCode.OutputType.DATA_URL) {
+    constructor(data, type = QRCode.OutputType.DATA_URL, opts = {}) {
         this.type = type;
         this.data = data;
+        this.config = {
+            errorCorrectionLevel: "H",
+            ...opts,
+        };
     }
 
-    async create({ toTerminal = false } = {}) {
+    async create({ toTerminal = false, ...opts } = {}) {
         if(toTerminal) {
-            return await qrcode[ this.type ](this.data, { type: "terminal" }).then(data => data);
+            return await qrcode[ this.type ](this.data, { type: "terminal", ...this.config, ...opts }).then(data => data);
         }
 
-        return await qrcode[ this.type ](this.data).then(data => data);
+        return await qrcode[ this.type ](this.data, { ...this.config, ...opts }).then(data => data);
     }
 };
 
