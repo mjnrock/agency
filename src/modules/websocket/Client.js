@@ -98,6 +98,7 @@ export class Client extends Network {
     kill() {
         this.connection.terminate();
     }
+    
 
     static QuickSetup(wsOpts = {}, handlers = {}, { state = {}, packets = Packets.NodeJson(), clientClass = Client, broadcastMessages = true } = {}) {
         const client = new clientClass(state, {

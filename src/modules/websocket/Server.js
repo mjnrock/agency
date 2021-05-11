@@ -86,6 +86,7 @@ export class Server extends Network {
 
         return this;
     }
+    
 
     static QuickSetup(wss, handlers = {}, { state = {}, packets = Packets.NodeJson(), broadcastMessages = true } = {}) {
         const server = new Server(wss, state, {
