@@ -58,7 +58,7 @@ export class BrowserClient extends Client {
     }
 
     static QuickSetup(opts = {}, handlers = {}, { state = {}, packets = Packets.BrowserJson() } = {}) {
-        return super.QuickSetup.call(this, opts, handlers, { state, packets });
+        return super.QuickSetup.call(this, opts, handlers, { state, packets, clientClass: BrowserClient });
     }
 };
 

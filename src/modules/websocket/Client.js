@@ -113,7 +113,7 @@ export class Client extends Dispatcher {
      *  by the <Client>.  As such, the @handlers are those 
      *  that should receive the unpackaged packets.
      */
-    static QuickSetup(opts = {}, handlers = {}, { state = {}, packets = Packets.NodeJson() } = {}) {
+    static QuickSetup(opts = {}, handlers = {}, { state = {}, packets = Packets.NodeJson(), clientClass = Client } = {}) {
         /**
          * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
          *  as a single-route (firstMatch), single-channel (named "default") network
@@ -150,7 +150,7 @@ export class Client extends Dispatcher {
             },
         });
     
-        const client = new this(network, {
+        const client = new clientClass(network, {
             ...packets,
             ...opts,
         });

@@ -128,7 +128,7 @@ export class Server extends Dispatcher {
                 },
             },
         });
-        const wss = new this(server, network, {
+        const wss = new Server(server, network, {
             ...packets,
         });
     

@@ -61,7 +61,7 @@ export class NodeClient extends Client {
     }
     
     static QuickSetup(opts = {}, handlers = {}, { state = {}, packets = Packets.NodeJson() } = {}) {
-        return super.QuickSetup.call(this, opts, handlers, { state, packets });
+        return super.QuickSetup.call(this, opts, handlers, { state, packets, clientClass: NodeClient });
     }
 };
 
