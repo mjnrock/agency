@@ -19,10 +19,10 @@ export function useNetwork(network) {
             setState(newState);
         };
         
-        network.getChannel("_internal").addHandler(Network.Signals.UPDATE, handler);
+        network.getChannel("_internal").addHandler(Network.Signal.UPDATE, handler);
         
         return () => {
-            network.getChannel("_internal").removeHandler(Network.Signals.UPDATE, handler);
+            network.getChannel("_internal").removeHandler(Network.Signal.UPDATE, handler);
         };
     }, [ network ]);
     

@@ -6,6 +6,7 @@ export class Server extends Network {
     static Signal = {
         LISTENING: "WebSocketServer.Listening",
         CLOSE: "WebSocketServer.Close",
+        ERROR: "WebSocketServer.Error",
         CONNECTION: "WebSocketServer.Connection",
         HEADERS: "WebSocketServer.Headers",
 
@@ -89,8 +90,23 @@ export class Server extends Network {
     
 
     static QuickSetup(wss, handlers = {}, { state = {}, packets = Packets.NodeJson(), broadcastMessages = true } = {}) {
+        const wsRelay = (msg, { emit, broadcast }) => {
+            if(broadcastMessages) {
+                broadcast(msg);
+            } else {
+                emit(msg);
+            }
+        };
+
         const server = new Server(wss, state, {
             default: {
+                [ Server.Signal.LISTENING ]: wsRelay,
+                [ Server.Signal.CLOSE ]: wsRelay,
+                [ Server.Signal.ERROR ]: wsRelay,
+                [ Server.Signal.CONNECTION ]: wsRelay,
+                [ Server.Signal.HEADERS ]: wsRelay,
+                [ Server.Signal.Client.MESSAGE_ERROR ]: wsRelay,
+                [ Server.Signal.Client.DISCONNECT ]: wsRelay,
                 [ Server.Signal.Client.MESSAGE ]: ({ data }, { emit, broadcast }) => {
                     const [ msg ] = data;
 

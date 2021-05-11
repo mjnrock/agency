@@ -101,8 +101,25 @@ export class Client extends Network {
     
 
     static QuickSetup(wsOpts = {}, handlers = {}, { state = {}, packets = Packets.NodeJson(), clientClass = Client, broadcastMessages = true } = {}) {
+        const wsRelay = (msg, { emit, broadcast }) => {
+            if(broadcastMessages) {
+                broadcast(msg);
+            } else {
+                emit(msg);
+            }
+        };
+
         const client = new clientClass(state, {
             default: {
+                [ Client.Signal.CLOSE ]: wsRelay,
+                [ Client.Signal.ERROR ]: wsRelay,
+                [ Client.Signal.MESSAGE ]: wsRelay,
+                [ Client.Signal.MESSAGE_ERROR ]: wsRelay,
+                [ Client.Signal.OPEN ]: wsRelay,
+                [ Client.Signal.PING ]: wsRelay,
+                [ Client.Signal.PONG ]: wsRelay,
+                [ Client.Signal.UNEXPECTED_RESPONSE ]: wsRelay,
+                [ Client.Signal.UPGRADE ]: wsRelay,
                 [ Client.Signal.MESSAGE ]: ({ data }, { emit, broadcast }) => {
                     const [ msg ] = data;
 

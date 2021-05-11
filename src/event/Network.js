@@ -11,10 +11,10 @@ import Message from "./Message";
  * 
  * 1) Create <Network>
  * 2) Invoke << .join >> on any entity that should become aware of state changes
- * 3) Create a handler paradigm to invoke << .broadcast >> on Network.Signals.UPDATE
+ * 3) Create a handler paradigm to invoke << .broadcast >> on Network.Signal.UPDATE
  */
 export class Network extends AgencyBase {
-    static Signals = {
+    static Signal = {
         UPDATE: `Network.Update`,
         EXTERNAL: `Network.External`,
     };
@@ -34,7 +34,7 @@ export class Network extends AgencyBase {
                 message => "default",
             ],
             default: {
-                [ Network.Signals.UPDATE ]: (msg, { broadcast }) => broadcast(msg),
+                [ Network.Signal.UPDATE ]: (msg, { broadcast }) => broadcast(msg),
                 $globals: {
                     network: this,
                     state: this.state,
@@ -55,7 +55,7 @@ export class Network extends AgencyBase {
 
         this.__state = state;
 
-        this.__bus.emit(this, Network.Signals.UPDATE, newState, oldState);
+        this.__bus.emit(this, Network.Signal.UPDATE, newState, oldState);
     }
 
     /**
