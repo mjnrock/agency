@@ -1,9 +1,9 @@
-import { QuickSetup as SetupWSClient } from "../../../src/modules/websocket/NodeClient";
+import NodeClient from "../../../src/modules/websocket/NodeClient";
 
 console.clear();
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
-const client = SetupWSClient({
+const client = NodeClient.QuickSetup({
     connect: true,
 
     // url: `ws://localhost:3001`,
@@ -11,7 +11,7 @@ const client = SetupWSClient({
     host: `localhost`,
     port: 3001,
 }, {
-    bounce: function(msg, { client }) {
+    bounce: function(msg, { client, network }) {
         console.log(777, msg.type, msg.data)
         
         setTimeout(() => {

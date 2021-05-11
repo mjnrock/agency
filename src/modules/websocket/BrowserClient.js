@@ -1,6 +1,5 @@
 import Client from "./Client";
 import Packets from "./Packets";
-import Network from "../../event/Network";
 import Message from "../../event/Message";
 
 export class BrowserClient extends Client {
@@ -57,74 +56,10 @@ export class BrowserClient extends Client {
     get isClosed() {
         return this.connection.readyState === WebSocket.CLOSED;
     }
+
+    static QuickSetup(opts = {}, handlers = {}, { state = {}, packets = Packets.BrowserJson() } = {}) {
+        return super.QuickSetup.call(this, opts, handlers, { state, packets });
+    }
 };
-
-/**
- * Create a new <BasicNetwork> and a new <Client>, returning
- *  the newly created client.  The network can be accessed
- *  via << client.network >>.
- * 
- * The main convenience is that this setup will use the
- *  << Packets.JSON >> paradigm and setup the local
- *  message routing from packets received and unpackaged
- *  by the <Client>.  As such, the @handlers are those 
- *  that should receive the unpackaged packets.
- */
-export function QuickSetup(opts = {}, handlers = {}, { state = {}, packets = Packets.BrowserJson() } = {}) {
-    /**
-     * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
-     *  as a single-route (firstMatch), single-channel (named "default") network
-     *  with real-time processing.
-     */
-    const network = new Network(state, {
-        $routes: [
-            message => "default",
-        ],
-        default: {
-            handlers: {
-                /**
-                 * Client handlers
-                 */
-                // [ Client.Signal.CLOSE ]: () => {},
-                // [ Client.Signal.ERROR ]: () => {},
-                [ Client.Signal.MESSAGE ]: ({ data }, { network }) => {
-                    const [ msg ] = data;
-
-                    network.emit(msg);
-                },
-                // [ Client.Signal.OPEN ]: (msg, { client }) => {
-                //     console.warn(`Client has connected to`, client.url);
-
-                //     client.send("bounce", Date.now());
-                // },
-                // [ Client.Signal.PING ]: () => {},
-                // [ Client.Signal.PONG ]: () => {},
-                // [ Client.Signal.UNEXPECTED_RESPONSE ]: () => {},
-                // [ Client.Signal.UPGRADE ]: () => {},
-
-                /**
-                 * Unpacked Client.Signal.MESSAGE handlers
-                 */
-                ...handlers,
-            },
-        },
-    });
-
-    const client = new BrowserClient(network, {
-        ...packets,
-        ...opts,
-    });
-
-    network.alter({
-        default: {
-            globals: {
-                client: client,
-                network: network,
-            },
-        },
-    });
-
-    return client;
-}
 
 export default BrowserClient;

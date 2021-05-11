@@ -87,65 +87,64 @@ export class Server extends Dispatcher {
 
         return this;
     }
-};
 
-/**
- * Create a new <BasicNetwork> and a new <Server>, returning
- *  the newly created server.  The network can be accessed
- *  via << server.network >>.
- * 
- * The main convenience is that this setup will use the
- *  << Packets.JSON >> paradigm and setup the local
- *  message routing from packets received and unpackaged
- *  by the <Server>.  As such, the @handlers are those
- *  that should receive the unpackaged packets.
- */
-export function QuickSetup(server, handlers = {}, { state = {}, packets = Packets.NodeJson() } = {}) {  
     /**
-     * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
-     *  as a single-route (firstMatch), single-channel (named "default") network
-     *  with real-time processing.
+     * Create a new <BasicNetwork> and a new <Server>, returning
+     *  the newly created server.  The network can be accessed
+     *  via << server.network >>.
+     * 
+     * The main convenience is that this setup will use the
+     *  << Packets.JSON >> paradigm and setup the local
+     *  message routing from packets received and unpackaged
+     *  by the <Server>.  As such, the @handlers are those
+     *  that should receive the unpackaged packets.
      */
-    const network = new Network(state, {
-        $routes: [
-            message => "default",
-        ],
-        default: {
-            handlers: {
-                /**
-                 * WebSocketClient handlers
-                 */
-                // [ Server.Signal.LISTENING ]: () => {},
-                // [ Server.Signal.CLOSE ]: () => {},
-                // [ Server.Signal.CONNECTION ]: (msg, { network }) => {
-                //     network.emit("bounce", Date.now());
-                // },
-                // [ Server.Signal.HEADERS ]: () => {},
-                [ Server.Signal.Client.MESSAGE ]: ({ data }) => {
-                    const [ msg ] = data;
-
-                    network.emit(msg);
+    static QuickSetup(server, handlers = {}, { state = {}, packets = Packets.NodeJson() } = {}) {  
+        /**
+         * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
+         *  as a single-route (firstMatch), single-channel (named "default") network
+         *  with real-time processing.
+         */
+        const network = new Network(state, {
+            default: {
+                handlers: {
+                    /**
+                     * WebSocketClient handlers
+                     */
+                    // [ Server.Signal.LISTENING ]: () => {},
+                    // [ Server.Signal.CLOSE ]: () => {},
+                    // [ Server.Signal.CONNECTION ]: (msg, { network }) => {
+                    //     network.emit("bounce", Date.now());
+                    // },
+                    // [ Server.Signal.HEADERS ]: () => {},
+                    [ Server.Signal.Client.MESSAGE ]: ({ data }) => {
+                        const [ msg ] = data;
+    
+                        network.emit(msg);
+                    },
+                    // [ Server.Signal.Client.DISCONNECT ]: () => {},
+                    
+                    ...handlers,
                 },
-                // [ Server.Signal.Client.DISCONNECT ]: () => {},
-                
-                ...handlers,
             },
-        },
-    });
-    const wss = new Server(server, network, {
-        ...packets,
-    });
-
-    network.alter({
-        default: {
-            globals: {
-                server: wss,
-                network: network,
+        });
+        const wss = new this(server, network, {
+            ...packets,
+        });
+    
+        network.alter({
+            default: {
+                globals: {
+                    server: wss,
+                    network: network,
+                },
             },
-        },
-    });
-
-    return wss;
+        });
+    
+        return wss;
+    };
 };
+
+export const QuickSetup = Server.QuickSetup;
 
 export default Server;
