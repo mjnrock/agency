@@ -36,11 +36,11 @@ const wss = Server.QuickSetup(expressWs(app), {
 
 const mainnet = new Network({}, {
     default: {
-        bounce: function(msg, { wss: cqats }) {
+        bounce: function(msg, { wss }) {
             console.log("Received Message:", msg.type, msg.data)
 
             setTimeout(() => {
-                cqats.sendToAll(msg);
+                wss.sendToAll(msg);
             }, 250);
         },
     },

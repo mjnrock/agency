@@ -37,11 +37,11 @@ const ws = NodeClient.QuickSetup({
 
 const mainnet = new Network({}, {
     default: {
-        bounce: function(msg, { ws: cats }) {
+        bounce: function(msg, { ws }) {
             console.log("Received Message:", msg.type, msg.data)
 
             setTimeout(() => {
-                cats.sendToServer(msg);
+                ws.sendToServer(msg);
             }, 250);
         },
     },
