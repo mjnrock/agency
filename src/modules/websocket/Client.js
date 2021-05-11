@@ -59,7 +59,7 @@ export class Client extends Network {
         return this;
     }
 
-    send(event, ...payload) {
+    sendToServer(event, ...payload) {
         if (this.isConnected) {
             let data;
             if(typeof this._packer === "function") {
@@ -122,7 +122,7 @@ export class Client extends Network {
         client.alter({
             default: {
                 $globals: {
-                    sendToServer: client.send.bind(client),
+                    sendToServer: client.sendToServer.bind(client),
                 },
             },
         });

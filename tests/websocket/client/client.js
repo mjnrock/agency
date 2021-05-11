@@ -4,6 +4,28 @@ import NodeClient from "../../../src/modules/websocket/NodeClient";
 console.clear();
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
+// //? Use the WebSocket Network itself to handle messages
+// //  This will use << .emit >> when receiving websocket messages
+// const ws = NodeClient.QuickSetup({
+//     connect: true,
+
+//     // url: `ws://localhost:3001`,
+//     protocol: `ws`,
+//     host: `localhost`,
+//     port: 3001,
+// }, {
+//     bounce: function(msg, { sendToServer }) {
+//         console.log("Received Message:", msg.type, msg.data)
+        
+//         setTimeout(() => {
+//             sendToServer(msg);
+//         }, 250);
+//     },
+// }, { broadcastMessages: false });
+
+
+//? Use a separate, connected Network to handle messages
+//  This will use << .broadcast >> when receiving websocket messages
 const ws = NodeClient.QuickSetup({
     connect: true,
 
@@ -11,85 +33,20 @@ const ws = NodeClient.QuickSetup({
     protocol: `ws`,
     host: `localhost`,
     port: 3001,
-}, {
-    bounce: function(msg, { sendToServer }) {
-        console.log("Received Message:", msg.type, msg.data)
-        
-        setTimeout(() => {
-            sendToServer(msg);
-        }, 1000);
-    },
-// }, { broadcastMessages: false });
 });
+
 const mainnet = new Network({}, {
     default: {
-        "*": msg => console.log(msg),
+        $globals: {
+            ws: ws,
+        },
+        bounce: function(msg, { ws }) {
+            console.log("Received Message:", msg.type, msg.data)
+
+            setTimeout(() => {
+                ws.sendToServer(msg);
+            }, 250);
+        },
     },
 });
-
 ws.join(mainnet);
-
-// setTimeout(() => {
-//     console.log(client.readiness)
-//     console.log(client.isConnected)
-// }, 1000)
-
-
-// setInterval(() => {
-//     client.send("test", 6, 7, 8, 9, 0);
-// }, 2500);
-
-// /**
-//  * The <BasicNetwork> is a fully-featured <Network> that comes preconfigured
-//  *  as a single-route (firstMatch), single-channel (named "default") network
-//  *  with real-time processing.
-//  */
-// const network = new BasicNetwork({
-//     /**
-//      * WebSocketClient handlers
-//      */
-//     [ WebSocketClient.Signal.CLOSE ]: ([ code, reason ]) => console.warn(`Client has disconnected [${ code }] from`, client.url),
-//     [ WebSocketClient.Signal.ERROR ]: ([ error ]) => {},
-//     [ WebSocketClient.Signal.MESSAGE ]: ([{ type, data }], { client }) => {
-//         if(!Array.isArray(data)) {
-//             data = [ data ];
-//         }
-
-//         network.emit(client, type, ...data);
-//     },
-//     [ WebSocketClient.Signal.OPEN ]: ([], { client }) => {
-//         console.warn(`Client has connected to`, client.url)
-//     },
-//     [ WebSocketClient.Signal.PING ]: ([ data ]) => {},
-//     [ WebSocketClient.Signal.PONG ]: ([ data ]) => {},
-//     [ WebSocketClient.Signal.UNEXPECTED_RESPONSE ]: ([ req, res ]) => {},
-//     [ WebSocketClient.Signal.UPGRADE ]: ([ res ]) => {},
-
-//     /**
-//      * Unpacked WebSocketClient.Signal.MESSAGE handlers
-//      */
-//     test: function(data) {
-//         console.log("Test")
-//         // console.log(this)
-//         console.log(...data)
-//     },
-// });
-
-// /**
-//  * Create the client and connect to the 
-//  */
-// const client = new WebSocketClient(network, {
-//     connect: true,
-
-//     // url: `ws://localhost:3001`,
-//     protocol: `ws`,
-//     host: `localhost`,
-//     port: 3001,
-// });
-
-// /**
-//  * Load @client into the global store for use in handlers
-//  */
-// network.storeGlobal({
-//     client: client,
-// });

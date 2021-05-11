@@ -6,6 +6,7 @@ import MessageBus from "./MessageBus";
 import Dispatcher from "./Dispatcher";
 import Receiver from "./Receiver";
 import Channel from "./Channel";
+import Message from "./Message";
 
 /**
  * 
@@ -237,7 +238,16 @@ export class Network extends AgencyBase {
      * Send a message to all connections, invoking the callback
      *  function on each receiver.
      */
-    broadcast(message) {
+    broadcast(...args) {
+        let message;
+        if(args.length > 1) {
+            message = Message.Generate(this, ...args);
+        } else if(Message.ConformsBasic(args[ 0 ])) {
+            [ message ] = args;
+        } else {
+            message = args;
+        }
+
         for(let member of this.__connections) {
             let { receiver } = this.__cache.get(member);
 

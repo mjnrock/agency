@@ -9,25 +9,44 @@ console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
 const app = express();
 const port = 3001;
-const wss = Server.QuickSetup(expressWs(app), {
-    [ Server.Signal.CONNECTION ]: (msg, { emit }) => {
-        emit("bounce", Date.now());
-    },
-    bounce: function(msg, { sendToAll }) {
-        console.log("Received Message:", msg.type, msg.data)
 
-        setTimeout(() => {
-            sendToAll(msg);
-        }, 250);
-    },
+// //? Use the WebSocket Network itself to handle messages
+// //  This will use << .emit >> when receiving websocket messages
+// const wss = Server.QuickSetup(expressWs(app), {
+//     [ Server.Signal.CONNECTION ]: (msg, { emit }) => {
+//         emit("bounce", Date.now());
+//     },
+//     bounce: function(msg, { sendToAll }) {
+//         console.log("Received Message:", msg.type, msg.data)
+
+//         setTimeout(() => {
+//             sendToAll(msg);
+//         }, 250);
+//     },
 // }, { broadcastMessages: false });
+
+//? Use a separate, connected Network to handle messages
+//  This will use << .broadcast >> when receiving websocket messages
+const wss = Server.QuickSetup(expressWs(app), {
+    [ Server.Signal.CONNECTION ]: (msg, { broadcast }) => {
+        broadcast("bounce", Date.now());
+    },
 });
+
 const mainnet = new Network({}, {
     default: {
-        "*": msg => console.log(msg),
+        $globals: {
+            wss: wss,
+        },
+        bounce: function(msg, { wss }) {
+            console.log("Received Message:", msg.type, msg.data)
+
+            setTimeout(() => {
+                wss.sendToAll(msg);
+            }, 250);
+        },
     },
 });
-
 wss.join(mainnet);
 
 
