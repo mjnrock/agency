@@ -1,6 +1,6 @@
 {
     "name": "@lespantsfancy/agency",
-    "version": "0.7.20",
+    "version": "0.7.21",
     "main": "lib/index.js",
     "author": "Matt Nawrocki <mjnrock@umich.edu>",
     "license": "None",
@@ -30,10 +30,12 @@
         }
     },
     "peerDependencies": {
+        "isomorphic-ws": "^4.0.1",
         "qrcode": "^1.4.4",
         "react": "^17.0.2",
         "semantic-ui-css": "^2.4.1",
-        "semantic-ui-react": "^2.0.3"
+        "semantic-ui-react": "^2.0.3",
+        "ws": "^7.4.5"
     },
     "devDependencies": {
         "babel-cli": "^6.26.0",
@@ -48,6 +50,7 @@
         "express-ws": "^4.0.0",
         "grunt": "^1.1.0",
         "grunt-contrib-copy": "^1.0.0",
+        "isomorphic-ws": "^4.0.1",
         "qrcode": "^1.4.4",
         "ws": "^7.4.5"
     },

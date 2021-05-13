@@ -1,12 +1,12 @@
 import Network from "../../../src/event/Network";
-import NodeClient from "../../../src/modules/websocket/NodeClient";
+import Client from "../../../src/modules/websocket/Client";
 
 console.clear();
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
 // //? Use the WebSocket Network itself to handle messages
 // //  This will use << .emit >> when receiving websocket messages
-// const ws = NodeClient.QuickSetup({
+// const ws = Client.QuickSetup({
 //     connect: true,
 
 //     // url: `ws://localhost:3001`,
@@ -26,7 +26,7 @@ console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
 //? Use a separate, connected Network to handle messages
 //  This will use << .broadcast >> when receiving websocket messages
-const ws = NodeClient.QuickSetup({
+const ws = Client.QuickSetup({
     connect: true,
 
     // url: `ws://localhost:3001`,

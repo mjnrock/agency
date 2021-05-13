@@ -1,11 +1,9 @@
-import NodeClient from "./NodeClient";
-import BrowserClient from "./BrowserClient";
+import Client from "./Client";
 import Server from "./Server";
 import Packets from "./Packets";
 
 export default {
-    NodeClient,
-    BrowserClient,
+    Client,
     Server,
     Packets,
 };

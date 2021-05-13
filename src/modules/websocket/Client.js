@@ -1,3 +1,5 @@
+import WebSocket from "isomorphic-ws";
+
 import Packets from "./Packets";
 import Network from "../../event/Network";
 import Message from "../../event/Message";
@@ -32,6 +34,33 @@ export class Client extends Network {
         if (opts.connect === true) {
             this.connect(opts);
         }
+    }
+
+    connect({ url, host, protocol = "http", port, ws } = {}) {
+        if (ws instanceof WebSocket) {
+            this.connection = ws;
+        } else if (host && protocol && port) {
+            this.connection = new WebSocket(`${ protocol }://${ host }:${ port }`);
+        } else {
+            this.connection = new WebSocket(url);
+        }
+
+        this._bind(this.connection);
+
+        return this;
+    }
+    
+    get isConnecting() {
+        return this.connection.readyState === WebSocket.CONNECTING;
+    }
+    get isConnected() {
+        return this.connection.readyState === WebSocket.OPEN;
+    }
+    get isClosing() {
+        return this.connection.readyState === WebSocket.CLOSING;
+    }
+    get isClosed() {
+        return this.connection.readyState === WebSocket.CLOSED;
     }
 
     _bind(client) {
@@ -86,8 +115,8 @@ export class Client extends Network {
     sendToServer(event, ...payload) {
         if (this.isConnected) {
             let data;
-            if(typeof this.middleware.pack === "function") {
-                if(Message.Conforms(event)) {
+            if (typeof this.middleware.pack === "function") {
+                if (Message.Conforms(event)) {
                     data = this.middleware.pack.call(this, event.type, ...event.data);
                 } else {
                     data = this.middleware.pack.call(this, event, ...payload);
@@ -122,11 +151,11 @@ export class Client extends Network {
     kill() {
         this.connection.terminate();
     }
-    
+
 
     static QuickSetup(wsOpts = {}, handlers = {}, { state = {}, packets = Packets.Json(), broadcastMessages = true } = {}) {
         const wsRelay = (msg, { emit, broadcast, network }) => {
-            if(broadcastMessages) {
+            if (broadcastMessages) {
                 broadcast(msg);
             } else {
                 emit(Message.Generate(network, Network.Signal.RELAY, msg));
@@ -147,7 +176,7 @@ export class Client extends Network {
                 [ Client.Signal.MESSAGE ]: ({ data }, { emit, broadcast }) => {
                     const [ msg ] = data;
 
-                    if(broadcastMessages) {
+                    if (broadcastMessages) {
                         broadcast(msg);
                     } else {
                         emit(msg);
@@ -156,7 +185,7 @@ export class Client extends Network {
 
                 ...handlers,
             },
-        },  {
+        }, {
             ...wsOpts,
             ...packets,
         });
@@ -168,7 +197,7 @@ export class Client extends Network {
                 },
             },
         });
-    
+
         return client;
     };
 };
