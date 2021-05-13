@@ -1,31 +1,12 @@
-export const NodeJson = () => ({
-    packer: function(event, ...args) {
+export const Json = () => ({
+    pack: function(event, ...args) {
         return JSON.stringify({
             type: event,
             payload: args,
             timestamp: Date.now(),
         });
     },
-    unpacker: function(json) {        
-        let obj = JSON.parse(json);
-
-        while(typeof obj === "string" || obj instanceof String) {
-            obj = JSON.parse(obj);
-        }
-
-        return obj;
-    },
-});
-
-export const BrowserJson = () => ({
-    packer: function(event, ...args) {
-        return JSON.stringify({
-            type: event,
-            payload: args,
-            timestamp: Date.now(),
-        });
-    },
-    unpacker: function({ data: json }) {
+    unpack: function({ data: json }) {
         let obj = JSON.parse(json);
 
         while(typeof obj === "string" || obj instanceof String) {
@@ -44,10 +25,10 @@ export const BrowserJson = () => ({
  *  then enc
  */
 export const StringBuffer = ({ encoding = "utf8", spacer = ":" } = {}) => ({
-    packer: function(event, ...args) {
+    pack: function(event, ...args) {
         return Buffer.from([ event, ...args ].join(spacer).toString(), encoding);
     },
-    unpacker: function(buffer) {
+    unpack: function(buffer) {
         if(buffer instanceof Buffer) {
             const str = Buffer.from(buffer, encoding).toString(encoding);
             const [ event, ...args ] = str.split(spacer);
@@ -63,7 +44,7 @@ export const StringBuffer = ({ encoding = "utf8", spacer = ":" } = {}) => ({
 });
 
 export default {
-    BrowserJson,
-    NodeJson,
+    Json,
+    Json,
     StringBuffer,
 };

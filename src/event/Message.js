@@ -29,7 +29,51 @@ export class Message {
     }
 
     getHash(algorithm = "md5", digest = "hex") {
-        return crypto.createHash(algorithm).update(this.toJSON()).digest(digest);
+        return crypto.createHash(algorithm).update(JSON.stringify([
+            this.getDataHash(algorithm, digest),
+            this.getMetaHash(algorithm, digest),
+        ])).digest(digest);
+    }
+    getDataHash(algorithm = "md5", digest = "hex") {
+        return crypto.createHash(algorithm).update(JSON.stringify({
+            type: this.type,
+            data: this.data,
+            timestamp: this.timestamp,
+        })).digest(digest);
+    }
+    getMetaHash(algorithm = "md5", digest = "hex") {
+        return crypto.createHash(algorithm).update(JSON.stringify({
+            id: this.id,
+            provenance: this.provenance.reduce((a, v) => {
+                let id;
+                if(typeof v === "object") {
+                    if("id" in v) {
+                        id = v.id;
+                    } else if("uuid" in v) {
+                        id = v.uuid;
+                    } else if("_id" in v) {
+                        id = v._id;
+                    } else if("_uuid" in v) {
+                        id = v._uuid;
+                    } else if("__id" in v) {
+                        id = v.__id;
+                    } else if("__uuid" in v) {
+                        id = v.__uuid;
+                    }
+
+                    if(typeof id === "function") {
+                        id = id();
+                    }
+
+                    if(id !== void 0) {
+                        return [ ...a, v ];
+                    }
+                }
+
+                return a;
+            }, []),
+            timestamp: this.timestamp,
+        })).digest(digest);
     }
 
     static Generate(emitter, type, ...args) {

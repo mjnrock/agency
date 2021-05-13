@@ -22,12 +22,10 @@ export class Server extends Network {
 
         this.wss = wss;
 
-        if (typeof opts.packer === "function") {
-            this._packer = opts.packer;
-        }
-        if (typeof opts.unpacker === "function") {
-            this._unpacker = opts.unpacker;
-        }
+        this.middleware = {
+            pack: opts.pack,
+            unpack: opts.unpack,
+        };
 
         this._bind(this.wss.getWss(), this.wss.app);
 
@@ -40,23 +38,23 @@ export class Server extends Network {
         wss.on("headers", (headers, req) => this.emit(Server.Signal.HEADERS, headers, req));
 
         app.ws("/", (client, req) => {
-            client.on("message", (packet) => {
+            client.addEventListener("message", (packet) => {
                 try {
                     let msg;                    
-                    if(typeof this._unpacker === "function") {
-                        const { type, payload } = this._unpacker.call(this, packet);
-
+                    if(typeof this.middleware.unpack === "function") {
+                        const { type, payload } = this.middleware.unpack.call(this, packet);
+                        
                         msg = Message.Generate(this, type, ...payload);
                     } else {
                         msg = packet;
                     }
-
+                    
                     this.emit(Server.Signal.Client.MESSAGE, msg, client, req);
                 } catch(e) {
                     this.emit(Server.Signal.Client.MESSAGE_ERROR, e, packet, client, req);
                 }
             });
-            client.on("close", (code, reason) => this.emit(Server.Signal.Client.DISCONNECT, code, reason));
+            client.addEventListener("close", (code, reason) => this.emit(Server.Signal.Client.DISCONNECT, code, reason));
         });
     }
 
@@ -66,11 +64,11 @@ export class Server extends Network {
 
     sendToClient(client, type, ...payload) {
         let msg;
-        if(typeof this._packer === "function") {
+        if(typeof this.middleware.pack === "function") {
             if(Message.ConformsBasic(type)) {
-                msg = this._packer.call(this, type.type, ...type.data);
+                msg = this.middleware.pack.call(this, type.type, ...type.data);
             } else {
-                msg = this._packer.call(this, type, ...payload);
+                msg = this.middleware.pack.call(this, type, ...payload);
             }
         } else {
             msg = [ type, payload ];
@@ -89,12 +87,12 @@ export class Server extends Network {
     }
     
 
-    static QuickSetup(wss, handlers = {}, { state = {}, packets = Packets.NodeJson(), broadcastMessages = true } = {}) {
-        const wsRelay = (msg, { emit, broadcast }) => {
+    static QuickSetup(wss, handlers = {}, { state = {}, packets = Packets.Json(), broadcastMessages = true } = {}) {
+        const wsRelay = (msg, { emit, broadcast, network }) => {
             if(broadcastMessages) {
                 broadcast(msg);
             } else {
-                emit(msg);
+                emit(Message.Generate(network, Network.Signal.RELAY, msg));
             }
         };
 

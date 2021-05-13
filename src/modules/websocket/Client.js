@@ -24,16 +24,40 @@ export class Client extends Network {
     constructor(state = {}, alter = {}, opts = {}) {
         super(state, alter);
 
-        if (typeof opts.packer === "function") {
-            this._packer = opts.packer;
-        }
-        if (typeof opts.unpacker === "function") {
-            this._unpacker = opts.unpacker;
-        }
+        this.middleware = {
+            pack: opts.pack,
+            unpack: opts.unpack,
+        };
 
         if (opts.connect === true) {
             this.connect(opts);
         }
+    }
+
+    _bind(client) {
+        client.addEventListener("close", (code, reason) => this.emit(Client.Signal.CLOSE, code, reason));
+        client.addEventListener("error", (error) => this.emit(Client.Signal.ERROR, error));
+        client.addEventListener("message", (packet) => {
+            try {
+                let msg;
+                if (typeof this.middleware.unpack === "function") {
+                    const { type, payload } = this.middleware.unpack.call(this, packet);
+
+                    msg = Message.Generate(this, type, ...payload);
+                } else {
+                    msg = packet;
+                }
+
+                this.emit(Client.Signal.MESSAGE, msg);
+            } catch (e) {
+                this.emit(Client.Signal.MESSAGE_ERROR, e, packet);
+            }
+        });
+        client.addEventListener("open", () => this.emit(Client.Signal.OPEN));
+        client.addEventListener("ping", (data) => this.emit(Client.Signal.PING, data));
+        client.addEventListener("pong", (data) => this.emit(Client.Signal.PONG, data));
+        client.addEventListener("unexpected-response", (req, res) => this.emit(Client.Signal.UNEXPECTED_RESPONSE, req, res));
+        client.addEventListener("upgrade", (res) => this.emit(Client.Signal.UPGRADE, res));
     }
 
     get url() {
@@ -62,11 +86,11 @@ export class Client extends Network {
     sendToServer(event, ...payload) {
         if (this.isConnected) {
             let data;
-            if(typeof this._packer === "function") {
+            if(typeof this.middleware.pack === "function") {
                 if(Message.Conforms(event)) {
-                    data = this._packer.call(this, event.type, ...event.data);
+                    data = this.middleware.pack.call(this, event.type, ...event.data);
                 } else {
-                    data = this._packer.call(this, event, ...payload);
+                    data = this.middleware.pack.call(this, event, ...payload);
                 }
             } else {
                 data = [ event, payload ];
@@ -100,16 +124,16 @@ export class Client extends Network {
     }
     
 
-    static QuickSetup(wsOpts = {}, handlers = {}, { state = {}, packets = Packets.NodeJson(), clientClass = Client, broadcastMessages = true } = {}) {
-        const wsRelay = (msg, { emit, broadcast }) => {
+    static QuickSetup(wsOpts = {}, handlers = {}, { state = {}, packets = Packets.Json(), broadcastMessages = true } = {}) {
+        const wsRelay = (msg, { emit, broadcast, network }) => {
             if(broadcastMessages) {
                 broadcast(msg);
             } else {
-                emit(msg);
+                emit(Message.Generate(network, Network.Signal.RELAY, msg));
             }
         };
 
-        const client = new clientClass(state, {
+        const client = new this(state, {
             default: {
                 [ Client.Signal.CLOSE ]: wsRelay,
                 [ Client.Signal.ERROR ]: wsRelay,

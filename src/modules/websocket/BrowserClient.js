@@ -1,6 +1,5 @@
 import Client from "./Client";
 import Packets from "./Packets";
-import Message from "../../event/Message";
 
 export class BrowserClient extends Client {
     constructor(state = {}, alter = {}, opts = {}) {
@@ -20,31 +19,6 @@ export class BrowserClient extends Client {
 
         return this;
     }
-
-    _bind(client) {
-        client.addEventListener("close", (code, reason) => this.emit(Client.Signal.CLOSE, code, reason));
-        client.addEventListener("error", (error) => this.emit(Client.Signal.ERROR, error));
-        client.addEventListener("message", (packet) => {
-            try {
-                let msg;
-                if (typeof this._unpacker === "function") {
-                    const { type, payload } = this._unpacker.call(this, packet);
-                    msg = Message.Generate(this, type, ...payload);
-                } else {
-                    msg = packet;
-                }
-
-                this.emit(Client.Signal.MESSAGE, msg);
-            } catch (e) {
-                this.emit(Client.Signal.MESSAGE_ERROR, e, packet);
-            }
-        });
-        client.addEventListener("open", () => this.emit(Client.Signal.OPEN));
-        client.addEventListener("ping", (data) => this.emit(Client.Signal.PING, data));
-        client.addEventListener("pong", (data) => this.emit(Client.Signal.PONG, data));
-        client.addEventListener("unexpected-response", (req, res) => this.emit(Client.Signal.UNEXPECTED_RESPONSE, req, res));
-        client.addEventListener("upgrade", (res) => this.emit(Client.Signal.UPGRADE, res));
-    }
     
     get isConnecting() {
         return this.connection.readyState === WebSocket.CONNECTING;
@@ -59,8 +33,8 @@ export class BrowserClient extends Client {
         return this.connection.readyState === WebSocket.CLOSED;
     }
 
-    static QuickSetup(wsOpts = {}, handlers = {}, { state = {}, packets = Packets.BrowserJson(), broadcastMessages } = {}) {
-        return super.QuickSetup.call(this, wsOpts, handlers, { state, packets, clientClass: BrowserClient, broadcastMessages });
+    static QuickSetup(wsOpts = {}, handlers = {}, { state = {}, packets = Packets.Json(), broadcastMessages } = {}) {
+        return super.QuickSetup.call(this, wsOpts, handlers, { state, packets, broadcastMessages });
     }
 };
 
