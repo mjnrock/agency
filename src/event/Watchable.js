@@ -108,6 +108,9 @@ export const wrapNested = (controller, prop, input) => {
  * The <Watchable> is an <Object> that emits changes to itself
  *  to a <Network>.  Newly added values to the <Watchable> are
  *  wrapped in a watcher for nested object changes.
+ * 
+ * CRUD-like messaging is available with use of the @useControlMessages
+ *  flag.  A property *must be enumerable* in order for a message to fire.
  */
 export class Watchable extends WatchableArchetype {
     static ControlType = {
