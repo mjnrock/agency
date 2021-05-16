@@ -301,8 +301,13 @@ export class Watchable extends WatchableArchetype {
  * @qty may be a number or a fn(network, args)
  * @args may be direct arguments or a fn(i, network) to determine appropriate arguments for that iteration
  * Returns one (1) <Watchable> if @qty === 1 and [ ...<Watchable> ] if @qty > 1
+ * 
+ * @metaFactory can be set to << true|"async" >> to instead receive a "default args" version of << Factory|AsyncFactory >>
+ *  that will use all passed arguments as the defaults.  The returned factory function can override
+ *  everything except the @network, and will explicitly prevent further metaing.  The async version of this
+ *  can also return a factory, but it is also exposed here so that the meta factory method is not a <Promise>.
  */
-export function Factory(network, args = [], qty = 1) {
+export function Factory(network, args = [], qty = 1, metaFactory = false) {
     if(typeof qty === "function") {
         qty = qty(network, args);
     }
@@ -324,6 +329,23 @@ export function Factory(network, args = [], qty = 1) {
 
         results.push(watch);
     }
+    
+    if(metaFactory === true || metaFactory === "sync") {
+        return (localArgs, localQty) => {
+            localArgs = localArgs == null ? args : localArgs;
+            localQty = localQty == null ? qty : localQty;
+    
+            return Factory(network, localArgs, localQty, false);
+        };
+    } else if(metaFactory === "async") {
+        return async (localArgs, localQty) => {
+            localArgs = localArgs == null ? args : localArgs;
+            localQty = localQty == null ? qty : localQty;
+    
+            return await AsyncFactory(network, localArgs, localQty, false);
+        };
+    }
+
 
     if(results.length > 1) {
         return results;
@@ -336,8 +358,12 @@ export function Factory(network, args = [], qty = 1) {
  * Identical to << Factory >>, except that functions can be
  *  async functions.  This returns a resolved <Promise> with
  *  the final <Watchable> value(s).
+ * 
+ * @metaFactory can be set to << true >> to instead receive a "default args" version of << Factory >>
+ *  that will use all passed arguments as the defaults.  The returned factory function can override
+ *  everything except the @network, and will explicitly prevent further metaing.
  */
-export async function AsyncFactory(network, args = [], qty = 1) {
+export async function AsyncFactory(network, args = [], qty = 1, metaFactory = false) {
     if(typeof qty === "function") {
         qty = await qty(network, args);
     }
@@ -358,6 +384,15 @@ export async function AsyncFactory(network, args = [], qty = 1) {
         const watch = new Watchable(network, ...localArgs);
 
         results.push(watch);
+    }
+
+    if(metaFactory) {
+        return async (localArgs, localQty) => {
+            localArgs = localArgs == null ? args : localArgs;
+            localQty = localQty == null ? qty : localQty;
+    
+            return await AsyncFactory(network, localArgs, localQty, false);
+        };
     }
 
     if(results.length > 1) {
