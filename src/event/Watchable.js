@@ -15,6 +15,14 @@ export const wrapNested = (controller, prop, input) => {
         return input;
     }
 
+    for(let [ key, value ] of Object.entries(input)) {
+        if(typeof value === "object") {
+            let kprop = `${ prop }.${ key }`;
+            
+            input[ key ] = wrapNested(controller, kprop, value);
+        }
+    }
+
     const proxy = new Proxy(input, {
         getPrototypeOf(t) {
             return WatchableArchetype.prototype;
@@ -29,13 +37,15 @@ export const wrapNested = (controller, prop, input) => {
             return Reflect.get(t, p);
         },
         set(t, p, v) {
+            const current = t[ p ];
+
             let nprop = `${ prop }.${ p }`;
 
             if(t[ p ] === v) {  // Ignore if the old value === new value
                 return t;
             }
 
-            let isNewlyCreated = !(p in t);
+            let isNewlyCreated = current === void 0;
             
             if(p[ 0 ] === "_" || (Object.getOwnPropertyDescriptor(t, p) || {}).set) {
                 return Reflect.defineProperty(t, p, {
@@ -57,12 +67,16 @@ export const wrapNested = (controller, prop, input) => {
             if(!(Array.isArray(input) && p in Array.prototype)) {   // Don't broadcast native <Array> keys (i.e. .push returns .length)
                 if(controller.useControlMessages) {
                     if(isNewlyCreated) {
-                        controller.controller.dispatch(Watchable.ControlType.UPDATE, nprop, v);
-                    } else {
                         controller.controller.dispatch(Watchable.ControlType.CREATE, nprop, v);
+                    } else {
+                        controller.controller.dispatch(Watchable.ControlType.UPDATE, nprop, v, current);
                     }
                 } else {
-                    controller.controller.dispatch(nprop, v);
+                    if(isNewlyCreated) {
+                        controller.controller.dispatch(nprop, v);
+                    } else {
+                        controller.controller.dispatch(nprop, v, current);
+                    }
                 }
             }
 
@@ -86,14 +100,6 @@ export const wrapNested = (controller, prop, input) => {
             return false;
         },
     });
-
-    for(let [ key, value ] of Object.entries(input)) {
-        if(typeof value === "object") {
-            let kprop = `${ prop }.${ key }`;
-            
-            proxy[ key ] = wrapNested(controller, kprop, value);
-        }
-    }
 
     return proxy;
 };
@@ -184,7 +190,9 @@ export class Watchable extends WatchableArchetype {
                 return Reflect.get(target, prop);
             },
             set(target, prop, value) {
-                if(target[ prop ] === value) {
+                const current = target[ prop ];
+
+                if(current === value) {
                     return target;
                 } else if(prop[ 0 ] === "_") {
                     if(emitProtected !== true) {
@@ -203,17 +211,21 @@ export class Watchable extends WatchableArchetype {
                     newValue = value;
                 }
 
-                let isNewlyCreated = target[ prop ] === void 0;
+                let isNewlyCreated = current === void 0;
                 let reflect = Reflect.set(target, prop, newValue);
 
                 if(target.__controller.useControlMessages) {
                     if(isNewlyCreated) {
                         target.__controller.controller.dispatch(Watchable.ControlType.CREATE, prop, newValue);
                     } else {
-                        target.__controller.controller.dispatch(Watchable.ControlType.UPDATE, prop, newValue);
+                        target.__controller.controller.dispatch(Watchable.ControlType.UPDATE, prop, newValue, current);
                     }
                 } else {
-                    target.__controller.controller.dispatch(prop, newValue);
+                    if(isNewlyCreated) {
+                        target.__controller.controller.dispatch(prop, newValue);
+                    } else {
+                        target.__controller.controller.dispatch(prop, newValue, current);
+                    }
                 }
 
                 return reflect;
