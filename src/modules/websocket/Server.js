@@ -4,17 +4,14 @@ import Message from "../../event/Message";
 
 export class Server extends Network {
     static Signal = {
-        LISTENING: "WebSocketServer.Listening",
-        CLOSE: "WebSocketServer.Close",
-        ERROR: "WebSocketServer.Error",
-        CONNECTION: "WebSocketServer.Connection",
-        HEADERS: "WebSocketServer.Headers",
-
-        Client: {
-            MESSAGE: "WebSocketServer.Client.Message",
-            MESSAGE_ERROR: "WebSocketServer.Client.MessageError",
-            DISCONNECT: "WebSocketServer.Client.Disconnect",
-        }
+        LISTENING: "WebSocketServer:Listening",
+        CLOSE: "WebSocketServer:Close",
+        ERROR: "WebSocketServer:Error",
+        CONNECTION: "WebSocketServer:Connection",
+        HEADERS: "WebSocketServer:Headers",
+        MESSAGE: "WebSocketServer:Message",
+        MESSAGE_ERROR: "WebSocketServer:MessageError",
+        DISCONNECT: "WebSocketServer:Disconnect",
     };
 
     constructor(wss, state = {}, modify = {}, opts = {}) {
@@ -49,12 +46,12 @@ export class Server extends Network {
                         msg = packet;
                     }
                     
-                    this.message(Server.Signal.Client.MESSAGE, msg, client, req);
+                    this.message(Server.Signal.MESSAGE, msg, client, req);
                 } catch(e) {
-                    this.message(Server.Signal.Client.MESSAGE_ERROR, e, packet, client, req);
+                    this.message(Server.Signal.MESSAGE_ERROR, e, packet, client, req);
                 }
             });
-            client.addEventListener("close", (code, reason) => this.message(Server.Signal.Client.DISCONNECT, code, reason));
+            client.addEventListener("close", (code, reason) => this.message(Server.Signal.DISCONNECT, code, reason));
         });
     }
 
@@ -103,9 +100,9 @@ export class Server extends Network {
                 [ Server.Signal.ERROR ]: wsRelay,
                 [ Server.Signal.CONNECTION ]: wsRelay,
                 [ Server.Signal.HEADERS ]: wsRelay,
-                [ Server.Signal.Client.MESSAGE_ERROR ]: wsRelay,
-                [ Server.Signal.Client.DISCONNECT ]: wsRelay,
-                [ Server.Signal.Client.MESSAGE ]: ({ data }, { message, broadcast }) => {
+                [ Server.Signal.MESSAGE_ERROR ]: wsRelay,
+                [ Server.Signal.DISCONNECT ]: wsRelay,
+                [ Server.Signal.MESSAGE ]: ({ data }, { message, broadcast }) => {
                     const [ msg ] = data;
 
                     if(broadcastMessages) {

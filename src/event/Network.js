@@ -14,17 +14,15 @@ import Message from "./Message";
  */
 export class Network extends AgencyBase {
     static Signal = {
-        UPDATE: `Network.Update`,
-        RELAY: `Network.Relay`,
+        UPDATE: `Network:Update`,
+        RELAY: `Network:Relay`,
     };
 
     constructor(state = {}, modify = {}) {
         super();
 
         this.__bus = new MessageBus();
-
         this.__connections = new Map();
-
         this.__state = state;
 
         this.modify({

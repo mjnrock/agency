@@ -9,7 +9,12 @@ const mainnet = new Network({}, {
     },
 });
 
-// const watch = Factory(mainnet, [{ rand: () => Math.random() }, { isStateSchema: true }], 1);
-const watch = Factory(mainnet, [{ rand: () => Math.random() }, { isStateSchema: true }], 5);
+const watch = Factory(mainnet, [{ rand: () => Math.random() }, { isStateSchema: true, useControlMessages: true }], 1);
+// const watch = Factory(mainnet, [{ rand: () => Math.random() }, { isStateSchema: true }], 5);
 
-console.log(watch);
+console.log(watch);     // This should invoke a READ with @useControlMessages
+
+watch.dogs = 15;
+watch.dogs = 13;
+watch.dogs = 11;
+delete watch.dogs;

@@ -6,15 +6,15 @@ import Message from "../../event/Message";
 
 export class Client extends Network {
     static Signal = {
-        CLOSE: "WebSocketClient.Close",
-        ERROR: "WebSocketClient.Error",
-        MESSAGE: "WebSocketClient.Message",
-        MESSAGE_ERROR: "WebSocketClient.MessageError",
-        OPEN: "WebSocketClient.Open",
-        PING: "WebSocketClient.Ping",
-        PONG: "WebSocketClient.Pong",
-        UNEXPECTED_RESPONSE: "WebSocketClient.UnexpectedResponse",
-        UPGRADE: "WebSocketClient.Upgrade",
+        CLOSE: "WebSocketClient:Close",
+        ERROR: "WebSocketClient:Error",
+        MESSAGE: "WebSocketClient:Message",
+        MESSAGE_ERROR: "WebSocketClient:MessageError",
+        OPEN: "WebSocketClient:Open",
+        PING: "WebSocketClient:Ping",
+        PONG: "WebSocketClient:Pong",
+        UNEXPECTED_RESPONSE: "WebSocketClient:UnexpectedResponse",
+        UPGRADE: "WebSocketClient:Upgrade",
     };
 
     static BinaryType = {

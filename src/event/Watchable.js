@@ -20,6 +20,10 @@ export const wrapNested = (controller, prop, input) => {
             return WatchableArchetype.prototype;
         },
         get(t, p) {
+            if(controller.useControlMessages) {
+                controller.controller.dispatch(Watchable.ControlType.READ, p);
+            }
+
             return Reflect.get(t, p);
         },
         set(t, p, v) {
@@ -47,10 +51,35 @@ export const wrapNested = (controller, prop, input) => {
             }
             
             if(!(Array.isArray(input) && p in Array.prototype)) {   // Don't broadcast native <Array> keys (i.e. .push returns .length)
-                controller.dispatch(nprop, v);
+                if(controller.useControlMessages) {
+                    if(isNewlyCreated) {
+                        controller.controller.dispatch(Watchable.ControlType.UPDATE, nprop, v);
+                    } else {
+                        controller.controller.dispatch(Watchable.ControlType.CREATE, nprop, v);
+                    }
+                } else {
+                    controller.controller.dispatch(nprop, v);
+                }
             }
 
             return t;
+        },
+        deleteProperty(t, p) {
+            if(p in t) {                
+                const reflect = Reflect.deleteProperty(t, p);
+
+                let nprop = `${ prop }.${ p }`;
+
+                if(controller.useControlMessages) {
+                    controller.controller.dispatch(Watchable.ControlType.DELETE, nprop, void 0);
+                } else {
+                    controller.controller.dispatch(nprop, void 0);
+                }
+
+                return reflect;
+            }
+
+            return false;
         },
     });
 
@@ -65,16 +94,32 @@ export const wrapNested = (controller, prop, input) => {
     return proxy;
 };
 
+/**
+ * The <Watchable> is an <Object> that emits changes to itself
+ *  to a <Network>.  Newly added values to the <Watchable> are
+ *  wrapped in a watcher for nested object changes.
+ */
 export class Watchable extends WatchableArchetype {
+    static ControlType = {
+        CREATE: `Watchable:Create`,
+        READ: `Watchable:Read`,
+        UPDATE: `Watchable:Update`,
+        DELETE: `Watchable:Delete`,
+    };
+
     /**
      * @isStateSchema bool | false | Function values will be evaluated at one (1) level of depth [ i.e. (f => g => {})(this, key, value) --> g => {} ]
      * @emitProtected bool | false | Emit updates for props like `_%` (i.e. one (1) preceding underscore)
      * @emitPrivate bool | false | Emit updates for props like `__%` (i.e. two (2) preceding underscores)
+     * @useControlMessages bool | false | Use << Watchable.ControlType >> for CRUD-like messaging from the <Watchable>
      */
-    constructor(network, state = {}, { isStateSchema = false, emitProtected = false, emitPrivate = false } = {}) {
+    constructor(network, state = {}, { isStateSchema = false, emitProtected = false, emitPrivate = false, useControlMessages = false } = {}) {
         super();
 
-        this.__controller = network.join(this, { callback: (...args) => this.__receiveHook(...args) });
+        this.__controller = {
+            controller: network.join(this, { callback: (...args) => this.__receiveHook(...args) }),
+            useControlMessages,
+        };
 
         for(let [ key, value ] of Object.entries(state)) {
             let newValue;
@@ -112,6 +157,10 @@ export class Watchable extends WatchableArchetype {
                     }
                 }
 
+                if(target.__controller.useControlMessages) {
+                    target.__controller.controller.dispatch(Watchable.ControlType.READ, prop);
+                }
+
                 return Reflect.get(target, prop);
             },
             set(target, prop, value) {
@@ -134,9 +183,29 @@ export class Watchable extends WatchableArchetype {
                     newValue = value;
                 }
 
+                let isNewlyCreated = target[ prop ] === void 0;
                 let reflect = Reflect.set(target, prop, newValue);
 
-                target.__controller.dispatch(prop, newValue);
+                if(target.__controller.useControlMessages) {
+                    if(isNewlyCreated) {
+                        target.__controller.controller.dispatch(Watchable.ControlType.CREATE, prop, newValue);
+                    } else {
+                        target.__controller.controller.dispatch(Watchable.ControlType.UPDATE, prop, newValue);
+                    }
+                } else {
+                    target.__controller.controller.dispatch(prop, newValue);
+                }
+
+                return reflect;
+            },
+            deleteProperty(target, prop) {
+                const reflect = Reflect.deleteProperty(target, prop);
+
+                if(target.__controller.useControlMessages) {
+                    target.__controller.controller.dispatch(Watchable.ControlType.DELETE, prop, void 0);
+                } else {
+                    target.__controller.controller.dispatch(prop, void 0);
+                }
 
                 return reflect;
             },
@@ -147,10 +216,15 @@ export class Watchable extends WatchableArchetype {
 };
 
 /**
+ * @qty may be a number or a fn(network, args)
  * @args may be direct arguments or a fn(i, network) to determine appropriate arguments for that iteration
  * Returns one (1) <Watchable> if @qty === 1 and [ ...<Watchable> ] if @qty > 1
  */
 export function Factory(network, args = [], qty = 1) {
+    if(typeof qty === "function") {
+        qty = qty(network, args);
+    }
+
     const results = [];
     for(let i = 0; i < qty; i++) {
         let localArgs;
@@ -174,6 +248,41 @@ export function Factory(network, args = [], qty = 1) {
     }
 
     return results[ 0 ];
-}
+};
+
+/**
+ * Identical to << Factory >>, except that functions can be
+ *  async functions.  This returns a resolved <Promise> with
+ *  the final <Watchable> value(s).
+ */
+export async function AsyncFactory(network, args = [], qty = 1) {
+    if(typeof qty === "function") {
+        qty = await qty(network, args);
+    }
+
+    const results = [];
+    for(let i = 0; i < qty; i++) {
+        let localArgs;
+        if(typeof args === "function") {
+            localArgs = await args(i, network);
+        } else {
+            if(Array.isArray(args)) {
+                localArgs = args;
+            } else {
+                localArgs = [ args ];
+            }
+        }
+
+        const watch = new Watchable(network, ...localArgs);
+
+        results.push(watch);
+    }
+
+    if(results.length > 1) {
+        return Promise.resolve(results);
+    }
+
+    return Promise.resolve(results[ 0 ]);
+};
 
 export default Watchable;
