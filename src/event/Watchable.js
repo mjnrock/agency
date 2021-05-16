@@ -295,6 +295,9 @@ export class Watchable extends WatchableArchetype {
     static Unflatten(network, obj, opts = {}, unflattenOpts = {}) {
         return new Watchable(network, unflatten(obj, unflattenOpts), opts);
     }
+
+    static Factory = Factory;
+    static AsyncFactory = AsyncFactory;
 };
 
 /**

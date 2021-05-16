@@ -1,5 +1,5 @@
 import Network from "../../src/event/Network";
-import { Factory, AsyncFactory } from "../../src/event/Watchable";
+import Watchable, { Factory, AsyncFactory } from "../../src/event/Watchable";
 
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
@@ -11,7 +11,7 @@ const network = new Network({}, {
 });
 
 
-const factory = Factory(network, [{
+const factory = Watchable.Factory(network, [{
     rand: () => Math.random(),
     cats: 43,
     dogs: {
@@ -24,8 +24,8 @@ const factory = Factory(network, [{
 }, {
     isStateSchema: true,
     // useControlMessages: true,
-}], 1, true);
-// }], 1, "async");
+// }], 1, true);
+}], 1, "async");
 
 // console.log(factory(null, 5));
 // console.log(factory());
