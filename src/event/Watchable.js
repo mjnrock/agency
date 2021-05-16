@@ -72,6 +72,9 @@ export const wrapNested = (controller, prop, input) => {
                     } else {
                         controller.controller.dispatch(Watchable.ControlType.UPDATE, nprop, v, current);
                     }
+                    
+                    
+                    controller.controller.dispatch(Watchable.ControlType.UPSERT, nprop, v, current);
                 } else {
                     if(isNewlyCreated) {
                         controller.controller.dispatch(nprop, v);
@@ -85,6 +88,7 @@ export const wrapNested = (controller, prop, input) => {
         },
         deleteProperty(t, p) {
             if(p in t) {                
+                const current = Reflect.get(t, p);
                 const reflect = Reflect.deleteProperty(t, p);
 
                 let nprop = `${ prop }.${ p }`;
@@ -94,6 +98,8 @@ export const wrapNested = (controller, prop, input) => {
                 } else {
                     controller.controller.dispatch(nprop, void 0);
                 }
+
+                target.controller.controller.dispatch(Watchable.ControlType.UPSERT, nprop, void 0, current);
 
                 return reflect;
             }
@@ -120,6 +126,8 @@ export class Watchable extends WatchableArchetype {
         READ: `Watchable:Read`,
         UPDATE: `Watchable:Update`,
         DELETE: `Watchable:Delete`,
+        
+        UPSERT: `Watchable:Upsert`,     // This will fire under CREATE, UPDATE, and DELETE messages
     };
 
     /**
@@ -225,6 +233,8 @@ export class Watchable extends WatchableArchetype {
                     } else {
                         target.__controller.controller.dispatch(Watchable.ControlType.UPDATE, prop, newValue, current);
                     }
+                    
+                    target.__controller.controller.dispatch(Watchable.ControlType.UPSERT, prop, newValue, current);
                 } else {
                     if(isNewlyCreated) {
                         target.__controller.controller.dispatch(prop, newValue);
@@ -236,6 +246,7 @@ export class Watchable extends WatchableArchetype {
                 return reflect;
             },
             deleteProperty(target, prop) {
+                const current = Reflect.get(target, prop);
                 const reflect = Reflect.deleteProperty(target, prop);
 
                 if(target.__controller.useControlMessages) {
@@ -243,6 +254,8 @@ export class Watchable extends WatchableArchetype {
                 } else {
                     target.__controller.controller.dispatch(prop, void 0);
                 }
+
+                target.__controller.controller.dispatch(Watchable.ControlType.UPSERT, prop, void 0, current);
 
                 return reflect;
             },
