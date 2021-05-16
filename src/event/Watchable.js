@@ -20,8 +20,10 @@ export const wrapNested = (controller, prop, input) => {
             return WatchableArchetype.prototype;
         },
         get(t, p) {
-            if(controller.useControlMessages) {
-                controller.controller.dispatch(Watchable.ControlType.READ, p);
+            if(p in t) {
+                if(controller.useControlMessages) {
+                    controller.controller.dispatch(Watchable.ControlType.READ, `${ prop }.${ p }`);
+                }
             }
 
             return Reflect.get(t, p);
@@ -32,6 +34,8 @@ export const wrapNested = (controller, prop, input) => {
             if(t[ p ] === v) {  // Ignore if the old value === new value
                 return t;
             }
+
+            let isNewlyCreated = !(p in t);
             
             if(p[ 0 ] === "_" || (Object.getOwnPropertyDescriptor(t, p) || {}).set) {
                 return Reflect.defineProperty(t, p, {
@@ -142,12 +146,26 @@ export class Watchable extends WatchableArchetype {
                     if(props[ 0 ] === "$") {
                         props = props.slice(1);
                     }
-
+                    
                     let result = target;
+                    let i = 0;
                     for(let p of props) {
-                        if(result[ p ] !== void 0) {
-                            result = result[ p ];
+                        if(typeof result === "object") {
+                            if(i === 0 && p in target) {
+                                if(target.__controller.useControlMessages) {
+                                    target.__controller.controller.dispatch(Watchable.ControlType.READ, p);
+                                }
+                            }
+                            let next = Reflect.get(result, p);
+    
+                            if(next !== void 0) {
+                                result = next;
+                            }
+                        } else {
+                            return void 0;  // Selection does not exist
                         }
+
+                        ++i;
                     }
 
                     if(result !== target) {
@@ -157,8 +175,10 @@ export class Watchable extends WatchableArchetype {
                     }
                 }
 
-                if(target.__controller.useControlMessages) {
-                    target.__controller.controller.dispatch(Watchable.ControlType.READ, prop);
+                if(prop in target) {
+                    if(target.__controller.useControlMessages) {
+                        target.__controller.controller.dispatch(Watchable.ControlType.READ, prop);
+                    }
                 }
 
                 return Reflect.get(target, prop);
