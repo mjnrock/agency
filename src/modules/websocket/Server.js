@@ -17,8 +17,8 @@ export class Server extends Network {
         }
     };
 
-    constructor(wss, state = {}, alter = {}, opts = {}) {
-        super(state, alter);
+    constructor(wss, state = {}, modify = {}, opts = {}) {
+        super(state, modify);
 
         this.wss = wss;
 
@@ -32,10 +32,10 @@ export class Server extends Network {
     }
 
     _bind(wss, app) {
-        wss.on("listening", () => this.emit(Server.Signal.LISTENING));
-        wss.on("close", () => this.emit(Server.Signal.CLOSE));
-        wss.on("connection", (client) => this.emit(Server.Signal.CONNECTION, client));
-        wss.on("headers", (headers, req) => this.emit(Server.Signal.HEADERS, headers, req));
+        wss.on("listening", () => this.message(Server.Signal.LISTENING));
+        wss.on("close", () => this.message(Server.Signal.CLOSE));
+        wss.on("connection", (client) => this.message(Server.Signal.CONNECTION, client));
+        wss.on("headers", (headers, req) => this.message(Server.Signal.HEADERS, headers, req));
 
         app.ws("/", (client, req) => {
             client.addEventListener("message", (packet) => {
@@ -49,12 +49,12 @@ export class Server extends Network {
                         msg = packet;
                     }
                     
-                    this.emit(Server.Signal.Client.MESSAGE, msg, client, req);
+                    this.message(Server.Signal.Client.MESSAGE, msg, client, req);
                 } catch(e) {
-                    this.emit(Server.Signal.Client.MESSAGE_ERROR, e, packet, client, req);
+                    this.message(Server.Signal.Client.MESSAGE_ERROR, e, packet, client, req);
                 }
             });
-            client.addEventListener("close", (code, reason) => this.emit(Server.Signal.Client.DISCONNECT, code, reason));
+            client.addEventListener("close", (code, reason) => this.message(Server.Signal.Client.DISCONNECT, code, reason));
         });
     }
 
@@ -88,11 +88,11 @@ export class Server extends Network {
     
 
     static QuickSetup(wss, handlers = {}, { state = {}, packets = Packets.Json(), broadcastMessages = true } = {}) {
-        const wsRelay = (msg, { emit, broadcast, network }) => {
+        const wsRelay = (msg, { message, broadcast, network }) => {
             if(broadcastMessages) {
                 broadcast(msg);
             } else {
-                emit(Message.Generate(network, Network.Signal.RELAY, msg));
+                message(Message.Generate(network, Network.Signal.RELAY, msg));
             }
         };
 
@@ -105,13 +105,13 @@ export class Server extends Network {
                 [ Server.Signal.HEADERS ]: wsRelay,
                 [ Server.Signal.Client.MESSAGE_ERROR ]: wsRelay,
                 [ Server.Signal.Client.DISCONNECT ]: wsRelay,
-                [ Server.Signal.Client.MESSAGE ]: ({ data }, { emit, broadcast }) => {
+                [ Server.Signal.Client.MESSAGE ]: ({ data }, { message, broadcast }) => {
                     const [ msg ] = data;
 
                     if(broadcastMessages) {
                         broadcast(msg);
                     } else {
-                        emit(msg);
+                        message(msg);
                     }
                 },
                 
@@ -121,7 +121,7 @@ export class Server extends Network {
             ...packets,
         });
 
-        server.alter({
+        server.modify({
             default: {
                 $globals: {
                     sendToClient: server.sendToClient.bind(server),

@@ -3,10 +3,10 @@ import Network from "../../event/Network";
 //TODO  Setup a reducer/dispatch paradigm for React
 
 export class ReactNetwork extends Network {
-    constructor(state = {}, alter = {}) {
-        super(state, alter);
+    constructor(state = {}, modify = {}) {
+        super(state, modify);
 
-        this.alter({
+        this.modify({
             $routes: [
                 message => "react",
             ],

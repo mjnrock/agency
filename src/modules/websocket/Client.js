@@ -23,8 +23,8 @@ export class Client extends Network {
         Fragments: "fragments",
     };
 
-    constructor(state = {}, alter = {}, opts = {}) {
-        super(state, alter);
+    constructor(state = {}, modify = {}, opts = {}) {
+        super(state, modify);
 
         this.middleware = {
             pack: opts.pack,
@@ -64,8 +64,8 @@ export class Client extends Network {
     }
 
     _bind(client) {
-        client.addEventListener("close", (code, reason) => this.emit(Client.Signal.CLOSE, code, reason));
-        client.addEventListener("error", (error) => this.emit(Client.Signal.ERROR, error));
+        client.addEventListener("close", (code, reason) => this.message(Client.Signal.CLOSE, code, reason));
+        client.addEventListener("error", (error) => this.message(Client.Signal.ERROR, error));
         client.addEventListener("message", (packet) => {
             try {
                 let msg;
@@ -77,16 +77,16 @@ export class Client extends Network {
                     msg = packet;
                 }
 
-                this.emit(Client.Signal.MESSAGE, msg);
+                this.message(Client.Signal.MESSAGE, msg);
             } catch (e) {
-                this.emit(Client.Signal.MESSAGE_ERROR, e, packet);
+                this.message(Client.Signal.MESSAGE_ERROR, e, packet);
             }
         });
-        client.addEventListener("open", () => this.emit(Client.Signal.OPEN));
-        client.addEventListener("ping", (data) => this.emit(Client.Signal.PING, data));
-        client.addEventListener("pong", (data) => this.emit(Client.Signal.PONG, data));
-        client.addEventListener("unexpected-response", (req, res) => this.emit(Client.Signal.UNEXPECTED_RESPONSE, req, res));
-        client.addEventListener("upgrade", (res) => this.emit(Client.Signal.UPGRADE, res));
+        client.addEventListener("open", () => this.message(Client.Signal.OPEN));
+        client.addEventListener("ping", (data) => this.message(Client.Signal.PING, data));
+        client.addEventListener("pong", (data) => this.message(Client.Signal.PONG, data));
+        client.addEventListener("unexpected-response", (req, res) => this.message(Client.Signal.UNEXPECTED_RESPONSE, req, res));
+        client.addEventListener("upgrade", (res) => this.message(Client.Signal.UPGRADE, res));
     }
 
     get url() {
@@ -143,7 +143,7 @@ export class Client extends Network {
                         this.kill();
                     }
                 } catch (e) {
-                    this.emit(Client.Signal.ERROR, e);
+                    this.message(Client.Signal.ERROR, e);
                 }
             }, timeout);
         }
@@ -154,11 +154,11 @@ export class Client extends Network {
 
 
     static QuickSetup(wsOpts = {}, handlers = {}, { state = {}, packets = Packets.Json(), broadcastMessages = true } = {}) {
-        const wsRelay = (msg, { emit, broadcast, network }) => {
+        const wsRelay = (msg, { message, broadcast, network }) => {
             if (broadcastMessages) {
                 broadcast(msg);
             } else {
-                emit(Message.Generate(network, Network.Signal.RELAY, msg));
+                message(Message.Generate(network, Network.Signal.RELAY, msg));
             }
         };
 
@@ -173,13 +173,13 @@ export class Client extends Network {
                 [ Client.Signal.PONG ]: wsRelay,
                 [ Client.Signal.UNEXPECTED_RESPONSE ]: wsRelay,
                 [ Client.Signal.UPGRADE ]: wsRelay,
-                [ Client.Signal.MESSAGE ]: ({ data }, { emit, broadcast }) => {
+                [ Client.Signal.MESSAGE ]: ({ data }, { message, broadcast }) => {
                     const [ msg ] = data;
 
                     if (broadcastMessages) {
                         broadcast(msg);
                     } else {
-                        emit(msg);
+                        message(msg);
                     }
                 },
 
@@ -190,7 +190,7 @@ export class Client extends Network {
             ...packets,
         });
 
-        client.alter({
+        client.modify({
             default: {
                 $globals: {
                     sendToServer: client.sendToServer.bind(client),
