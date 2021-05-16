@@ -70,12 +70,18 @@ export function unflatten(obj, { splitter = "." } = {}) {
 };
 
 /**
+ * This is a generalized recursion function that will iterate over all
+ *  key-value-pairs within the passed @obj, performing work recursively.
+ *  Get/Set traps can be utilized, a custom test can be used to decide
+ *  if a key should invoke recursion, and a custom object copier can be
+ *  used to create a shallow copy or deep copy (default).
+ * 
  * @obj The object over which << recurse >> will iterate
  * @setter ? | An assignment function to modify current values
  * @getter ? | An accessor function to perform work on each, nested entry
  * @condition ? | A conditional function to test if << recurse >> should be invoked recursively
  * @copyObject ? | false | A boolean to use JSON.parse(JSON.stringify(@obj)), or a custom copy function
- * @namespace ? | Used internally for recursion calls
+ * @_namespace ? | Used internally for recursion calls
  */
 export function recurse(obj, { setter, getter, condition, copyObject = false, _namespace } = {}) {
     let newObj;
@@ -114,6 +120,10 @@ export function recurse(obj, { setter, getter, condition, copyObject = false, _n
     return newObj;
 };
 
+/**
+ * A helper function that can create and seed objects with custom
+ *  default values.  Nested objects can be created via dot notation.
+ */
 export function seedObject(keys = [], fn = () => null) {
     const obj = {};
     for (let key of keys) {
@@ -237,7 +247,7 @@ export function factory(fnOrClass, qty, args = [], mutator) {
     }
 
     return results[ 0 ];
-}
+};
 
 export default {
     pipe,
