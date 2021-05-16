@@ -111,7 +111,7 @@ export class Watchable extends WatchableArchetype {
      * @isStateSchema bool | false | Function values will be evaluated at one (1) level of depth [ i.e. (f => g => {})(this, key, value) --> g => {} ]
      * @emitProtected bool | false | Emit updates for props like `_%` (i.e. one (1) preceding underscore)
      * @emitPrivate bool | false | Emit updates for props like `__%` (i.e. two (2) preceding underscores)
-     * @useControlMessages bool | false | Use << Watchable.ControlType >> for CRUD-like messaging from the <Watchable>
+     * @useControlMessages bool | false | Use << Watchable.ControlType >> for CRUD-like messaging from the <Watchable>.  These can be used for event-listening for data syncing.
      */
     constructor(network, state = {}, { isStateSchema = false, emitProtected = false, emitPrivate = false, useControlMessages = false } = {}) {
         super();
