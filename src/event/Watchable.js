@@ -28,8 +28,8 @@ export const wrapNested = (controller, prop, input) => {
             return WatchableArchetype.prototype;
         },
         get(t, p) {
-            if(p in t) {
-                if(controller.useControlMessages) {
+            if(controller.useControlMessages) {
+                if((Reflect.getOwnPropertyDescriptor(t, p) || {}).enumerable) {
                     controller.controller.dispatch(Watchable.ControlType.READ, `${ prop }.${ p }`);
                 }
             }
@@ -47,7 +47,7 @@ export const wrapNested = (controller, prop, input) => {
 
             let isNewlyCreated = current === void 0;
             
-            if(p[ 0 ] === "_" || (Object.getOwnPropertyDescriptor(t, p) || {}).set) {
+            if(p[ 0 ] === "_" || (Reflect.getOwnPropertyDescriptor(t, p) || {}).set) {
                 return Reflect.defineProperty(t, p, {
                     value: v,
                     configurable: true,
@@ -157,8 +157,8 @@ export class Watchable extends WatchableArchetype {
                     let i = 0;
                     for(let p of props) {
                         if(typeof result === "object") {
-                            if(i === 0 && p in target) {
-                                if(target.__controller.useControlMessages) {
+                            if(target.__controller.useControlMessages) {
+                                if(i === 0 && (Reflect.getOwnPropertyDescriptor(target, prop) || {}).enumerable) {
                                     target.__controller.controller.dispatch(Watchable.ControlType.READ, p);
                                 }
                             }
@@ -181,8 +181,8 @@ export class Watchable extends WatchableArchetype {
                     }
                 }
 
-                if(prop in target) {
-                    if(target.__controller.useControlMessages) {
+                if(target.__controller.useControlMessages) {
+                    if((Reflect.getOwnPropertyDescriptor(target, prop) || {}).enumerable) {
                         target.__controller.controller.dispatch(Watchable.ControlType.READ, prop);
                     }
                 }

@@ -22,7 +22,7 @@ const watch = Factory(mainnet, [{
     },
 }, {
     isStateSchema: true,
-    useControlMessages: true,
+    // useControlMessages: true,
 }], 1);
 // const watch = Factory(mainnet, [{ rand: () => Math.random() }, { isStateSchema: true }], 5);
 
@@ -42,4 +42,5 @@ watch.dogs.fish = {
 // console.log(watch.dogs)
 // console.log(watch[ "dogs.fish.what" ])
 // console.log(watch[ "cats" ])
-// console.log(watch.cats)
+console.log(watch.id)
+console.log(watch.__id)
