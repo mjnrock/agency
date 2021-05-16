@@ -1,16 +1,16 @@
 import Network from "../../src/event/Network";
-import Watchable, { Factory } from "../../src/event/Watchable";
+import { Factory } from "../../src/event/Watchable";
 
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
-const mainnet = new Network({}, {
+const network = new Network({}, {
     default: {
         "**": msg => console.log(msg),
         // [ Watchable.ControlType.READ ]: msg => console.log(msg),
     },
 });
 
-const watch = Factory(mainnet, [{
+const watch = Factory(network, [{
     rand: () => Math.random(),
     cats: 43,
     dogs: {
@@ -26,13 +26,21 @@ const watch = Factory(mainnet, [{
 }], 1);
 // const watch = Factory(mainnet, [{ rand: () => Math.random() }, { isStateSchema: true }], 5);
 
-// console.log(watch);     // This should invoke a READ with @useControlMessages
+console.log(watch.toSchemaObject(true));
+// console.log(watch.toBuffer({ all: "*" }).toString());
+// console.log(watch.toString({ all: 4444 }));
+// console.log(watch.toString({
+//     primary: "+++",
+//     secondary: "---",
+// }));
+// console.log(Watchable.Flatten(watch));     // This should invoke a READ with @useControlMessages
+// console.log(Watchable.Unflatten(network, Watchable.Flatten(watch)));     // This should invoke a READ with @useControlMessages
 
 // watch.dogs = 15;
 // watch.hjdskfjk = 13;
-watch.dogs.fish = {
-    yes: false,
-};
+// watch.dogs.fish = {
+//     yes: false,
+// };
 // watch.dogs.fish = {
 //     what: "ok",
 // };
@@ -42,5 +50,16 @@ watch.dogs.fish = {
 // console.log(watch.dogs)
 // console.log(watch[ "dogs.fish.what" ])
 // console.log(watch[ "cats" ])
-console.log(watch.id)
-console.log(watch.__id)
+// console.log(watch.id)
+// console.log(watch.__id)
+// console.log(flatten(watch))
+// console.log(unflatten(flatten(watch)))
+
+// const obj = new Watchable(network, flatten(watch));
+// obj.cats = 69;
+// const obj = flatten(watch, { asArray: true });
+// const uobj = new Watchable(network, unflatten(obj));
+
+// console.log(watch)
+// console.log(obj)
+// console.log(uobj)

@@ -69,6 +69,51 @@ export function unflatten(obj, { splitter = "." } = {}) {
     return obj;
 };
 
+/**
+ * @obj The object over which << recurse >> will iterate
+ * @setter ? | An assignment function to modify current values
+ * @getter ? | An accessor function to perform work on each, nested entry
+ * @condition ? | A conditional function to test if << recurse >> should be invoked recursively
+ * @copyObject ? | false | A boolean to use JSON.parse(JSON.stringify(@obj)), or a custom copy function
+ * @namespace ? | Used internally for recursion calls
+ */
+export function recurse(obj, { setter, getter, condition, copyObject = false, _namespace } = {}) {
+    let newObj;
+    if(copyObject) {
+        if(typeof copyObject === "function") {
+            newObj = copyObject(obj);
+        } else {
+            newObj = JSON.parse(JSON.stringify(obj));
+        }
+    } else {
+        newObj = obj;
+    }
+
+    if(!condition) {
+        condition = (key, value) => typeof value === "object";
+    }
+
+    for(let [ key, value ] of Object.entries(newObj)) {
+        let nkey = _namespace ? `${ _namespace }.${ key }` : key;
+
+        if(condition(key, value)) {
+            newObj[ key ] = recurse(newObj[ key ], { setter, getter, condition, _namespace: nkey });
+        } else {
+            if(typeof setter === "function") {
+                newObj[ key ] = setter(key, value, _namespace, newObj);
+            } else {
+                newObj[ key ] = value;
+            }
+        }
+
+        if(typeof getter === "function") {
+            getter(nkey, newObj[ key ], value);
+        }
+    }
+
+    return newObj;
+};
+
 export function seedObject(keys = [], fn = () => null) {
     const obj = {};
     for (let key of keys) {
@@ -200,6 +245,7 @@ export default {
     curry,
     flatten,
     unflatten,
+    recurse,
     seedObject,
     round,
     floor,

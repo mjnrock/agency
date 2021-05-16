@@ -1,4 +1,5 @@
 import AgencyBase from "./../AgencyBase";
+import { flatten, unflatten, recurse } from "./../util/helper";
 
 export const WatchableArchetype = class extends AgencyBase {
     constructor() {
@@ -111,6 +112,7 @@ export const wrapNested = (controller, prop, input) => {
  * 
  * CRUD-like messaging is available with use of the @useControlMessages
  *  flag.  A property *must be enumerable* in order for a message to fire.
+ *  If @useControlMessages is *false*, then the "READ" messages are *not* fired.
  */
 export class Watchable extends WatchableArchetype {
     static ControlType = {
@@ -247,6 +249,51 @@ export class Watchable extends WatchableArchetype {
         });
 
         return proxy;
+    }
+
+    /**
+     * Arguments are passed directly to << .toString >>
+     * Final buffer has the following concatenation:
+     * [ primaryLength ][ primaryChar(s) ][ secondaryLength ][ secondaryChar(s) ][ << this.toString(...args) >> ]
+     * 
+     * E.g. primary="|",secondary=":",this={ test: true } --> `1|1:test:true`
+     * E.g. both=".",this={ test: true, another: "yes" } --> `1.1.test.true.another.yes`
+     */
+    toBuffer({ primary = "|", secondary = ":", all } = {}) {
+        const str = this.toString({ primary, secondary, all });
+        const buffer = Buffer.from(`${ primary.length }${ primary }${ secondary.length }${ secondary }${ str }`);
+
+        return buffer;
+    }
+    toString({ primary = "|", secondary = ":", all } = {}) {
+        if(all) {
+            primary = secondary = all.toString();
+        }
+
+        return flatten(this, { asArray: true }).map(([ k, v ]) => `${ k }${ secondary }${ v }`).join(primary);
+    }
+    toObject() {
+        return JSON.parse(this.toJson());
+    }
+    toSchemaObject() {        
+        const obj = this.toObject();
+
+        return recurse(obj, {
+            setter: (key, value) => ({
+                type: typeof value,
+                value: value,
+            }),
+        });
+    }
+    toJson() {
+        return JSON.stringify(this);
+    }
+
+    static Flatten(watchable, opts = {}) {
+        return flatten(watchable, opts);
+    }
+    static Unflatten(network, obj, opts = {}, unflattenOpts = {}) {
+        return new Watchable(network, unflatten(obj, unflattenOpts), opts);
     }
 };
 
