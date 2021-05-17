@@ -17,6 +17,7 @@ const watch = new Watchable(mainnet, {
     },
     _test: 234523,
 }, {
+    useControlMessages: true,
     isStateSchema: true,
     emitProtected: true,
     emitPrivate: true,
@@ -26,11 +27,11 @@ console.log(`[State]:`, watch);
 console.warn(`------------------------------------------------`);
 
 watch._cat = 15;
-watch.__cats = 150;
+// watch.__cats = 150;
 // console.log(`[$.cat]:`, watch);
 // console.warn(`------------------------------------------------`);
 
-// watch.dogs.roofus = 99;
+watch.dogs.roofus = 99;
 // console.log(`[$.dogs.roofus]:`, watch);
 // console.warn(`------------------------------------------------`);
 

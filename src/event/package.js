@@ -4,6 +4,8 @@ import Channel from "./Channel";
 import Router from "./Router";
 import MessageBus from "./MessageBus";
 import Network from "./Network";
+import Watchable from "./Watchable";
+import EventWatchable from "./EventWatchable";
 
 import $DispatchState from "./$DispatchState";
 
@@ -14,6 +16,8 @@ export default {
     Router,
     MessageBus,
     Network,
+    Watchable,
+    EventWatchable,
 
     $DispatchState,
 };
