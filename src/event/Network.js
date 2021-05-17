@@ -125,20 +125,20 @@ export class Network extends AgencyBase {
      * @addSelfToDefaultGlobal | Add << this >> to default channel globals via { [ addSelfToDefaultGlobal ]: this }
      *      As such, whatever string value is passed will be used as the key
      */
-    addConnection(entity, { callback, filter, addSelfToDefaultGlobal = false } = {}) {
+    addConnection(entity, { callback, filter, addToDefaultGlobal = false } = {}) {
         if(!!entity && !callback) {
-            return this.__emptyJoin(entity, { filter, addSelfToDefaultGlobal });
+            return this.__emptyJoin(entity, { filter, addToDefaultGlobal });
         }
 
         
         const cache = this.__createCacheObject(entity, callback, filter);
         this.__connections.set(entity, cache);
 
-        if((typeof addSelfToDefaultGlobal === "string" || addSelfToDefaultGlobal instanceof String) && entity instanceof Network) {
+        if((typeof addToDefaultGlobal === "string" || addToDefaultGlobal instanceof String) && entity instanceof Network) {
             entity.modify({
                 default: {
                     $globals: {
-                        [ addSelfToDefaultGlobal ]: this,
+                        [ addToDefaultGlobal ]: this,
                     }
                 }
             });
@@ -274,7 +274,7 @@ export class Network extends AgencyBase {
     __createCacheObject(entity, callback, filter) {
         const cache = {
             dispatcher: new Dispatcher(this, entity),
-            receiver: new Receiver(callback, filter),
+            receiver: new Receiver(callback, msg => msg.emitter !== entity),
             controller: {},
         };
 
