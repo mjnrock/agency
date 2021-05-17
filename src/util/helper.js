@@ -206,6 +206,15 @@ export function clamp(value, { min, max } = {}) {
 // console.log(clamp(29, { min: 10, max: 20 }))
 
 /**
+ * This will do a locale-specific, case-insensitive text comparison
+ */
+export function isSameText(a, b) {
+    return typeof a === "string" && typeof b === "string"
+        ? a.localeCompare(b, undefined, { sensitivity: "accent" }) === 0
+        : a === b;
+}
+
+/**
  * A wrapper function to invoke if you want to amend various prototypes
  * Current:
  *  - Array
@@ -263,6 +272,7 @@ export default {
     between,
     near,
     clamp,
+	isSameText,
 
     extendJavascript,
     factory,

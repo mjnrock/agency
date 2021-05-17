@@ -32,8 +32,10 @@ export class Network extends AgencyBase {
             default: {
                 [ Network.Signal.UPDATE ]: (msg, { broadcast }) => broadcast(msg),
                 $globals: {
-                    network: this,
-                    state: this.state,
+					network: this,
+                    getState: () => this.state,
+                    setState: state => this.state = state,
+                    mergeState: (state = {}) => this.state = { ...this.state, ...state },
                     message: this.message.bind(this),
                     broadcast: this.broadcast.bind(this),
                 },

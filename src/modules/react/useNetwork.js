@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 
 import Network from "../../event/Network";
 import Dispatcher from "../../event/Dispatcher";
@@ -8,49 +8,49 @@ import Dispatcher from "../../event/Dispatcher";
  *  and return it, along with a dispatcher attached to that same network,
  *  using the network as its subject.
  */
-export function useNetwork(network) {
-    const [ state, setState ] = useState(() => network.state);
-    const [ dispatcher ] = useState(() => new Dispatcher(network, network));
+export function useNetwork(network, channel = "default") {
+	const [ state, setState ] = useState(() => network.state);
+	const [ dispatcher ] = useState(() => new Dispatcher(network, network));
 
-    useEffect(() => {
-        const handler = function({ data }) {
-            const [ newState ] = data;
+	useEffect(() => {
+		const handler = function ({ data }) {
+			const [ newState ] = data;
 
-            setState(newState);
-        };
-        
-        network.getChannel("_internal").addHandler(Network.Signal.UPDATE, handler);
+			setState(newState);
+		};
+
+        network.ch(channel).addHandler(Network.Signal.UPDATE, handler);
         
         return () => {
-            network.getChannel("_internal").removeHandler(Network.Signal.UPDATE, handler);
+            network.ch(channel).removeHandler(Network.Signal.UPDATE, handler);
         };
-    }, [ network ]);
-    
-    return {
-        state,
-        dispatch: dispatcher.dispatch,
-        broadcast: dispatcher.broadcast,
-    };
+	}, [ network, channel ]);
+
+	return {
+		state,
+		dispatch: dispatcher.dispatch,
+		broadcast: dispatcher.broadcast,
+	};
 };
 
 /**
  * A wrapper for << useNetwork >> for cases where the network resides within
  *  a React Context.  @prop can be used with dot notation to grab a nested value.
  */
-export function useContextNetwork(context, prop = "network") {
-    const ctx = useContext(context);
+export function useContextNetwork(context, prop = "network", channel) {
+	const ctx = useContext(context);
 
-    let nested = prop.split("."),
-        network = ctx;
+	let nested = prop.split("."),
+		network = ctx;
 
-    for(let p of nested) {
-        network = network[ p ];
-    }
+	for (let p of nested) {
+		network = network[ p ];
+	}
 
-    return useNetwork(network);
+	return useNetwork(network, channel);
 };
 
 export default {
-    useNetwork,
-    useContextNetwork,
+	useNetwork,
+	useContextNetwork,
 };
