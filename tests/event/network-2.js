@@ -65,12 +65,12 @@ const e2 = {
 };
 
 //? @receiver is returned to allow for network-aware changes: 1) Modifying the @callback fn, 2) Add/removing a @filter fn
-const { dispatch: e1d, receiver: e1r } = network.join(e1, {
+const { dispatch: e1d, receiver: e1r } = network.addConnection(e1, {
     callback(message) {        
         console.log("[Kiszka Received]:", message);
     },
 });
-const { dispatch: e2d, receiver: e2r } = network.join(e2, {
+const { dispatch: e2d, receiver: e2r } = network.addConnection(e2, {
     callback(message) {        
         console.log("[Buddha Received]:", message);
     },

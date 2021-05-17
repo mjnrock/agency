@@ -140,7 +140,7 @@ export class Watchable extends WatchableArchetype {
         super();
 
         this.__controller = {
-            controller: network.join(this, { callback: (...args) => this.__receiveHook(...args) }),
+            controller: network.addConnection(this, { callback: (...args) => this.__receiveHook(...args) }),
             useControlMessages,
         };
 

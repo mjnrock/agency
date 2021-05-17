@@ -6,7 +6,7 @@ const network = new Network({
     cat: 2,
 });
 
-const { dispatch, receiver } = network.join();
+const { dispatch, receiver } = network.addConnection();
 receiver.reassign((...args) => console.log(...args));
 
 console.log(network);
