@@ -1,6 +1,6 @@
 {
     "name": "@lespantsfancy/agency",
-    "version": "0.7.31",
+    "version": "0.7.32",
     "main": "lib/index.js",
     "author": "Matt Nawrocki <mjnrock@umich.edu>",
     "license": "None",
@@ -33,8 +33,6 @@
         "isomorphic-ws": "^4.0.1",
         "qrcode": "^1.4.4",
         "react": "^17.0.2",
-        "semantic-ui-css": "^2.4.1",
-        "semantic-ui-react": "^2.0.3",
         "ws": "^7.4.5"
     },
     "devDependencies": {
