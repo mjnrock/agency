@@ -13,9 +13,9 @@ export const $Dispatcher = $super => class extends $super {
         this._dispatch = null;
         this._broadcast = null;
         
-
         this.network = Dispatcher.network;
         this.subject = Dispatcher.subject;
+        this.middleware = Dispatcher.middleware;
         
         if(Dispatcher.subject === true) {
             this.subject = Dispatcher.network;  //  sic
@@ -26,9 +26,10 @@ export const $Dispatcher = $super => class extends $super {
      * ? Convenience Method
      * Reassign the @network and @subject in one call
      */
-    reassign(network, subject) {
+    reassign(network, subject, middleware) {
         this.network = network;
         this.subject = subject;
+        this.middleware = middleware;
 
         return this;
     }
@@ -61,6 +62,23 @@ export const $Dispatcher = $super => class extends $super {
         }
     }
 
+    /**
+     * The << middleware >> allows a default middleware to
+     *  be bound to the <Dispatcher> invocations.
+     */
+    get middleware() {
+        if(typeof this._middleware === "function") {
+            return this._middleware;
+        }
+		
+		return (network, subject, args) => args;
+    }
+    set middleware(middleware) {
+        if(typeof middleware === "function") {
+            this._middleware = middleware;
+        }
+    }
+
 
     /**
      * The dispatch methods allow for a message to be sent
@@ -73,10 +91,12 @@ export const $Dispatcher = $super => class extends $super {
     set dispatch(fn) {
         if(typeof fn === "function") {
             this._dispatch = (...args) => {
+				const params = this.middleware(this.network.__bus, this.subject, args) || args;
+
                 if(this.subject) {
-                    fn.call(this.network.__bus, this.subject, ...args);
+                    fn.call(this.network.__bus, this.subject, ...params);
                 } else {
-                    fn.call(this.network.__bus, ...args);
+                    fn.call(this.network.__bus, ...params);
                 }
             };
         }
@@ -94,12 +114,14 @@ export const $Dispatcher = $super => class extends $super {
         return this._broadcast;
     }
     set broadcast(fn) {
-        if(typeof fn === "function") {
-            this._broadcast = (...args) => {
+		if(typeof fn === "function") {
+			this._broadcast = (...args) => {
+				const params = this.middleware(this.network, this.subject, args) || args;
+
                 if(this.subject) {
-                    fn.call(this.network, this.subject, ...args);
+                    fn.call(this.network, this.subject, ...params);
                 } else {
-                    fn.call(this.network, ...args);
+                    fn.call(this.network, ...params);
                 }
             };
         }

@@ -46,4 +46,4 @@ const mainnet = new Network({}, {
         },
     },
 });
-ws.join(mainnet, { addSelfToDefaultGlobal: "ws" });
+ws.addListener(mainnet, { addToDefaultGlobal: "ws" });

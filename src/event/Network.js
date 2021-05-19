@@ -122,10 +122,12 @@ export class Network extends AgencyBase {
     }
 
     /**
+	 * Add a listener to receive << .broadcast >> messages
+	 * 
      * @addSelfToDefaultGlobal | Add << this >> to default channel globals via { [ addSelfToDefaultGlobal ]: this }
      *      As such, whatever string value is passed will be used as the key
      */
-    addConnection(entity, { callback, filter, addToDefaultGlobal = false } = {}) {
+    addListener(entity, { callback, filter, addToDefaultGlobal = false } = {}) {
         if(!!entity && !callback) {
             return this.__emptyJoin(entity, { filter, addToDefaultGlobal });
         }
@@ -145,18 +147,28 @@ export class Network extends AgencyBase {
         }
         
         return cache.controller;
-    }
-    removeConnection(entity) {
+    }	
+    /**
+	 * Remove a listener to stop receiving << .broadcast >> messages
+	 */
+    removeListener(entity) {
         return this.__connections.delete(entity);
     }
-	join(network, opts) {
+
+	/**
+	 * This is a "reverse" of << .addListener >>
+	 */
+	tuneIn(network, opts) {
 		if(network instanceof Network) {
-			return network.addConnection(this, opts);
+			return network.addListener(this, opts);
 		}
 	}
-	leave(network) {
+	/**
+	 * This is a "reverse" of << .removeListener >>
+	 */
+	tuneOut(network) {
 		if(network instanceof Network) {
-			return network.removeConnection(this);
+			return network.removeListener(this);
 		}
 	}
 
@@ -172,13 +184,13 @@ export class Network extends AgencyBase {
      *  function on each receiver.
      */
     broadcast(...args) {
-        let message;
+		let message;
         if(args.length > 1) {
-            message = Message.Generate(this, ...args);
+			message = Message.Generate(this, ...args);
         } else if(Message.ConformsBasic(args[ 0 ])) {
-            [ message ] = args;
+			[ message ] = args;
         } else {
-            message = args;
+			message = args;
         }
 
         for(let { receiver } of this.__connections.values()) {
@@ -288,13 +300,13 @@ export class Network extends AgencyBase {
     }
     __emptyJoin(entity, opts = {}) {
         if(entity instanceof Network) {
-            return this.addConnection(entity, {
+            return this.addListener(entity, {
                 ...opts,
                 callback: entity.__bus.receive.bind(entity.__bus),
             });
         }
 
-        return this.addConnection(entity, {
+        return this.addListener(entity, {
             callback: () => {},
         });
     }

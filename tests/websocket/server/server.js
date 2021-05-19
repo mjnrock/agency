@@ -26,26 +26,28 @@ const port = 3001;
 // }, { broadcastMessages: false });
 
 
+
+
 //? Use a separate, connected Network to handle messages
 //  This will use << .broadcast >> when receiving websocket messages
 const wss = Server.QuickSetup(expressWs(app), {
-    [ Server.Signal.CONNECTION ]: (msg, { broadcast }) => {
-        broadcast("bounce", Date.now());
-    },
+	[ Server.Signal.CONNECTION ]: (msg, { broadcast }) => {
+		broadcast("bounce", Date.now());
+	},
 });
-
 const mainnet = new Network({}, {
-    default: {
-        bounce: function(msg, { wss }) {
-            console.log("Received Message:", msg.type, msg.data)
-
-            setTimeout(() => {
-                wss.sendToAll(msg);
-            }, 250);
-        },
-    },
+	default: {
+		bounce: function(msg) {
+			console.log("Received Message:", msg.type, msg.data)
+			
+			setTimeout(() => {
+				wss.sendToAll(msg);
+			}, 250);
+		},
+	},
 });
-wss.join(mainnet, { addSelfToDefaultGlobal: "wss" });
+
+wss.addListener(mainnet, { addToDefaultGlobal: "wss" });
 
 
 /**
