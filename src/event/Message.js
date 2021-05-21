@@ -1,12 +1,12 @@
 import crypto from "crypto";
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4, validate } from "uuid";
 
 export class Message {
     constructor(emitter, type, ...args) {
         this.id = uuidv4();
         this.type = type;
         this.data = args;
-        this.emitter = emitter.id;
+        this.emitter = validate(emitter) ? emitter : emitter.id;
         this.tags = new Set([ emitter.id ]);
         this.timestamp = Date.now();
 
@@ -29,10 +29,18 @@ export class Message {
 		return [ ...this.tags ];
 	}
 
+	isFrom(potentialEmitter) {
+		if(typeof potentialEmitter === "object") {
+			return this.emitter === potentialEmitter.id;
+		}
+
+		return false;
+	}
+
     toObject() {
         return Object.assign({}, this);
     }
-    toJSON() {
+    toJson() {
         return JSON.stringify(this.toObject());
     }
 
@@ -52,7 +60,7 @@ export class Message {
     getMetaHash(algorithm = "md5", digest = "hex") {
         return crypto.createHash(algorithm).update(JSON.stringify({
             id: this.id,
-            tags: this.tags.reduce((a, v) => {
+            tags: [ ...this.tags ].reduce((a, v) => {
                 let id;
                 if(typeof v === "object") {
                     if("id" in v) {
@@ -85,8 +93,10 @@ export class Message {
     }
 
     static Generate(emitter, type, ...args) {
-        if(Message.Conforms(type)) {
+        if(Message.Conforms(emitter)) {
             return new Message(emitter.emitter, emitter.type, ...emitter.data);
+        } else if(Message.Conforms(type)) {
+            return new Message(emitter, type.type, ...type.data);
         }
 
         return new Message(emitter, type, ...args);
@@ -115,9 +125,9 @@ export class Message {
     }
 
     static FromObject(obj) {
-        return Message.FromJSON(obj);
+        return Message.FromJson(obj);
     }
-    static FromJSON(json, maxDepth = 10) {
+    static FromJson(json, maxDepth = 10) {
         try {
             let obj = json;
     

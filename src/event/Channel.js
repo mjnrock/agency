@@ -135,7 +135,7 @@ export class Channel extends AgencyBase {
         }
 
         return this;
-    }    
+    }
     removeHandler(event, ...fns) {
         if(this.handlers.get(event) instanceof Set) {
             if(Array.isArray(fns[ 0 ])) {
@@ -163,6 +163,86 @@ export class Channel extends AgencyBase {
 
         return this;
     }
+	
+    addReducer(event, ...fns) {
+        const newFns = fns.map(fn => (msg, { setState, getState, ...rest }, ...args) => {
+			setState(fn(msg, { setState, state: getState(), ...rest }, ...args));
+		});
+
+		this.addHandler(event, ...newFns);
+
+		return [ event, newFns ];
+    }
+    addMergeReducer(event, ...fns) {
+        const newFns = fns.map(fn => (msg, { mergeState, getState, ...rest }, ...args) => {
+			mergeState(fn(msg, { mergeState, state: getState(), ...rest }, ...args));
+		});
+
+		this.addHandler(event, ...newFns);
+
+		return [ event, newFns ];
+    }
+    addReducers(addReducerArgs = []) {
+		const newFns = [];
+        for(let [ event, ...fns ] of addReducerArgs.map(v => Array.isArray(v) ? v : [ v ])) {
+            newFns.push(this.addReducer(event, ...fns));
+        }
+
+        return newFns;
+    }
+    addMergeReducers(addMergeReducerArgs = []) {
+		const newFns = [];
+        for(let [ event, ...fns ] of addMergeReducerArgs.map(v => Array.isArray(v) ? v : [ v ])) {
+            newFns.push(this.addMergeReducer(event, ...fns));
+        }
+
+        return newFns;
+    }
+	get removeReducer() {
+		return this.removeHandler;
+	}
+	get removeReducers() {
+		return this.removeHandlers;
+	}
+	get removeMergeReducer() {
+		return this.removeHandler;
+	}
+	get removeMergeReducers() {
+		return this.removeHandlers;
+	}
+	get removeEffect() {
+		return this.removeHandler;
+	}
+	get removeEffects() {
+		return this.removeHandlers;
+	}
+
+	/**
+	 * Effects are fired *after* a single *message* has been handled.
+	 * 	As such, effects will fire **once per message** when dealing with
+	 * 	<MessageCollections> (i.e. << messages.size >> times).
+	 */
+	addEffect(event, ...fns) {
+		const newFn = (msg, ...args) => {
+			if(msg.type === event) {
+				for(let fn of fns) {
+					fn(msg, ...args);
+				}
+			}
+		};
+		
+		this.addHandler("**", newFn);
+
+		return [ event, newFn ];
+	}
+	addEffects(addEffectArgs = []) {
+		const newFns = [];
+        for(let [ event, ...fns ] of addEffectArgs.map(v => Array.isArray(v) ? v : [ v ])) {
+            newFns.push(this.addEffect(event, ...fns));
+        }
+
+        return newFns;
+	}
 
     /**
      * This is similar to .addHandlers, but will erase any existing handlers, first.

@@ -1,16 +1,27 @@
+import crypto from "crypto";
+import Message from "./Message";
+
 export class MessageCollection {
 	constructor(messages = [], {
-		maxSize = Infinity,
+		capacity = Infinity,
 		current = 0,
 		sorter,
 		middleware,
 	}) {
-		this.messages = new Set(messages);
+		this.messages = new Set();
+		this.addMany(messages);
 
-		this.maxSize = maxSize;
+		this.capacity = capacity;
 		this._current = current;
 		this.sorter = sorter;
 		this.middleware = middleware;
+	}
+
+	get isFull() {
+		return this.messages.size >= this.capacity;
+	}
+	get remaining() {
+		return this.capacity - this.messages.size;
 	}
 
 	get current() {
@@ -68,7 +79,9 @@ export class MessageCollection {
 	}
 
 	add(message) {
-		this.messages.add(message);
+		if(!this.isFull) {
+			this.messages.add(message);
+		}
 
 		return this;
 	}
@@ -96,36 +109,40 @@ export class MessageCollection {
 		this.messages = new Set(messages);
 	}
 	get() {
-		return [ ...this.messages ].map(m => m.toObject());
+		return [ ...this.messages ].map(m => Message.Generate(m.toObject()));
 	}
 
-	inject(network) {
+	inject(network, middleware) {
 		let messages = this.get();
 		if(typeof this.sorter === "function") {
 			messages = this.sorter(messages);
 		}
 		
-		for(let message of messages) {
-			if(typeof this.middleware === "function") {
-				message = this.middleware(message);
-			}
-
-			network.message(message);
+		if(typeof middleware === "function") {
+			network.collection(messages, middleware);
+		} else {
+			network.collection(messages, this.middleware);
 		}
 	}
-	async asyncInject(network) {
-		let messages = this.get();
-		if(typeof this.sorter === "function") {
-			messages = await this.sorter(messages);
-		}
-		
-		for(let message of messages) {
-			if(typeof this.middleware === "function") {
-				message = await this.middleware(message);
-			}
 
-			network.message(message);
-		}
+    getHash(algorithm = "md5", digest = "hex") {
+		const hashes = [ ...this.messages ].map(m => m.getHash(algorithm, digest)).toString();
+
+        return crypto.createHash(algorithm).update(hashes).digest(digest);
+    }
+
+	toObject() {
+		return [ ...this.messages ].map(m => m.toObject());
+	}	
+	toJson() {
+		return [ ...this.messages ].map(m => m.toJson());
+	}
+
+	static FromObject(messageArray = []) {
+		return new MessageCollection(messageArray.map(mo => Message.FromObject(mo)));
+	}
+	static FromJson(messageArray = []) {
+		return new MessageCollection(messageArray.map(mj => Message.FromJson(mj)));
 	}
 };
 

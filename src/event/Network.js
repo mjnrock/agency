@@ -114,6 +114,18 @@ export class Network extends AgencyBase {
                     for(let [ name, val ] of Object.entries(value)) {
                         channel.globals[ name ] = val;
                     }
+                } else if(key === "$reducers") {
+                    for(let [ name, val ] of Object.entries(value)) {
+						channel.addReducer(name, val);
+                    }
+                } else if(key === "$mergeReducers") {
+                    for(let [ name, val ] of Object.entries(value)) {
+						channel.addMergeReducer(name, val);
+                    }
+                } else if(key === "$effects") {
+                    for(let [ name, val ] of Object.entries(value)) {
+						channel.addEffect(name, val);
+                    }
                 } else {
                     channel.addHandler(key, value);
                 }
@@ -181,6 +193,18 @@ export class Network extends AgencyBase {
     message(type, ...args) {
         this.__bus.emit(this, type, ...args);
     }
+	/**
+	 * Route a <MessageCollection>
+	 */
+	collection(messages, middleware) {
+		for(let msg of messages) {
+			if(typeof middleware === "function") {
+				msg = middleware(msg) || msg;
+			}
+
+			this.message(msg);
+		}
+	}
     /**
      * Send a message to all connections, invoking the callback
      *  function on each receiver.

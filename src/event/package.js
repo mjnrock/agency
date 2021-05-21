@@ -3,6 +3,7 @@ import Receiver from "./Receiver";
 import Channel from "./Channel";
 import Router from "./Router";
 import Message from "./Message";
+import MessageCollection from "./MessageCollection";
 import MessageBus from "./MessageBus";
 import Network from "./Network";
 import Watchable from "./Watchable";
@@ -16,6 +17,7 @@ export default {
     Channel,
     Router,
     Message,
+    MessageCollection,
     MessageBus,
     Network,
     Watchable,

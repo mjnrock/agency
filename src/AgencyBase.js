@@ -1,6 +1,27 @@
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4, validate } from "uuid";
 
 export class AgencyBase {
+	static Repository = new Map();
+
+	static Register(object) {
+		if(typeof object === "object" && validate(object.id)) {
+			AgencyBase.Repository.set(object.id, object);
+
+			return true;
+		}
+
+		return false;
+	}
+	static Unregister(objectOrId) {
+		if(typeof objectOrId === "object") {
+			return AgencyBase.Repository.delete(objectOrId.id);
+		} else if(validate(objectOrId)) {
+			return AgencyBase.Repository.delete(objectOrId);
+		}
+
+		return false;
+	}
+
     constructor() {
         const proxy = new Proxy(this, {
             get(target, prop) {
@@ -26,8 +47,15 @@ export class AgencyBase {
 
         proxy.__id = uuidv4();
 
+		//FIXME	WeakMap vs. Map and cleanup
+		// AgencyBase.Register(proxy);
+
         return proxy;
     }
+
+	__deconstructor() {
+		AgencyBase.Unregister(this);
+	}
 
     [ Symbol.iterator ]() {
         var index = -1;
