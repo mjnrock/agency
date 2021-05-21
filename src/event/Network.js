@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from "uuid";
+
 import AgencyBase from "./../AgencyBase";
 
 import MessageBus from "./MessageBus";
@@ -291,6 +293,7 @@ export class Network extends AgencyBase {
         };
 
         cache.controller = {
+			eid: typeof entity === "object" ? (entity.id || entity._id || entity.__id || entity.uuid) : entity,
             dispatch: cache.dispatcher.dispatch,
             broadcast: cache.dispatcher.broadcast,
             receiver: this.__createReceiverFn(entity),
@@ -306,7 +309,11 @@ export class Network extends AgencyBase {
             });
         }
 
-        return this.addListener(entity, {
+		let finalEntity = typeof entity === "object" ? entity : {
+			id: uuidv4(),
+			value: entity,
+		};
+        return this.addListener(finalEntity, {
             callback: () => {},
         });
     }

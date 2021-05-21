@@ -25,6 +25,7 @@ require = require("esm")(module/*, options*/)
 // module.exports = require("./tests/event/dispatch.js");
 
 // module.exports = require("./tests/event/message.js");
+module.exports = require("./tests/event/message-collection.js");
 // module.exports = require("./tests/event/network.js");
 // module.exports = require("./tests/event/network-2.js");
 // module.exports = require("./tests/event/network-3.js");
@@ -33,7 +34,7 @@ require = require("esm")(module/*, options*/)
 // module.exports = require("./tests/event/watchable-2.js");
 // module.exports = require("./tests/event/watchable-3.js");
 // module.exports = require("./tests/event/event-watchable.js");
-module.exports = require("./tests/event/dispatch.js");
+// module.exports = require("./tests/event/dispatch.js");
 
 // module.exports = require("./tests/qrcode/qrcode.js");
 

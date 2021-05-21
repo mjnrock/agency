@@ -24,7 +24,7 @@ function Comp() {
     const { state, dispatch } = useContextNetwork(Context, "testProp.n1.n2");
     // const { state, dispatch } = useContextNetwork(Context, "testProp");
 
-    console.log(state)
+    // console.log(state)
 
     return (
         <div>

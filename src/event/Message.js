@@ -6,11 +6,11 @@ export class Message {
         this.id = uuidv4();
         this.type = type;
         this.data = args;
-        this.emitter = emitter;
-        this.provenance = new Set([ emitter ]);
+        this.emitter = emitter.id;
+        this.tags = new Set([ emitter.id ]);
         this.timestamp = Date.now();
 
-        //  Basic proxy traps to prevent direct reassignment, but doesn't prevent nested object modification (e.g. provenance)
+        //  Basic proxy traps to prevent direct reassignment, but doesn't prevent nested object modification (e.g. tags)
         return new Proxy(this, {
             get(target, prop) {
                 return Reflect.get(target, prop);
@@ -20,6 +20,14 @@ export class Message {
             },
         });
     }
+
+	addTag(...tags) {
+		for(let tag of tags) {
+			this.tags.add(tag);
+		}
+
+		return [ ...this.tags ];
+	}
 
     toObject() {
         return Object.assign({}, this);
@@ -44,7 +52,7 @@ export class Message {
     getMetaHash(algorithm = "md5", digest = "hex") {
         return crypto.createHash(algorithm).update(JSON.stringify({
             id: this.id,
-            provenance: this.provenance.reduce((a, v) => {
+            tags: this.tags.reduce((a, v) => {
                 let id;
                 if(typeof v === "object") {
                     if("id" in v) {
@@ -93,7 +101,7 @@ export class Message {
             && "type" in obj
             && "data" in obj
             && "emitter" in obj
-            && "provenance" in obj
+            && "tags" in obj
             && "timestamp" in obj;
     }
     static ConformsBasic(obj) {
@@ -121,7 +129,7 @@ export class Message {
 
             const message = new Message(obj.emitter, obj.type, ...obj.data);
             message.id = obj.id;
-            message.provenance = new Set(obj.provenance);
+            message.tags = new Set(obj.tags);
             message.timestamp = obj.timestamp;
 
             return message;
