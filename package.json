@@ -1,6 +1,6 @@
 {
     "name": "@lespantsfancy/agency",
-    "version": "0.7.35",
+    "version": "0.7.36",
     "main": "lib/index.js",
     "author": "Matt Nawrocki <mjnrock@umich.edu>",
     "license": "None",
@@ -56,9 +56,9 @@
             "es2015"
         ]
     },
-	"esm": {
-		"force": true,
-		"cache": false,
-		"sourceMap": false
-	}
+    "esm": {
+        "force": true,
+        "cache": false,
+        "sourceMap": false
+    }
 }
