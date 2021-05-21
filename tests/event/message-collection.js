@@ -1,3 +1,5 @@
+throw new Error();
+
 import { v4 as uuidv4 } from "uuid";
 
 import Message from "../../src/event/Message";
@@ -5,6 +7,7 @@ import MessageCollection from "../../src/event/MessageCollection";
 import Network from "../../src/event/Network";
 
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
+
 
 const network = new Network({
 	setHistory: [],

@@ -15,7 +15,6 @@
         "is-base64": "^1.1.0",
         "mainloop.js": "^1.0.4",
         "node-fetch": "^2.6.1",
-        "object-hash": "^2.1.1",
         "uuid": "^8.3.2"
     },
     "eslintConfig": {
@@ -56,5 +55,10 @@
         "presets": [
             "es2015"
         ]
-    }
+    },
+	"esm": {
+		"force": true,
+		"cache": false,
+		"sourceMap": false
+	}
 }
