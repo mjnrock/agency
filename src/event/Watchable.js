@@ -140,7 +140,7 @@ export class Watchable extends WatchableArchetype {
         super();
 
         this.__controller = {
-            controller: network.addConnection(this, { callback: (...args) => this.__receiveHook(...args) }),
+            controller: network.addListener(this),
             useControlMessages,
         };
 
@@ -204,6 +204,17 @@ export class Watchable extends WatchableArchetype {
             },
             set(target, prop, value) {
                 const current = target[ prop ];
+
+				if(prop === "$set" && typeof value === "object") {
+					for(let k of Object.keys(target)) {
+						delete target[ k ];
+					}
+					for(let [ k, v ] of Object.entries(value)) {
+						target[ k ] = v;
+					}
+
+					return target;
+				}
 
                 if(current === value) {
                     return target;

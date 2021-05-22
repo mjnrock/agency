@@ -17,7 +17,7 @@ const watch = new Watchable(mainnet, {
     },
     _test: 234523,
 }, {
-    useControlMessages: true,
+    // useControlMessages: true,
     isStateSchema: true,
     emitProtected: true,
     emitPrivate: true,

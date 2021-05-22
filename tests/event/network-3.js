@@ -23,11 +23,11 @@ network.state = {
     cat: 5,
 }
 
-network.addConnection(n2);
+network.addListener(n2);
 network.emit("test", 1, 2, 3);
 
 
-// network.addConnection(n2);
+// network.addListener(n2);
 
 // console.log(network.__connections)
 // console.log(network.getController(n2))
