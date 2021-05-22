@@ -81,6 +81,11 @@ export class Channel extends AgencyBase {
     /**
      * An extracted invocation method so that << .bus >> can
      *  bypass the queue if in real-time mode.
+	 * 
+	 * NOTE: If a "*" handler returns << false >>, the *entire*
+	 * 	invocation will halt and return << false >> and no further
+	 * 	handlers will fire.  As such, this allows "*" to be used 
+	 * 	as a de facto <Channel> filter.
      */
     invokeHandlers(message) {
         const optionArgs = {
@@ -91,7 +96,12 @@ export class Channel extends AgencyBase {
         const preHandlers = this.handlers.get("*") || [];
         for(let pre of preHandlers) {
             if(typeof pre === "function") {
-                pre(message, optionArgs);
+                let result = pre(message, optionArgs);
+
+				// Pre-check escape activation
+				if(result === false) {
+					return false;
+				}
             }
         }
 
