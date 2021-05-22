@@ -22,7 +22,7 @@ require = require("esm")(module/*, options*/)
 // module.exports = require("./tests/event/network.js");
 // module.exports = require("./tests/event/network-2.js");
 // module.exports = require("./tests/event/network-3.js");
-// module.exports = require("./tests/event/network-4.js");
+module.exports = require("./tests/event/network-4.js");
 // module.exports = require("./tests/event/react-network.js");
 // module.exports = require("./tests/event/watchable.js");
 // module.exports = require("./tests/event/watchable-2.js");
@@ -30,7 +30,6 @@ require = require("esm")(module/*, options*/)
 // module.exports = require("./tests/event/watchable-4.js");
 // module.exports = require("./tests/event/event-watchable.js");
 // module.exports = require("./tests/event/dispatch.js");
-module.exports = require("./tests/event/context.js");
 
 // module.exports = require("./tests/qrcode/qrcode.js");
 
