@@ -52,6 +52,9 @@ export class Network extends AgencyBase {
     get state() {
         return this.__state;
     }
+    get $() {
+        return this.state;
+    }
     set state(state) {
         let oldState = this.__state.toObject(),
             newState = Object.assign({}, state);

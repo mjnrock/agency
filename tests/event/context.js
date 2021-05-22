@@ -6,4 +6,7 @@ const ctx = new Context({
 	cat: 2
 });
 
+ctx.cats = 14;
+
 console.log(ctx.cat);
+console.log(ctx.cats);
