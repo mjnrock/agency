@@ -37,6 +37,11 @@ c1.color = "Calico2";
 c2.color = "Buddha";
 
 
-
 console.log(c1);
 console.log(c2);
+
+
+console.log("-----");
+console.log(c1.id);
+console.log(c1.$copy().id);
+console.log(c1.$copy(false).id);

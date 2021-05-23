@@ -116,7 +116,7 @@ export const $Registry = $super => class extends $super {
     }
     
     /**
-     * ! [Special Case]:    <Registry> iteration is VALUES ONLY, because the UUID is internal and synonyms are virtualized.
+     * ! [Special Case]:    <Registry> iteration is VALUES ONLY, because the UUID is internal (or present in the value) and synonyms are virtualized.
      */
     [ Symbol.iterator ]() {
         var index = -1;
@@ -138,7 +138,7 @@ export const $Registry = $super => class extends $super {
     }
 
     register(entry, ...synonyms) {
-        //  Prevent anything with an establish "id" from registering multiple times, as it's already an Object and addressed
+        //  Prevent anything with an established "id" from registering multiple times, as it's already an Object and addressed
         if (this[ (entry || {}).__id || (entry || {}).id ] !== void 0) {
             return false;
         }

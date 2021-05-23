@@ -38,11 +38,25 @@ export class CardCollection extends Registry {
 			if(!Array.isArray(args)) {
 				args = [ args ];
 			}
-			
+
 			this.removeCard(...args);
 		}
 
 		return this;
+	}
+
+	copy(reId = false) {
+		
+	}
+
+	//FIXME
+	toDeck(...collections) {
+		const deck = new Deck();
+
+		return deck;
+	}
+	static FromDeck(deck) {
+
 	}
 };
 

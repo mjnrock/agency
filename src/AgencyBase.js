@@ -69,6 +69,13 @@ export class AgencyBase {
     get id() {
         return this.__id;
     }
+    set id(id) {
+		if(validate(id)) {
+			this.__id = id;
+		}
+
+		return this;
+    }
     
     get _keys() {
         return Reflect.ownKeys(this);

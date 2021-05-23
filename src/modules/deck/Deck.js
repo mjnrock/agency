@@ -5,7 +5,7 @@ import Card from "./Card";
 import CardCollection from "./CardCollection";
 
 export class Deck extends AgencyBase {
-	constructor() {
+	constructor(collection) {
 		super();
 	}
 };
