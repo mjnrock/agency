@@ -23,8 +23,8 @@ export class EventWatchable extends Watchable {
      * @middleware ? fn -> T|F that can interrupt propagation if it returns false, a mutator, utility fn, etc.
      * @useExistingFnAsMiddleware ? If true, any function bound to `on${ eventName }` will be used as that event's @middleware
      */
-    constructor(network, eventEmitter, events = [], { state, namespace, useAsRelayOnly = false, middleware = {}, useExistingFnAsMiddleware = false, ...opts } = {}) {
-        super(network, state, opts);
+    constructor(eventEmitter, events = [], { state, namespace, useAsRelayOnly = false, middleware = {}, useExistingFnAsMiddleware = false, ...opts } = {}) {
+        super(state, opts);
 
         this.__emitter = eventEmitter;
         this.__handlers = {};
@@ -72,7 +72,7 @@ export class EventWatchable extends Watchable {
                 if(this.__config.useAsRelayOnly) {
                     let type = this.__config.namespace ? `${ this.__config.namespace }.${ eventName }` : eventName;
                     
-                    this.__controller.controller.dispatch(type, ...args);
+                    this.__controller.dispatch(type, ...args);
                 } else {
                     if(this[ eventName ] === void 0) {
                         this[ eventName ] = {};

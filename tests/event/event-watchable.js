@@ -13,9 +13,13 @@ const network = new Network({}, {
 });
 
 const ee = new EventEmitter();
-const ew = new EventWatchable(network, ee, [
+const ew = new EventWatchable(ee, [
     "cat",
 ], {
+	network: network,
+	// hooks: {
+	// 	"*": msg => console.log(msg.type, msg.data)
+	// },
     useControlMessages: true,
     useAsRelayOnly: true,
     namespace: "namespace1.namespace2",
