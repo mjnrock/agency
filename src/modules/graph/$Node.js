@@ -1,4 +1,4 @@
-import Registry from "../Registry";
+import Registry from "../../Registry";
 
 export const $Node = $super => class extends $super {
     constructor({ Node = {}, ...rest } = {}) {

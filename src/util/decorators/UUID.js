@@ -18,5 +18,7 @@ export function UUID(uuid) {
         });
 
         return target;
-    }
-}
+    };
+};
+
+export default UUID;
