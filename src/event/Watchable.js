@@ -311,7 +311,7 @@ export class Watchable extends WatchableArchetype {
 		return obj;
     }
     toSchemaObject() {
-        const obj = this.toObject();
+        const obj = this.toObject(true);
 
         return recurse(obj, {
             setter: (key, value) => ({
@@ -320,7 +320,7 @@ export class Watchable extends WatchableArchetype {
             }),
         });
     }
-    toJson(includeCustomFns) {
+    toJson(includeCustomFns = true) {
         return JSON.stringify(this.toObject(includeCustomFns), (key, value) => {
 			if(typeof value === "function") {
 				return value.toString();
