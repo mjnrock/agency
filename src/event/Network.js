@@ -8,6 +8,7 @@ import Receiver from "./Receiver";
 import Channel from "./Channel";
 import Message from "./Message";
 import Watchable from "./Watchable";
+import CacheController from "./CacheController";
 
 /**
  * 
@@ -155,6 +156,10 @@ export class Network extends AgencyBase {
                 }
             });
         }
+
+		if(entity instanceof Watchable) {
+			entity.__controller.network = cache.controller;
+		}
         
         return cache.controller;
     }	
@@ -272,53 +277,15 @@ export class Network extends AgencyBase {
 
         return cache.controller || {};
     }
-
-    /**
-     * A helper function for when no other arguments are passed
-     *  besides @entity.  This is used for situations where the
-     *  callback/filter are seeded later.
-     */
-    __createReceiverFn(entity) {
-        return ({ callback, filter } = {}) => {
-            const data = this.__connections.get(entity);
-
-            if(!data) {
-                return -1;  // Cache record does not exist
-            }
-            
-            let wasUpdated = false;
-            if(typeof callback === "function") {
-                data.receiver.__callback = callback;
-                wasUpdated = true;
-            }
-            if(typeof filter === "function") {
-                data.receiver.__filter = filter;
-                wasUpdated = true;
-            }
-
-            if(wasUpdated) {
-                this.__connections.set(entity, data);
-
-                return true;
-            }
-
-            return false;
-        };
-    }
+	
     __createCacheObject(entity, callback, filter) {
         const cache = {
             dispatcher: new Dispatcher(this, entity),
-            receiver: new Receiver(callback, msg => msg.emitter !== entity),
-            controller: {},
+            receiver: new Receiver(callback, filter || (msg => msg.emitter !== entity)),
+			controller: {},
         };
 
-        cache.controller = {
-			eid: typeof entity === "object" ? (entity.id || entity._id || entity.__id || entity.uuid) : entity,
-            dispatch: cache.dispatcher.dispatch,
-            broadcast: cache.dispatcher.broadcast,
-            receiver: this.__createReceiverFn(entity),
-			leave: () => this.removeListener(entity),
-        };
+		cache.controller = new CacheController(this, entity, cache);
 
         return cache;
     }
