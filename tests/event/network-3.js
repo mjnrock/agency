@@ -24,7 +24,7 @@ network.state = {
 }
 
 network.addListener(n2);
-network.emit("test", 1, 2, 3);
+network.message("test", 1, 2, 3);
 
 
 // network.addListener(n2);

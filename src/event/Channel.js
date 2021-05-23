@@ -1,7 +1,7 @@
 import AgencyBase from "./../AgencyBase";
 
 export class Channel extends AgencyBase {
-    constructor({ globals = {}, config = {} } = {}) {
+    constructor({ globals = {}, config = {}, handlers = {} } = {}) {
         super();
 
         this.globals = globals;
@@ -11,12 +11,54 @@ export class Channel extends AgencyBase {
         ]);
         this.queue = [];
 
+		this.parseHandlerObject(handlers);
+
         this.config = {
             isBatchProcess: false,
             maxBatchSize: 1000,
             ...config,
         };
     }
+
+	parseHandlerObject(handlers) {
+		for(let [ key, value ] of Object.entries(handlers)) {
+			if(key === "$globals") {
+				for(let [ k, v ] of Object.entries(value)) {
+					this.globals[ k ] = v;
+				}
+			} else if(key === "$reducers") {
+				for(let [ k, v ] of Object.entries(value)) {
+					if(!Array.isArray(v)) {
+						v = [ v ];
+					}
+
+					this.addReducer(k, ...v);
+				}
+			} else if(key === "$mergeReducers") {
+				for(let [ k, v ] of Object.entries(value)) {
+					if(!Array.isArray(v)) {
+						v = [ v ];
+					}
+
+					this.addMergeReducer(k, ...v);
+				}
+			} else if(key === "$effects") {
+				for(let [ k, v ] of Object.entries(value)) {
+					if(!Array.isArray(v)) {
+						v = [ v ];
+					}
+
+					this.addEffect(k, ...v);
+				}
+			} else {
+				if(!Array.isArray(value)) {
+					value = [ value ];
+				}
+
+				this.addHandler(key, ...value);
+			}
+		}
+	}
 
     /**
      * Turn off the batching process and process any event

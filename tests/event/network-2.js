@@ -23,7 +23,7 @@ const channelName1 = "Cats";
     // network.__bus.channels[ channelName1 ].addHandler("meow", function([], { broadcast }) {
     //     broadcast(this);
     // });
-network.alter({
+network.modify({
     //? All keys that are *NOT* prefixed with "$" will be used as the @channelName
     [ channelName1 ]: {
         meow([], { broadcast }) {

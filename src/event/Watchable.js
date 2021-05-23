@@ -1,5 +1,12 @@
 import AgencyBase from "./../AgencyBase";
+import Channel from "./Channel";
 import { flatten, unflatten, recurse } from "./../util/helper";
+import Message from "./Message";
+import Network from "./Network";
+
+export const createMessage = (emitter, ...args) => {
+	return new Message(emitter, ...args);
+};
 
 export const WatchableArchetype = class extends AgencyBase {
     constructor() {
@@ -31,7 +38,7 @@ export const wrapNested = (controller, prop, input) => {
         get(t, p) {
             if(controller.useControlMessages) {
                 if((Reflect.getOwnPropertyDescriptor(t, p) || {}).enumerable) {
-                    controller.controller.dispatch(Watchable.ControlType.READ, `${ prop }.${ p }`);
+                    controller.dispatch(Watchable.ControlType.READ, `${ prop }.${ p }`);
                 }
             }
 
@@ -68,18 +75,18 @@ export const wrapNested = (controller, prop, input) => {
             if(!(Array.isArray(input) && p in Array.prototype)) {   // Don't broadcast native <Array> keys (i.e. .push returns .length)
                 if(controller.useControlMessages) {
                     if(isNewlyCreated) {
-                        controller.controller.dispatch(Watchable.ControlType.CREATE, nprop, v);
+                        controller.dispatch(Watchable.ControlType.CREATE, nprop, v);
                     } else {
-                        controller.controller.dispatch(Watchable.ControlType.UPDATE, nprop, v, current);
+                        controller.dispatch(Watchable.ControlType.UPDATE, nprop, v, current);
                     }
                     
                     
-                    controller.controller.dispatch(Watchable.ControlType.UPSERT, nprop, v, current);
+                    controller.dispatch(Watchable.ControlType.UPSERT, nprop, v, current);
                 } else {
                     if(isNewlyCreated) {
-                        controller.controller.dispatch(nprop, v);
+                        controller.dispatch(nprop, v);
                     } else {
-                        controller.controller.dispatch(nprop, v, current);
+                        controller.dispatch(nprop, v, current);
                     }
                 }
             }
@@ -94,12 +101,12 @@ export const wrapNested = (controller, prop, input) => {
                 let nprop = `${ prop }.${ p }`;
 
                 if(controller.useControlMessages) {
-                    controller.controller.dispatch(Watchable.ControlType.DELETE, nprop, void 0);
+                    controller.dispatch(Watchable.ControlType.DELETE, nprop, void 0);
                 } else {
-                    controller.controller.dispatch(nprop, void 0);
+                    controller.dispatch(nprop, void 0);
                 }
 
-                target.controller.controller.dispatch(Watchable.ControlType.UPSERT, nprop, void 0, current);
+                target.controller.dispatch(Watchable.ControlType.UPSERT, nprop, void 0, current);
 
                 return reflect;
             }
@@ -136,13 +143,24 @@ export class Watchable extends WatchableArchetype {
      * @emitPrivate bool | false | Emit updates for props like `__%` (i.e. two (2) preceding underscores)
      * @useControlMessages bool | false | Use << Watchable.ControlType >> for CRUD-like messaging from the <Watchable>.  These can be used for event-listening for data syncing.
      */
-    constructor(network, state = {}, { isStateSchema = false, emitProtected = false, emitPrivate = false, useControlMessages = false } = {}) {
+    constructor(state = {}, { hooks = {}, network, isStateSchema = false, emitProtected = false, emitPrivate = false, useControlMessages = false } = {}) {
         super();
 
+		this.__channel = new Channel({ handlers: {
+			"**": msg => {
+				if(this.__controller.network) {
+					this.__controller.network.dispatch(msg);
+				}
+			},
+			...hooks,
+		} });
         this.__controller = {
-            controller: network.addListener(this),
+			network: null,
+			dispatch: (...args) => this.__channel.bus(createMessage(this, ...args)),
             useControlMessages,
         };
+
+		this.$attach(network);
 
         for(let [ key, value ] of Object.entries(state)) {
             let newValue;
@@ -172,7 +190,7 @@ export class Watchable extends WatchableArchetype {
                         if(typeof result === "object") {
                             if(target.__controller.useControlMessages) {
                                 if(i === 0 && (Reflect.getOwnPropertyDescriptor(target, prop) || {}).enumerable) {
-                                    target.__controller.controller.dispatch(Watchable.ControlType.READ, p);
+                                    target.__controller.dispatch(Watchable.ControlType.READ, p);
                                 }
                             }
                             let next = Reflect.get(result, p);
@@ -196,7 +214,7 @@ export class Watchable extends WatchableArchetype {
 
                 if(target.__controller.useControlMessages) {
                     if((Reflect.getOwnPropertyDescriptor(target, prop) || {}).enumerable) {
-                        target.__controller.controller.dispatch(Watchable.ControlType.READ, prop);
+                        target.__controller.dispatch(Watchable.ControlType.READ, prop);
                     }
                 }
 
@@ -240,17 +258,17 @@ export class Watchable extends WatchableArchetype {
 
                 if(target.__controller.useControlMessages) {
                     if(isNewlyCreated) {
-                        target.__controller.controller.dispatch(Watchable.ControlType.CREATE, prop, newValue);
+                        target.__controller.dispatch(Watchable.ControlType.CREATE, prop, newValue);
                     } else {
-                        target.__controller.controller.dispatch(Watchable.ControlType.UPDATE, prop, newValue, current);
+                        target.__controller.dispatch(Watchable.ControlType.UPDATE, prop, newValue, current);
                     }
                     
-                    target.__controller.controller.dispatch(Watchable.ControlType.UPSERT, prop, newValue, current);
+                    target.__controller.dispatch(Watchable.ControlType.UPSERT, prop, newValue, current);
                 } else {
                     if(isNewlyCreated) {
-                        target.__controller.controller.dispatch(prop, newValue);
+                        target.__controller.dispatch(prop, newValue);
                     } else {
-                        target.__controller.controller.dispatch(prop, newValue, current);
+                        target.__controller.dispatch(prop, newValue, current);
                     }
                 }
 
@@ -261,12 +279,12 @@ export class Watchable extends WatchableArchetype {
                 const reflect = Reflect.deleteProperty(target, prop);
 
                 if(target.__controller.useControlMessages) {
-                    target.__controller.controller.dispatch(Watchable.ControlType.DELETE, prop, void 0);
+                    target.__controller.dispatch(Watchable.ControlType.DELETE, prop, void 0);
                 } else {
-                    target.__controller.controller.dispatch(prop, void 0);
+                    target.__controller.dispatch(prop, void 0);
                 }
 
-                target.__controller.controller.dispatch(Watchable.ControlType.UPSERT, prop, void 0, current);
+                target.__controller.dispatch(Watchable.ControlType.UPSERT, prop, void 0, current);
 
                 return reflect;
             },
@@ -274,6 +292,27 @@ export class Watchable extends WatchableArchetype {
 
         return proxy;
     }
+
+	get isAttached() {
+		return !!this.__controller.network;
+	}
+	$attach(network) {
+		if(network instanceof Network) {
+			this.$detach();
+
+			this.__controller.network = network.addListener(this);
+		}
+
+		return this;
+	}
+	$detach() {
+		if(this.__controller.network) {
+			this.__controller.network.leave();
+			this.__controller.network = null;
+		}
+
+		return this;
+	}
 
     /**
      * Arguments are passed directly to << .toString >>
@@ -335,15 +374,15 @@ export class Watchable extends WatchableArchetype {
     static Flatten(watchable, opts = {}) {
         return flatten(watchable, opts);
     }
-    static Unflatten(network, obj, opts = {}, unflattenOpts = {}) {
-        return new Watchable(network, unflatten(obj, unflattenOpts), opts);
+    static Unflatten(obj, opts = {}, unflattenOpts = {}) {
+        return new Watchable(unflatten(obj, unflattenOpts), opts);
     }
 
-	static Generate(network, watchable, opts = {}) {
+	static Generate(watchable, opts = {}) {
 		if(watchable instanceof Watchable) {
-			return new Watchable(network, watchable.toObject(opts.includeCustomFns), opts);
+			return new Watchable(watchable.toObject(opts.includeCustomFns), opts);
 		} else if(!Array.isArray(watchable) && typeof watchable === "object") {
-			return new Watchable(network, watchable, opts);
+			return new Watchable(watchable, opts);
 		}
 
 		return false;
@@ -354,25 +393,24 @@ export class Watchable extends WatchableArchetype {
 };
 
 /**
- * @qty may be a number or a fn(network, args)
- * @args may be direct arguments or a fn(i, network) to determine appropriate arguments for that iteration
+ * @qty may be a number or a fn(args)
+ * @args may be direct arguments or a fn(i) to determine appropriate arguments for that iteration
  * Returns one (1) <Watchable> if @qty === 1 and [ ...<Watchable> ] if @qty > 1
  * 
  * @metaFactory can be set to << true|"async" >> to instead receive a "default args" version of << Factory|AsyncFactory >>
- *  that will use all passed arguments as the defaults.  The returned factory function can override
- *  everything except the @network, and will explicitly prevent further metaing.  The async version of this
+ *  that will use all passed arguments as the defaults.  The async version of this
  *  can also return a factory, but it is also exposed here so that the meta factory method is not a <Promise>.
  */
-export function Factory(network, args = [], qty = 1, metaFactory = false) {
+export function Factory(args = [], qty = 1, metaFactory = false) {
     if(typeof qty === "function") {
-        qty = qty(network, args);
+        qty = qty(args);
     }
 
     const results = [];
     for(let i = 0; i < qty; i++) {
         let localArgs;
         if(typeof args === "function") {
-            localArgs = args(i, network);
+            localArgs = args(i);
         } else {
             if(Array.isArray(args)) {
                 localArgs = args;
@@ -381,7 +419,7 @@ export function Factory(network, args = [], qty = 1, metaFactory = false) {
             }
         }
 
-        const watch = new Watchable(network, ...localArgs);
+        const watch = new Watchable(...localArgs);
 
         results.push(watch);
     }
@@ -391,14 +429,14 @@ export function Factory(network, args = [], qty = 1, metaFactory = false) {
             localArgs = localArgs == null ? args : localArgs;
             localQty = localQty == null ? qty : localQty;
     
-            return Factory(network, localArgs, localQty, false);
+            return Factory(localArgs, localQty, false);
         };
     } else if(metaFactory === "async") {
         return async (localArgs, localQty) => {
             localArgs = localArgs == null ? args : localArgs;
             localQty = localQty == null ? qty : localQty;
     
-            return await AsyncFactory(network, localArgs, localQty, false);
+            return await AsyncFactory(localArgs, localQty, false);
         };
     }
 
@@ -416,19 +454,18 @@ export function Factory(network, args = [], qty = 1, metaFactory = false) {
  *  the final <Watchable> value(s).
  * 
  * @metaFactory can be set to << true >> to instead receive a "default args" version of << Factory >>
- *  that will use all passed arguments as the defaults.  The returned factory function can override
- *  everything except the @network, and will explicitly prevent further metaing.
+ *  that will use all passed arguments as the defaults.
  */
-export async function AsyncFactory(network, args = [], qty = 1, metaFactory = false) {
+export async function AsyncFactory(args = [], qty = 1, metaFactory = false) {
     if(typeof qty === "function") {
-        qty = await qty(network, args);
+        qty = await qty(args);
     }
 
     const results = [];
     for(let i = 0; i < qty; i++) {
         let localArgs;
         if(typeof args === "function") {
-            localArgs = await args(i, network);
+            localArgs = await args(i);
         } else {
             if(Array.isArray(args)) {
                 localArgs = args;
@@ -437,7 +474,7 @@ export async function AsyncFactory(network, args = [], qty = 1, metaFactory = fa
             }
         }
 
-        const watch = new Watchable(network, ...localArgs);
+        const watch = new Watchable(...localArgs);
 
         results.push(watch);
     }
@@ -447,7 +484,7 @@ export async function AsyncFactory(network, args = [], qty = 1, metaFactory = fa
             localArgs = localArgs == null ? args : localArgs;
             localQty = localQty == null ? qty : localQty;
     
-            return await AsyncFactory(network, localArgs, localQty, false);
+            return await AsyncFactory(localArgs, localQty, false);
         };
     }
 

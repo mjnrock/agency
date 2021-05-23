@@ -26,7 +26,8 @@ export class Network extends AgencyBase {
 
         this.__bus = new MessageBus();
         this.__connections = new Map();
-        this.__state = new Watchable(this, state, {
+        this.__state = new Watchable(state, {
+			network: this,
 			useControlMessages: true,
 		});
 
@@ -124,27 +125,7 @@ export class Network extends AgencyBase {
         for(let [ channelName, entries ] of Object.entries(obj)) {
             let channel = this.__bus.channels[ channelName ] || this.__bus.createChannel(channelName);
 
-            for(let [ key, value ] of Object.entries(entries)) {
-                if(key === "$globals") {
-                    for(let [ name, val ] of Object.entries(value)) {
-                        channel.globals[ name ] = val;
-                    }
-                } else if(key === "$reducers") {
-                    for(let [ name, val ] of Object.entries(value)) {
-						channel.addReducer(name, val);
-                    }
-                } else if(key === "$mergeReducers") {
-                    for(let [ name, val ] of Object.entries(value)) {
-						channel.addMergeReducer(name, val);
-                    }
-                } else if(key === "$effects") {
-                    for(let [ name, val ] of Object.entries(value)) {
-						channel.addEffect(name, val);
-                    }
-                } else {
-                    channel.addHandler(key, value);
-                }
-            }
+			channel.parseHandlerObject(entries);
         }
 
         return this;
@@ -245,7 +226,7 @@ export class Network extends AgencyBase {
     /**
      * Pass a message from one channel to another.
      */
-    pass(channel, msg) {
+    sendToChannel(channel, msg) {
         if(channel instanceof Channel) {
             channel.bus(msg);
         } else {
@@ -255,7 +236,7 @@ export class Network extends AgencyBase {
     /**
      * Pass a message to all channels, with optional exclulsions.
      */
-    multiPass(msg, exclude = []) {
+    sendToAllChannels(msg, exclude = []) {
         if(!Array.isArray(exclude)) {
             exclude = [ exclude ];
         }
@@ -336,6 +317,7 @@ export class Network extends AgencyBase {
             dispatch: cache.dispatcher.dispatch,
             broadcast: cache.dispatcher.broadcast,
             receiver: this.__createReceiverFn(entity),
+			leave: () => this.removeListener(entity),
         };
 
         return cache;
