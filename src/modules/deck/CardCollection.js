@@ -19,15 +19,6 @@ export class CardCollection extends Registry {
 		this.add(...cards)
 	}
 
-    [ Symbol.iterator ]() {
-        var index = -1;
-        var data = Object.values(this.cards);
-
-        return {
-            next: () => ({ value: data[ ++index ], done: !(index in data) })
-        };
-    }
-
 	get deck() {
 		return this.state._deck;
 	}

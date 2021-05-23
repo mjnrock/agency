@@ -1,4 +1,5 @@
 import AgencyBase from "./../../AgencyBase";
+
 import CardCollection from "./CardCollection";
 
 export class Card extends AgencyBase {
@@ -6,15 +7,7 @@ export class Card extends AgencyBase {
 		super();
 
 		this._deck = deck;
-		
 		this.state = state;
-	}
-
-	get deck() {
-		return this._deck;
-	}
-	set deck(deck) {
-		this._deck = deck;
 	}
 
 	discard() {

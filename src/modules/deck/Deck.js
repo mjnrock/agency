@@ -1,4 +1,5 @@
 import AgencyBase from "./../../AgencyBase";
+import Registry from "./../../Registry";
 
 import Card from "./Card";
 import CardCollection from "./CardCollection";
@@ -7,7 +8,7 @@ export class Deck extends AgencyBase {
 	constructor({ cards = [], shuffle = false, collections = [] } = {}) {
 		super();
 
-		this.cards = new Set();
+		this.cards = new Registry();
 		this.collections = {
 			deck: new CardCollection({ deck: this }),
 			discard: new CardCollection({ deck: this }),
@@ -23,7 +24,7 @@ export class Deck extends AgencyBase {
 
     [ Symbol.iterator ]() {
         var index = -1;
-        var data = Object.entries(this.collections);
+        var data = Object.entries(this.cards);
 
         return {
             next: () => ({ value: data[ ++index ], done: !(index in data) })
@@ -88,12 +89,11 @@ export class Deck extends AgencyBase {
 
 		for(let card of cards) {
 			if(card instanceof CardCollection) {
-				console.log(card.cards, collection)
 				this.addCards(card.cards, collection);
 			} else if(card instanceof Card) {
-				card.deck = this;
+				card._deck = this;
 				
-				this.cards.add(card);
+				this.cards.register(card);
 			}
 		}
 
@@ -112,9 +112,9 @@ export class Deck extends AgencyBase {
 			if(card instanceof CardCollection) {
 				this.removeCards(card.cards, collection);
 			} else if(card instanceof Card) {
-				card.deck = null;
+				card._deck = null;
 				
-				this.cards.delete(card);
+				this.cards.unregister(card);
 			}
 		}
 		
@@ -166,7 +166,7 @@ export class Deck extends AgencyBase {
 
 	discard(...cards) {
 		for(let card of cards) {
-			if(this.cards.includes(card)) {
+			if(this.cards.has(card)) {
 				
 			}
 		}

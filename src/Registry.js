@@ -20,8 +20,18 @@ export const $Registry = $super => class extends $super {
     constructor({ Registry = {}, ...rest } = {}) {
         super({ ...rest });
 
-        this.__cache = new WeakMap();    // Used primarily for the reregistration of objects
-        this.__state = {};
+        Reflect.defineProperty(this, "__cache", {	// Used primarily for the reregistration of objects
+			value: new WeakMap(),
+			configurable: false,
+			writable: true,
+			enumerable: false,
+		});
+        Reflect.defineProperty(this, "__state", {
+			value: {},
+			configurable: false,
+			writable: true,
+			enumerable: false,
+		});
 
         const proxy = new Proxy(this, {
             get(target, prop) {
