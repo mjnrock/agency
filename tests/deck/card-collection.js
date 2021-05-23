@@ -50,6 +50,6 @@ Console.h2(`Copy Collection`);
 
 Console.log(cc)
 Console.hr();
-Console.log(cc.copy())
+Console.log(cc.createCopy())
 Console.hr();
-Console.log(cc.copy(true))
+Console.log(cc.createCopy(true))

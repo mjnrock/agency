@@ -8,10 +8,10 @@ export class Card extends Watchable {
 		// this._parent = null;
 	}
 
-	$copy(reId = true, opts = {}) {
+	$copy(reassignId = true, opts = {}) {
 		const card = Card.Generate(this, opts);
 
-		if(reId) {
+		if(reassignId) {
 			card.id = uuidv4();
 		} else {
 			card.id = this.id;

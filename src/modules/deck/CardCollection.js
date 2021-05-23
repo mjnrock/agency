@@ -46,7 +46,7 @@ export class CardCollection extends Registry {
 		return this;
 	}
 
-	copy(reId = false) {
+	createCopy(reassignIds = false) {
 		const map = new Map();
 		for(let card of this) {
 			if(card instanceof Card) {
@@ -62,7 +62,7 @@ export class CardCollection extends Registry {
 
 		const cc = new CardCollection();
 		const ccObj = [ ...map ].map(([ k, v ]) => {
-			const newCard = k.$copy(reId);
+			const newCard = k.$copy(reassignIds);
 
 			return [
 				newCard,
@@ -75,16 +75,6 @@ export class CardCollection extends Registry {
 		}
 
 		return cc;
-	}
-
-	//FIXME
-	toDeck(...collections) {
-		const deck = new Deck();
-
-		return deck;
-	}
-	static FromDeck(deck) {
-
 	}
 };
 
