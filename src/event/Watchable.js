@@ -296,10 +296,21 @@ export class Watchable extends WatchableArchetype {
 
         return flatten(this, { asArray: true }).map(([ k, v ]) => `${ k }${ secondary }${ v }`).join(primary);
     }
-    toObject() {
-        return JSON.parse(this.toJson());
+    toObject(includeCustomFns = true) {
+		if(includeCustomFns) {
+			return Object.assign({}, this);
+		}
+		
+		const obj = Object.assign({}, this);
+		for(let key of Object.keys(obj)) {
+			if(typeof obj[ key ] === "function") {
+				delete obj[ key ];
+			}
+		}
+
+		return obj;
     }
-    toSchemaObject() {        
+    toSchemaObject() {
         const obj = this.toObject();
 
         return recurse(obj, {
@@ -309,8 +320,16 @@ export class Watchable extends WatchableArchetype {
             }),
         });
     }
-    toJson() {
-        return JSON.stringify(this);
+    toJson(includeCustomFns) {
+        return JSON.stringify(this.toObject(includeCustomFns), (key, value) => {
+			if(typeof value === "function") {
+				return value.toString();
+			} else if(value === this) {
+				return WatchableArchetype;
+			}
+			
+			return value;
+		});
     }
 
     static Flatten(watchable, opts = {}) {
@@ -319,6 +338,16 @@ export class Watchable extends WatchableArchetype {
     static Unflatten(network, obj, opts = {}, unflattenOpts = {}) {
         return new Watchable(network, unflatten(obj, unflattenOpts), opts);
     }
+
+	static Generate(network, watchable, opts = {}) {
+		if(watchable instanceof Watchable) {
+			return new Watchable(network, watchable.toObject(opts.includeCustomFns), opts);
+		} else if(!Array.isArray(watchable) && typeof watchable === "object") {
+			return new Watchable(network, watchable, opts);
+		}
+
+		return false;
+	}
 
     static Factory = Factory;
     static AsyncFactory = AsyncFactory;
