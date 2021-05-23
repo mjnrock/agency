@@ -21,6 +21,8 @@ export const wrapNested = (controller, prop, input) => {
         return input;
     } else if(typeof input !== "object") {
         return input;
+    } else if(input == null) {
+        return input;
     }
 
     for(let [ key, value ] of Object.entries(input)) {
@@ -293,6 +295,12 @@ export class Watchable extends WatchableArchetype {
         return proxy;
     }
 
+	$hook(handlers = {}) {
+		this.__channel.parseHandlerObject(handlers);
+
+		return this;
+	}
+	
 	get isAttached() {
 		return !!this.__controller.network;
 	}

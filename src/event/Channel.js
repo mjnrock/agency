@@ -50,6 +50,14 @@ export class Channel extends AgencyBase {
 
 					this.addEffect(k, ...v);
 				}
+			} else if(key === "$delete") {
+				for(let [ k, v ] of Object.entries(value)) {
+					if(!Array.isArray(v)) {
+						v = [ v ];
+					}
+
+					this.removeHandler(k, ...v);
+				}
 			} else {
 				if(!Array.isArray(value)) {
 					value = [ value ];
