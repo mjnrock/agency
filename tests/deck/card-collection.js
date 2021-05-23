@@ -1,8 +1,8 @@
+import Console from "./../helper";
+
 import Deckski from "../../src/modules/deck/package";
 
-// console.log("-----");
-console.clear();
-console.warn("------------ NEW EXECUTION CONTEXT ------------");
+Console.NewContext();
 
 //	Create cards
 const c1 = new Deckski.Card({
@@ -29,17 +29,27 @@ const cc = new Deckski.CardCollection([
 	c3,
 ]);
 
-console.log(cc);
+Console.log(cc);
 
-console.log("----- Enumerate Collection -----");
+Console.h2(`Enumerate Collection`);
 
 // Ensure enumeration works correctly
 for(let card of cc) {
-	console.log(card.id, card);
+	Console.log(card.id, card);
 }
 
-console.log("-----");
+Console.hr();
+Console.log(cc._entries);
+Console.hr();
 
 // Ensure aliasing works, as well as direct id match
-console.log(cc.kiszka)
-console.log(cc[ c2.id ])
+Console.log(cc.kiszka)
+Console.log(cc[ c2.id ])
+
+Console.h2(`Copy Collection`);
+
+Console.log(cc)
+Console.hr();
+Console.log(cc.copy())
+Console.hr();
+Console.log(cc.copy(true))

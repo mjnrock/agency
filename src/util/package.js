@@ -7,6 +7,7 @@ import Enumerator from "./Enumerator";
 import LinkedList from "./LinkedList";
 
 import Helper from "./helper";
+import Console from "./Console";
 
 export default {
     Dice,
@@ -18,4 +19,5 @@ export default {
     LinkedList,
 
     Helper,
+	Console,
 };

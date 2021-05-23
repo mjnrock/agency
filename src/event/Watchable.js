@@ -383,124 +383,121 @@ export class Watchable extends WatchableArchetype {
         return flatten(watchable, opts);
     }
     static Unflatten(obj, opts = {}, unflattenOpts = {}) {
-        return new Watchable(unflatten(obj, unflattenOpts), opts);
+        return new this(unflatten(obj, unflattenOpts), opts);
     }
 
 	static Generate(watchable, opts = {}) {
-		if(watchable instanceof Watchable) {
-			return new Watchable(watchable.toObject(opts.includeCustomFns), opts);
+		if(watchable instanceof this) {
+			return new this(watchable.toObject(opts.includeCustomFns), opts);
 		} else if(!Array.isArray(watchable) && typeof watchable === "object") {
-			return new Watchable(watchable, opts);
+			return new this(watchable, opts);
 		}
 
 		return false;
 	}
 
-    static Factory = Factory;
-    static AsyncFactory = AsyncFactory;
-};
+	/**
+	 * @qty may be a number or a fn(args)
+	 * @args may be direct arguments or a fn(i) to determine appropriate arguments for that iteration
+	 * Returns one (1) <Watchable> if @qty === 1 and [ ...<Watchable> ] if @qty > 1
+	 * 
+	 * @metaFactory can be set to << true|"async" >> to instead receive a "default args" version of << Factory|AsyncFactory >>
+	 *  that will use all passed arguments as the defaults.  The async version of this
+	 *  can also return a factory, but it is also exposed here so that the meta factory method is not a <Promise>.
+	 */
+	static Factory(args = [], qty = 1, metaFactory = false) {
+		if(typeof qty === "function") {
+			qty = qty(args);
+		}
 
-/**
- * @qty may be a number or a fn(args)
- * @args may be direct arguments or a fn(i) to determine appropriate arguments for that iteration
- * Returns one (1) <Watchable> if @qty === 1 and [ ...<Watchable> ] if @qty > 1
- * 
- * @metaFactory can be set to << true|"async" >> to instead receive a "default args" version of << Factory|AsyncFactory >>
- *  that will use all passed arguments as the defaults.  The async version of this
- *  can also return a factory, but it is also exposed here so that the meta factory method is not a <Promise>.
- */
-export function Factory(args = [], qty = 1, metaFactory = false) {
-    if(typeof qty === "function") {
-        qty = qty(args);
-    }
+		const results = [];
+		for(let i = 0; i < qty; i++) {
+			let localArgs;
+			if(typeof args === "function") {
+				localArgs = args(i);
+			} else {
+				if(Array.isArray(args)) {
+					localArgs = args;
+				} else {
+					localArgs = [ args ];
+				}
+			}
 
-    const results = [];
-    for(let i = 0; i < qty; i++) {
-        let localArgs;
-        if(typeof args === "function") {
-            localArgs = args(i);
-        } else {
-            if(Array.isArray(args)) {
-                localArgs = args;
-            } else {
-                localArgs = [ args ];
-            }
-        }
+			const watch = new this(...localArgs);
 
-        const watch = new Watchable(...localArgs);
-
-        results.push(watch);
-    }
-    
-    if(metaFactory === true || metaFactory === "sync") {
-        return (localArgs, localQty) => {
-            localArgs = localArgs == null ? args : localArgs;
-            localQty = localQty == null ? qty : localQty;
-    
-            return Factory(localArgs, localQty, false);
-        };
-    } else if(metaFactory === "async") {
-        return async (localArgs, localQty) => {
-            localArgs = localArgs == null ? args : localArgs;
-            localQty = localQty == null ? qty : localQty;
-    
-            return await AsyncFactory(localArgs, localQty, false);
-        };
-    }
+			results.push(watch);
+		}
+		
+		if(metaFactory === true || metaFactory === "sync") {
+			return (localArgs, localQty) => {
+				localArgs = localArgs == null ? args : localArgs;
+				localQty = localQty == null ? qty : localQty;
+		
+				return Factory(localArgs, localQty, false);
+			};
+		} else if(metaFactory === "async") {
+			return async (localArgs, localQty) => {
+				localArgs = localArgs == null ? args : localArgs;
+				localQty = localQty == null ? qty : localQty;
+		
+				return await AsyncFactory(localArgs, localQty, false);
+			};
+		}
 
 
-    if(results.length > 1) {
-        return results;
-    }
+		if(results.length > 1) {
+			return results;
+		}
 
-    return results[ 0 ];
-};
+		return results[ 0 ];
+	};
 
-/**
- * Identical to << Factory >>, except that functions can be
- *  async functions.  This returns a resolved <Promise> with
- *  the final <Watchable> value(s).
- * 
- * @metaFactory can be set to << true >> to instead receive a "default args" version of << Factory >>
- *  that will use all passed arguments as the defaults.
- */
-export async function AsyncFactory(args = [], qty = 1, metaFactory = false) {
-    if(typeof qty === "function") {
-        qty = await qty(args);
-    }
+	/**
+	 * Identical to << Factory >>, except that functions can be
+	 *  async functions.  This returns a resolved <Promise> with
+	 *  the final <Watchable> value(s).
+	 * 
+	 * @metaFactory can be set to << true >> to instead receive a "default args" version of << Factory >>
+	 *  that will use all passed arguments as the defaults.
+	 */
+	static async AsyncFactory(args = [], qty = 1, metaFactory = false) {
+		if(typeof qty === "function") {
+			qty = await qty(args);
+		}
 
-    const results = [];
-    for(let i = 0; i < qty; i++) {
-        let localArgs;
-        if(typeof args === "function") {
-            localArgs = await args(i);
-        } else {
-            if(Array.isArray(args)) {
-                localArgs = args;
-            } else {
-                localArgs = [ args ];
-            }
-        }
+		const results = [];
+		for(let i = 0; i < qty; i++) {
+			let localArgs;
+			if(typeof args === "function") {
+				localArgs = await args(i);
+			} else {
+				if(Array.isArray(args)) {
+					localArgs = args;
+				} else {
+					localArgs = [ args ];
+				}
+			}
 
-        const watch = new Watchable(...localArgs);
+			const watch = new this(...localArgs);
 
-        results.push(watch);
-    }
+			results.push(watch);
+		}
 
-    if(metaFactory) {
-        return async (localArgs, localQty) => {
-            localArgs = localArgs == null ? args : localArgs;
-            localQty = localQty == null ? qty : localQty;
-    
-            return await AsyncFactory(localArgs, localQty, false);
-        };
-    }
+		if(metaFactory) {
+			return async (localArgs, localQty) => {
+				localArgs = localArgs == null ? args : localArgs;
+				localQty = localQty == null ? qty : localQty;
+		
+				return await AsyncFactory(localArgs, localQty, false);
+			};
+		}
 
-    if(results.length > 1) {
-        return Promise.resolve(results);
-    }
+		if(results.length > 1) {
+			return Promise.resolve(results);
+		}
 
-    return Promise.resolve(results[ 0 ]);
+		return Promise.resolve(results[ 0 ]);
+	};
 };
 
 export default Watchable;

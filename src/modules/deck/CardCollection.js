@@ -1,3 +1,4 @@
+import { validate } from "uuid";
 import Registry from "./../../Registry";
 
 import Card from "./Card";
@@ -46,7 +47,34 @@ export class CardCollection extends Registry {
 	}
 
 	copy(reId = false) {
-		
+		const map = new Map();
+		for(let card of this) {
+			if(card instanceof Card) {
+				map.set(card, []);
+			}
+		}
+		for(let synonym of this.synonyms) {
+			const card = this[ synonym ];
+			const current = map.get(card);
+
+			map.set(card, [ ...current, synonym ]);
+		}
+
+		const cc = new CardCollection();
+		const ccObj = [ ...map ].map(([ k, v ]) => {
+			const newCard = k.$copy(reId);
+
+			return [
+				newCard,
+				v,
+			];
+		});
+
+		for(let [ card, ...synonyms ] of ccObj) {
+			cc.addCard(card, ...synonyms);
+		}
+
+		return cc;
 	}
 
 	//FIXME
