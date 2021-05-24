@@ -93,12 +93,40 @@ export class CardCollection extends Registry {
 	/**
 	 * Deletes all cards from the collection that
 	 * 	qualify {{ @filterFn => true }}
+	 * 
+	 * Opposite of << .consume >>
 	 */
 	purge(filterFn) {
 		if(typeof filterFn === "function") {
 			for(let card of this) {
 				if(filterFn(card, this) === true) {
 					this.unregister(card);
+				}
+			}
+		}
+
+		return this;
+	}
+	/**
+	 * Adds all cards from the collection that
+	 * 	qualify {{ @includeFn => true }}
+	 * 
+	 * Opposite of << .purge >>
+	 */
+	consume(includeFn, synonymFn) {
+		if(typeof includeFn === "function") {
+			for(let card of this) {
+				if(includeFn(card, this) === true) {
+					let synonyms = [];
+					if(typeof synonymFn === "function") {
+						synonyms = synonymFn(card, this);
+
+						if(!Array.isArray(synonyms)) {
+							synonyms = [ synonyms ];
+						}
+					}
+
+					this.register(card);
 				}
 			}
 		}
