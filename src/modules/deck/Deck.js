@@ -34,13 +34,20 @@ export class Deck extends CardCollection {
 		}
 	}
 
+	
+	/**
+	 * @param {Card[]|CardCollection|int|fn} cards | The `fn` must return one of the @card types, *except* another function (i.e. single-tier evaluation)
+	 */
 	move(cards = [], from, to) {
-		//FIXME	@cards can be: [ ...Card ], CardCollection, #, includeFn, or fn => # (e.g. random)
+		//FIXME	Account for all the @card variants and move accordingly
+
 		const fromPile = this.piles.get(from);
 		const toPile = this.piles.get(to);
 
 		if(fromPile instanceof CardCollection && toPile instanceof CardCollection) {
 			//TODO Perform transfer
+
+			//?	Create a transaction log for provenance and verifiability/lookup
 
 			return true;
 		}
