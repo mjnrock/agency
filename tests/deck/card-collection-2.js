@@ -14,11 +14,15 @@ const c2 = new Deckski.Card({
 	sex: "M",
 });
 
-// Create collection and add cards with and without synonyms
+
+//	Create card collection
 const cc = new Deckski.CardCollection([
 	[ c1, "kiszka" ],
 	[ c2, "buddha" ],
 ]);
+
+
+//	Create deck
 const deck = new Deckski.Deck();
 
 Console.log(deck.fromCollection(cc))
