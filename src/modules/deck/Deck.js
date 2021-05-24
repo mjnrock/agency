@@ -1,19 +1,57 @@
 import CardCollection from "./CardCollection";
 
+/**
+ * ### README
+ * 
+ * The <Deck> is a <Card> aggregator that maintains a
+ * 	provenance-awareness of every <Card> that it contains.
+ * 	As play progresses, <Card(s)> are transferred to piles
+ * 	within the deck, and the master registry (the <Deck> class
+ * 	itself), keep reference to which <Card(s)> are where.
+ * 
+ * As the <Deck> expects game play, it also expects a player count.
+ * 	Each player is given a "hand-#", which internally is a pile.
+ * 	While the <Deck> contains piles for the players, the data should
+ * 	primarily be read externally, and manipulated internally.
+ * 
+ * The <Deck> should be used as a light-weight source-of-truth,
+ * 	and the actual game should simply reference and abstract data
+ * 	from the <Deck> class.
+ */
 export class Deck extends CardCollection {
 	constructor(cards = [], players = 1) {
 		super();
 
-		this.setCards(cards);
+		this.setCards(cards);	// "Card Dictionary"
 
-		this.collections = new Map([
-			[ "deck", new CardCollection() ],
+		this.piles = new Map([
+			[ "draw", new CardCollection() ],
 			[ "discard", new CardCollection() ],
 		]);
 
 		for(let i = 0; i < players; i++) {
-			this.collections.set(`hand-${ i }`, new CardCollection());
+			this.piles.set(`hand-${ i + 1 }`, new CardCollection());
 		}
+	}
+
+	move(cards = [], from, to) {
+		//FIXME	@cards can be: [ ...Card ], CardCollection, #, includeFn, or fn => # (e.g. random)
+		const fromPile = this.piles.get(from);
+		const toPile = this.piles.get(to);
+
+		if(fromPile instanceof CardCollection && toPile instanceof CardCollection) {
+			//TODO Perform transfer
+
+			return true;
+		}
+
+		return false;
+	}
+	draw(cards = [], to, from = "draw") {
+		return this.move(cards, from, to);
+	}
+	discard(cards = [], from, to = "discard") {
+		return this.move(cards, from, to);
 	}
 
 	fromCollection(collection, reassignIds = false) {

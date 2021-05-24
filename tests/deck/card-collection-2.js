@@ -23,6 +23,7 @@ const cc = new Deckski.CardCollection([
 
 
 //	Create deck
-const deck = new Deckski.Deck();
+const deck = new Deckski.Deck([], 4);
 
 Console.log(deck.fromCollection(cc))
+Console.log(deck.piles)
