@@ -137,6 +137,21 @@ export const $Registry = $super => class extends $super {
         }, []);
     }
 
+	get map() {		
+		const map = new Map();
+		for(let entry of this) {
+			map.set(entry, []);
+		}
+		for(let synonym of this.synonyms) {
+			const entry = this[ synonym ];
+			const current = map.get(entry);
+
+			map.set(entry, [ ...current, synonym ]);
+		}
+
+		return map;
+	}
+
     register(entry, ...synonyms) {
         //  Prevent anything with an established "id" from registering multiple times, as it's already an Object and addressed
         if (this[ (entry || {}).__id || (entry || {}).id ] !== void 0) {

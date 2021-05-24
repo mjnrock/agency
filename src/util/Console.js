@@ -4,7 +4,7 @@ export class Console {
 		console.warn(`*************************************************`);
 		console.warn(`************* NEW EXECUTION CONTEXT *************`);
 		console.warn(`*************************************************`);
-		Console.br(2);
+		Console.br(1);
 
 		return this;
 	}

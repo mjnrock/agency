@@ -1,12 +1,23 @@
-import AgencyBase from "./../../AgencyBase";
-import Registry from "./../../Registry";
-
-import Card from "./Card";
 import CardCollection from "./CardCollection";
 
-export class Deck extends AgencyBase {
-	constructor(collection) {
+export class Deck extends CardCollection {
+	constructor(cards = []) {
 		super();
+
+		this.setCards(cards);
+	}
+
+	fromCollection(collection, reassignIds = false) {
+		this.empty();
+		this.copyFrom(collection, reassignIds);
+
+		return this;
+	}
+
+	static FromCollection(collection, reassignIds = false) {
+		const deck = new Deck();
+
+		return deck.fromCollection(collection, reassignIds);
 	}
 };
 

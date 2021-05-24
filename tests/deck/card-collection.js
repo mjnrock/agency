@@ -31,7 +31,7 @@ const cc = new Deckski.CardCollection([
 
 Console.log(cc);
 
-Console.h2(`Enumerate Collection`);
+Console.h1(`Enumerate Collection`);
 
 // Ensure enumeration works correctly
 for(let card of cc) {
@@ -46,7 +46,7 @@ Console.hr();
 Console.log(cc.kiszka)
 Console.log(cc[ c2.id ])
 
-Console.h2(`Copy Collection`);
+Console.h1(`Copy Collection`);
 
 Console.log(cc)
 Console.hr();
