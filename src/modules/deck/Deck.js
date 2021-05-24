@@ -1,10 +1,19 @@
 import CardCollection from "./CardCollection";
 
 export class Deck extends CardCollection {
-	constructor(cards = []) {
+	constructor(cards = [], players = 1) {
 		super();
 
 		this.setCards(cards);
+
+		this.collections = new Map([
+			[ "deck", new CardCollection() ],
+			[ "discard", new CardCollection() ],
+		]);
+
+		for(let i = 0; i < players; i++) {
+			this.collections.set(`hand-${ i }`, new CardCollection());
+		}
 	}
 
 	fromCollection(collection, reassignIds = false) {
