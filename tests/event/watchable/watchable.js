@@ -1,5 +1,5 @@
-import Network from "../../src/event/Network";
-import Watchable from "../../src/event/Watchable";
+import Network from "../../../src/event/Network";
+import Watchable from "../../../src/event/watchable/Watchable";
 
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 

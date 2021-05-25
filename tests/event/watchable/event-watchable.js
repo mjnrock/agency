@@ -1,7 +1,7 @@
 import EventEmitter from "events";
-import Network from "../../src/event/Network";
-import Watchable from "../../src/event/Watchable";
-import EventWatchable from "../../src/event/EventWatchable";
+import Network from "../../../src/event/Network";
+import Watchable from "../../../src/event/watchable/Watchable";
+import EventWatchable from "../../../src/event/watchable/EventWatchable";
 
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 

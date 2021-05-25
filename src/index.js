@@ -9,7 +9,7 @@ import AgencyBase from "./AgencyBase";
 export default {
     Util,
     Event,
-    Watchable,
+    Watchable,	// Pulled up because it is, in practice, a core module
     Logic,
 
     Registry,
