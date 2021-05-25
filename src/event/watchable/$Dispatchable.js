@@ -1,5 +1,5 @@
-import Channel from "./Channel";
-import Message from "./Message";
+import Channel from "./../Channel";
+import Message from "./../Message";
 
 export const $Dispatchable = $super => class extends $super {
     constructor({ Dispatchable = {}, ...rest } = {}) {

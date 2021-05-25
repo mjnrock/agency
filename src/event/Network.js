@@ -7,7 +7,7 @@ import Dispatcher from "./Dispatcher";
 import Receiver from "./Receiver";
 import Channel from "./Channel";
 import Message from "./Message";
-import Watchable from "./Watchable";
+import Watchable from "./watchable/Watchable";
 import NetworkController from "./NetworkController";
 
 /**

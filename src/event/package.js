@@ -7,8 +7,8 @@ import Message from "./Message";
 import MessageCollection from "./MessageCollection";
 import MessageBus from "./MessageBus";
 import Network from "./Network";
-import Watchable from "./Watchable";
-import EventWatchable from "./EventWatchable";
+
+import Watchable from "./watchable/package";
 
 export default {
     Dispatcher,
@@ -20,6 +20,6 @@ export default {
     MessageCollection,
     MessageBus,
     Network,
+
     Watchable,
-    EventWatchable,
 };

@@ -1,8 +1,8 @@
-import AgencyBase from "./../AgencyBase";
+import AgencyBase from "../../AgencyBase";
 import $Dispatchable from "./$Dispatchable";
-import { flatten, unflatten, recurse, compose } from "./../util/helper";
-import Message from "./Message";
-import Network from "./Network";
+import { flatten, unflatten, recurse, compose } from "../../util/helper";
+import Message from "../Message";
+import Network from "../Network";
 
 export const createMessage = (emitter, ...args) => {
 	return new Message(emitter, ...args);
