@@ -46,6 +46,7 @@ export class Deck extends compose($Dispatchable)(CardCollection) {
 		}
 	}
 
+	//FIXME	Figure out paradigm for ordering
 	
 	_interpretCards(cards) {
 		if(typeof cards === "number") {
