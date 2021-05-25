@@ -23,10 +23,13 @@ const cc = new Deckski.CardCollection([
 
 
 //	Create deck
-const deck = new Deckski.Deck([], { hooks: {
-	"*": msg => console.log(msg.type, msg.data),
-}});
+const deck = new Deckski.Deck({
+	piles: [ "cat", "dog" ],
+	hooks: {
+		"**": msg => console.log(msg.type, msg.data),
+	},
+});
 
-deck.dispatch("cat", 1, 2, 3, 4, 5);
+deck.move(1, "draw", "cat");
 
 Console.log(deck)

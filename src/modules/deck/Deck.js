@@ -22,7 +22,11 @@ import CardCollection from "./CardCollection";
  * 	from the <Deck> class.
  */
 export class Deck extends compose($Dispatchable)(CardCollection) {
-	constructor(cards = [], { piles = [], hooks = {} } = {}) {
+	static Signal = {
+		TX: "Deck.Transaction",
+	};
+
+	constructor({ cards = [], piles = [], hooks = {} } = {}) {
 		super({
 			Dispatchable: {
 				hooks,
@@ -54,19 +58,20 @@ export class Deck extends compose($Dispatchable)(CardCollection) {
 		if(fromPile instanceof CardCollection && toPile instanceof CardCollection) {
 			//TODO Perform transfer
 
-			//?	Create a transaction log for provenance and verifiability/lookup
+			this.dispatch(Deck.Signal.TX, { from, to, cards });
 
 			return true;
 		}
 
 		return false;
 	}
-	draw(cards = [], to, from = "draw") {
-		return this.move(cards, from, to);
+	draw(cards = [], to) {
+		return this.move(cards, "draw", to);
 	}
-	discard(cards = [], from, to = "discard") {
-		return this.move(cards, from, to);
+	discard(cards = [], from) {
+		return this.move(cards, from, "discard");
 	}
+	
 
 	fromCollection(collection, reassignIds = false) {
 		this.empty();
