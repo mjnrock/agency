@@ -1,3 +1,6 @@
+import { $Dispatchable } from "./../../event/Channel";
+import { compose } from "../../util/helper";
+
 import CardCollection from "./CardCollection";
 
 /**
@@ -18,9 +21,13 @@ import CardCollection from "./CardCollection";
  * 	and the actual game should simply reference and abstract data
  * 	from the <Deck> class.
  */
-export class Deck extends CardCollection {
-	constructor(cards = [], players = 1) {
-		super();
+export class Deck extends compose($Dispatchable)(CardCollection) {
+	constructor(cards = [], { piles = [], hooks = {} } = {}) {
+		super({
+			Dispatchable: {
+				hooks,
+			},
+		});
 
 		this.setCards(cards);	// "Card Dictionary"
 
@@ -29,8 +36,8 @@ export class Deck extends CardCollection {
 			[ "discard", new CardCollection() ],
 		]);
 
-		for(let i = 0; i < players; i++) {
-			this.piles.set(`hand-${ i + 1 }`, new CardCollection());
+		for(let pile of piles) {
+			this.piles.set(pile, new CardCollection());
 		}
 	}
 

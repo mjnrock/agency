@@ -1,6 +1,6 @@
 import Dispatcher from "./Dispatcher";
 import Receiver from "./Receiver";
-import CacheController from "./CacheController";
+import NetworkController from "./NetworkController";
 import Channel from "./Channel";
 import Router from "./Router";
 import Message from "./Message";
@@ -15,7 +15,7 @@ import $DispatchState from "./$DispatchState";
 export default {
     Dispatcher,
     Receiver,
-    CacheController,
+    NetworkController,
     Channel,
     Router,
     Message,

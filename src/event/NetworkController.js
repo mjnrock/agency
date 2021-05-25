@@ -1,6 +1,6 @@
 import AgencyBase from "../AgencyBase";
 
-export class CacheController extends AgencyBase {
+export class NetworkController extends AgencyBase {
 	constructor(network, entity, cache) {
 		super();
 		
@@ -36,4 +36,4 @@ export class CacheController extends AgencyBase {
 	}
 };
 
-export default CacheController;
+export default NetworkController;

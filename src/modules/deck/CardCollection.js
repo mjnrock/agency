@@ -11,6 +11,9 @@ export class CardCollection extends Registry {
 	constructor(cards = []) {
 		super();
 
+		if(!Array.isArray(cards)) {
+			cards = [ cards ];
+		}
 		this.addCards(cards);
 	}
 

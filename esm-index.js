@@ -36,7 +36,8 @@ require = require("esm")(module/*, options*/)
 
 // module.exports = require("./tests/deck/card");
 // module.exports = require("./tests/deck/card-collection");
-module.exports = require("./tests/deck/card-collection-2");
+// module.exports = require("./tests/deck/card-collection-2");
+module.exports = require("./tests/deck/deck");
 
 // module.exports = require("./tests/agency-base.js");
 // module.exports = require("./tests/multiton.js");
