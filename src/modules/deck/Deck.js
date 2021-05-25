@@ -80,6 +80,8 @@ export class Deck extends compose($Dispatchable)(CardCollection) {
 			cardList = [ ...fromPile ].slice(0, cardList);
 		}
 
+		console.log(cardList, from, to)
+
 		if(fromPile instanceof CardCollection && toPile instanceof CardCollection) {
 			fromPile.transfer(cardList, toPile, true);
 

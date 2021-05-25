@@ -27,7 +27,7 @@ export class CardCollection extends Registry {
 	}
 	setCards(...cards) {
 		if(Array.isArray(cards[ 0 ])) {
-			cards = [ cards[ 0 ] ];
+			cards = cards[ 0 ];
 		}
 
 		this.empty();
@@ -181,6 +181,10 @@ export class CardCollection extends Registry {
 	}
 
 	transfer(cards = [], to, transferSynonyms = true) {
+		if(!Array.isArray(cards)) {
+			cards = [ cards ];
+		}
+		
 		const map = this.map;
 		if(to instanceof CardCollection) {
 			for(let card of cards) {

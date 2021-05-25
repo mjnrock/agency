@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import Watchable from "./../../event/Watchable";
 
 export class Card extends Watchable {
-	constructor(state, { ...opts } = {}) {
+	constructor(state, opts = {}) {
 		super(state, opts);
 
 		// this._parent = null;
@@ -18,6 +18,19 @@ export class Card extends Watchable {
 		}
 
 		return card;
+	}
+
+	static FromSchema(input = []) {		
+		if(!Array.isArray(input)) {
+			input = [ input ];
+		}
+		
+		const cards = [];
+		for(let [ data, opts = {} ] of input) {
+			cards.push(new Card(data, opts));
+		}
+
+		return cards;
 	}
 };
 
