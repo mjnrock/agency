@@ -1,4 +1,4 @@
-import { $Dispatchable } from "./../../event/Channel";
+import $Dispatchable from "./../../event/$Dispatchable";
 import { compose } from "../../util/helper";
 
 import Card from "./Card";

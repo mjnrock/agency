@@ -10,8 +10,6 @@ import Network from "./Network";
 import Watchable from "./Watchable";
 import EventWatchable from "./EventWatchable";
 
-import $DispatchState from "./$DispatchState";
-
 export default {
     Dispatcher,
     Receiver,
@@ -24,6 +22,4 @@ export default {
     Network,
     Watchable,
     EventWatchable,
-
-    $DispatchState,
 };

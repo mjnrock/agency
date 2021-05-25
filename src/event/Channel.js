@@ -1,25 +1,6 @@
 import AgencyBase from "./../AgencyBase";
 import Message from "./Message";
 
-export const $Dispatchable = $super => class extends $super {
-    constructor({ Dispatchable = {}, ...rest } = {}) {
-        super({ ...rest });
-		
-		this.channel = new Channel({ handlers: {
-			...(Dispatchable.hooks || {}),
-		} });
-    }
-
-	hook(handlers = {}) {
-		this.channel.parseHandlerObject(handlers);
-
-		return this;
-	}
-	dispatch(type, ...args) {
-		this.channel.bus(new Message(this, type, ...args));
-	}
-};
-
 export class Channel extends AgencyBase {
     constructor({ globals = {}, config = {}, handlers = {} } = {}) {
         super();

@@ -24,11 +24,7 @@ require = require("esm")(module/*, options*/)
 // module.exports = require("./tests/event/network-3.js");
 // module.exports = require("./tests/event/network-4.js");
 // module.exports = require("./tests/event/react-network.js");
-// module.exports = require("./tests/event/watchable.js");
-// module.exports = require("./tests/event/watchable-2.js");
-// module.exports = require("./tests/event/watchable-3.js");
-// module.exports = require("./tests/event/watchable-4.js");
-// module.exports = require("./tests/event/watchable-5.js");
+module.exports = require("./tests/event/watchable.js");
 // module.exports = require("./tests/event/event-watchable.js");
 // module.exports = require("./tests/event/dispatch.js");
 
@@ -37,7 +33,7 @@ require = require("esm")(module/*, options*/)
 // module.exports = require("./tests/deck/card");
 // module.exports = require("./tests/deck/card-collection");
 // module.exports = require("./tests/deck/card-collection-2");
-module.exports = require("./tests/deck/deck");
+// module.exports = require("./tests/deck/deck");
 
 // module.exports = require("./tests/agency-base.js");
 // module.exports = require("./tests/multiton.js");

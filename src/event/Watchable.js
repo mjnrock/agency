@@ -1,6 +1,6 @@
 import AgencyBase from "./../AgencyBase";
-import Channel from "./Channel";
-import { flatten, unflatten, recurse } from "./../util/helper";
+import $Dispatchable from "./$Dispatchable";
+import { flatten, unflatten, recurse, compose } from "./../util/helper";
 import Message from "./Message";
 import Network from "./Network";
 
@@ -8,9 +8,9 @@ export const createMessage = (emitter, ...args) => {
 	return new Message(emitter, ...args);
 };
 
-export const WatchableArchetype = class extends AgencyBase {
-    constructor() {
-        super();
+export const WatchableArchetype = class extends compose($Dispatchable)(AgencyBase) {
+    constructor(...args) {
+        super(...args);
     }
 };
 
@@ -146,16 +146,19 @@ export class Watchable extends WatchableArchetype {
      * @useControlMessages bool | false | Use << Watchable.ControlType >> for CRUD-like messaging from the <Watchable>.  These can be used for event-listening for data syncing.
      */
     constructor(state = {}, { hooks = {}, network, isStateSchema = false, emitProtected = false, emitPrivate = false, useControlMessages = false } = {}) {
-        super();
-
-		this.__channel = new Channel({ handlers: {
-			"**": msg => {
-				if(this.__controller.network) {
-					this.__controller.network.dispatch(msg);
-				}
+        super({
+			Dispatchable: {
+				hooks: {
+					"**": msg => {
+						if(this.__controller.network) {
+							this.__controller.network.dispatch(msg);
+						}
+					},
+					...hooks,
+				},
 			},
-			...hooks,
-		} });
+		});
+
         this.__controller = {
 			network: null,
 			dispatch: (...args) => this.__channel.bus(createMessage(this, ...args)),
@@ -294,12 +297,6 @@ export class Watchable extends WatchableArchetype {
 
         return proxy;
     }
-
-	$hook(handlers = {}) {
-		this.__channel.parseHandlerObject(handlers);
-
-		return this;
-	}
 	
 	get isAttached() {
 		return !!this.__controller.network;

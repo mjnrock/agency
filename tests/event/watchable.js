@@ -1,52 +1,36 @@
-import Network from "./../../src/event/Network";
-import Watchable from "./../../src/event/Watchable";
+import Network from "../../src/event/Network";
+import Watchable from "../../src/event/Watchable";
 
 console.warn("------------ NEW EXECUTION CONTEXT ------------");
 
-const mainnet = new Network({}, {
-    default: {
-        "**": msg => console.log(msg),
-    },
+const network = new Network({}, {
+	default: {
+		// "*": msg => console.log(msg.type, msg.data),
+		"*": msg => console.log(msg),
+	},
 });
 
-const watch = new Watchable(mainnet, {
-    cat: 5,
-    rand: () => Math.random(),
-    dogs: {
-        roofus: 1,
-    },
-    _test: 234523,
+const watch = new Watchable({
+	cat: {
+		cats: 4,
+	},
+	cats: 2,
+	catss: 3,
 }, {
-    // useControlMessages: true,
-    isStateSchema: true,
-    emitProtected: true,
-    emitPrivate: true,
+	network,
+	hooks: {
+		"*": msg => console.log(msg),
+		cat: msg => console.log("CAT", msg),
+		"cat.cats": msg => console.log("CAT.CATS", msg),
+		dog: msg => console.log("DOG", msg),
+	},
 });
 
-console.log(`[State]:`, watch);
-console.warn(`------------------------------------------------`);
+console.log(watch.id)
+console.log(watch)
+console.log(watch.isAttached)
 
-watch._cat = 15;
-// watch.__cats = 150;
-// console.log(`[$.cat]:`, watch);
-// console.warn(`------------------------------------------------`);
+console.warn("------------");
 
-watch.dogs.roofus = 99;
-// console.log(`[$.dogs.roofus]:`, watch);
-// console.warn(`------------------------------------------------`);
-
-// watch.fish = {
-//     a: 9,
-//     b: 8,
-//     c: {
-//         moreFish: true,
-//         nested: {
-//             yes: false,
-//         },
-//     },
-// };
-// console.log(`[$.fish]:`, watch);
-// console.warn(`------------------------------------------------`);
-
-// console.warn(`------------------------------------------------`);
-// console.log(`[State]:`, watch);
+watch.cat.cats = 15;
+// watch.dog = 31;
