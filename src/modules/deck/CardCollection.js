@@ -116,20 +116,20 @@ export class CardCollection extends Registry {
 	 * 
 	 * Opposite of << .purge >>
 	 */
-	consume(includeFn, synonymFn) {
-		if(typeof includeFn === "function") {
-			for(let card of this) {
-				if(includeFn(card, this) === true) {
+	consume(collection, includeFn, synonymFn) {
+		if(collection instanceof CardColection && typeof includeFn === "function") {
+			for(let card of collection) {
+				if(includeFn(card, collection) === true) {
 					let synonyms = [];
 					if(typeof synonymFn === "function") {
-						synonyms = synonymFn(card, this);
+						synonyms = synonymFn(card, collection, this);
 
 						if(!Array.isArray(synonyms)) {
 							synonyms = [ synonyms ];
 						}
 					}
 
-					this.register(card);
+					this.register(card, ...synonyms);
 				}
 			}
 		}
@@ -180,6 +180,22 @@ export class CardCollection extends Registry {
 		return this;
 	}
 
+	transfer(cards = [], to, transferSynonyms = true) {
+		const map = this.map;
+		if(to instanceof CardCollection) {
+			for(let card of cards) {
+				if(this.has(card)) {
+					if(transferSynonyms) {
+						to.addCard(card, ...map.get(card));
+					} else {
+						to.addCard(card);
+					}
+
+					this.removeCard(card);
+				}
+			}
+		}
+	}
 	transferFrom(collection, transferSynonyms = true) {
 		if(collection instanceof CardCollection) {
 			collection.transferTo(this, transferSynonyms);

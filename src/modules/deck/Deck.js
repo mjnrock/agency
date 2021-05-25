@@ -1,6 +1,7 @@
 import { $Dispatchable } from "./../../event/Channel";
 import { compose } from "../../util/helper";
 
+import Card from "./Card";
 import CardCollection from "./CardCollection";
 
 /**
@@ -36,7 +37,7 @@ export class Deck extends compose($Dispatchable)(CardCollection) {
 		this.setCards(cards);	// "Card Dictionary"
 
 		this.piles = new Map([
-			[ "draw", new CardCollection() ],
+			[ "draw", new CardCollection(this.getCards()) ],
 			[ "discard", new CardCollection() ],
 		]);
 
@@ -46,17 +47,41 @@ export class Deck extends compose($Dispatchable)(CardCollection) {
 	}
 
 	
+	_interpretCards(cards) {
+		if(typeof cards === "number") {
+			return cards;
+		} else if(cards instanceof Card) {
+			return cards;
+		} else if(cards instanceof CardCollection) {
+			return cards.getCards();
+		} else if(Array.isArray(cards)) {
+			let cardList = [];
+			for(let card of cards) {
+				cardList.push(this._interpretCards(card));
+			}
+
+			return cardList;
+		} else if(typeof cards === "function") {
+			return this._interpretCards(cards(this));
+		}
+
+		return [];
+	}
 	/**
 	 * @param {Card[]|CardCollection|int|fn} cards | The `fn` must return one of the @card types, *except* another function (i.e. single-tier evaluation)
 	 */
 	move(cards = [], from, to) {
-		//FIXME	Account for all the @card variants and move accordingly
-
 		const fromPile = this.piles.get(from);
 		const toPile = this.piles.get(to);
 
+		let cardList = this._interpretCards(cards);
+
+		if(typeof cardList === "number") {
+			cardList = [ ...fromPile ].slice(0, cardList);
+		}
+
 		if(fromPile instanceof CardCollection && toPile instanceof CardCollection) {
-			//TODO Perform transfer
+			fromPile.transfer(cardList, toPile, true);
 
 			this.dispatch(Deck.Signal.TX, { from, to, cards });
 
