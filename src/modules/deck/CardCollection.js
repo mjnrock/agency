@@ -180,11 +180,32 @@ export class CardCollection extends Registry {
 		return this;
 	}
 
+	//FIXME	Think about this more 
+	// index(i) {
+	// 	return [ ...this.cards ].splice(i, 1)[ 0 ];
+	// }
+	// take(qty = 1) {
+	// 	const cards = [];
+	// 	for(let i = 0; i < qty; i++) {
+	// 		const index = this.order.shift();
+	// 		const card = this.index(index);
+
+	// 		cards.push(card);
+	// 		this.removeCard(card);
+	// 	}
+
+	// 	if(cards.length > 1) {
+	// 		return new CardCollection(cards);
+	// 	}
+
+	// 	return cards[ 0 ];
+	// }
+
 	transfer(cards = [], to, transferSynonyms = true) {
 		if(!Array.isArray(cards)) {
 			cards = [ cards ];
 		}
-		
+
 		const map = this.map;
 		if(to instanceof CardCollection) {
 			for(let card of cards) {

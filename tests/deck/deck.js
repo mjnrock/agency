@@ -50,7 +50,7 @@ Console.log(deck);
 Console.log(deck.getCards());
 
 
-// deck.move(2, "draw", "dog");
+deck.move(2, "draw", "dog");
 // deck.move(() = > 2, "draw", "dog");
 
 // deck.move(~~(Math.random() * 3) + 1, "draw", "cat");

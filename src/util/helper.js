@@ -214,6 +214,14 @@ export function isSameText(a, b) {
         : a === b;
 }
 
+export function array_range(input) {
+	if(typeof input === "function") {
+		return Array.apply(null, Array(input)).map((x, i) => input(i));
+	}
+
+	return Array.apply(null, Array(input)).map((x, i) => i);
+}
+
 /**
  * A wrapper function to invoke if you want to amend various prototypes
  * Current:
@@ -273,6 +281,7 @@ export default {
     near,
     clamp,
 	isSameText,
+	array_range,
 
     extendJavascript,
     factory,
