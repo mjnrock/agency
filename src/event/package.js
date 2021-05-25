@@ -8,6 +8,8 @@ import MessageCollection from "./MessageCollection";
 import MessageBus from "./MessageBus";
 import Network from "./Network";
 
+import $Dispatchable from "./$Dispatchable";
+
 import Watchable from "./watchable/package";
 
 export default {
@@ -20,6 +22,8 @@ export default {
     MessageCollection,
     MessageBus,
     Network,
+
+	$Dispatchable,
 
     Watchable,
 };

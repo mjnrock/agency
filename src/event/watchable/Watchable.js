@@ -1,5 +1,5 @@
 import AgencyBase from "../../AgencyBase";
-import $Dispatchable from "./$Dispatchable";
+import $Dispatchable from "../$Dispatchable";
 import { flatten, unflatten, recurse, compose } from "../../util/helper";
 import Message from "../Message";
 import Network from "../Network";

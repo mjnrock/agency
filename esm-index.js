@@ -22,7 +22,6 @@ module.exports = require("./tests/repository.js");
 // module.exports = require("./tests/deck/deck");
 
 // module.exports = require("./tests/agency-base.js");
-// module.exports = require("./tests/multiton.js");
 // module.exports = require("./tests/registry.js");
 // module.exports = require("./tests/registry-2.js");
 

@@ -1,7 +1,7 @@
 import { v4 as uuidv4, validate } from "uuid";
 
 import AgencyBase from "./AgencyBase";
-import $Dispatchable from "./event/watchable/$Dispatchable";
+import $Dispatchable from "./event/$Dispatchable";
 import RepositoryEntry from "./RepositoryEntry";
 import { compose } from "./util/helper";
 
@@ -10,8 +10,17 @@ import { compose } from "./util/helper";
  * 	property that **must** be a UUID.
  */
 export class Repository extends compose($Dispatchable)(AgencyBase) {
-	constructor({ config = {} } = {}) {
-		super({});
+	static Signal = {
+		REGISTER: "Repository.Register",
+		UNREGISTER: "Repository.Unregister",
+	};
+
+	constructor({ config = {}, hooks = {} } = {}) {
+		super({
+			Dispatchable: {
+				hooks,
+			},
+		});
 
 		this.__config = {
 			accessor: null,		// (?) fn
@@ -26,18 +35,22 @@ export class Repository extends compose($Dispatchable)(AgencyBase) {
             get(target, prop) {
 				const result = Reflect.get(target, prop);
 
+				if(prop in target) {
+					return result;
+				}
+
 				if(typeof target.__config.accessor === "function") {
 					return target.__config.accessor(target, prop, [ result, ...target.__config.accessorArgs ]);
 				}
 				
 				return result;
             },
-            set(target, prop, value) {
+            // set(target, prop, value) {
+				
+			// },
+			// deleteProperty(target, prop) {
 
-			},
-			deleteProperty(target, prop) {
-
-			},
+			// },
 		});
 
 		return proxy;
@@ -86,7 +99,7 @@ export class Repository extends compose($Dispatchable)(AgencyBase) {
 	 * 	which will **mutate the original object** by injecting a UUID into it under
 	 * 	the id prop: << @entry.id = uuidv4() >>
 	 */
-	register(entry, state = {}, synonyms = [], { forceInjectId = false } = {}) {
+	register(entry, { state = {}, synonyms = [], forceInjectId = false } = {}) {
 		if(typeof entry !== "object") {
 			return false;
 		} else {
@@ -99,18 +112,44 @@ export class Repository extends compose($Dispatchable)(AgencyBase) {
 			}
 		}
 
-		const FIXME_ORDER = Infinity;	//TODO Generate an order scalar based on current situation
+		const uuid = entry.id;
+		
+		//FIXME Generate an order scalar based on current situation
+		const ORDER = Infinity;
 
-		this.__entries.set(entry, new RepositoryEntry(
+		this[ uuid ] = entry;
+
+		this.__entries.set(uuid, new RepositoryEntry(
 			entry,
-			FIXME_ORDER,
+			ORDER,
 			{
 				state: state,
 				synonyms: synonyms,
 			}
 		));
 
+		const eventArgs = [ uuid, ORDER, synonyms ];
+		this.$dispatch(Repository.Signal.REGISTER, ...eventArgs);
+
 		return true;
+	}
+	unregister(entrySynonymOrId) {
+		let uuid;
+		if(typeof entrySynonymOrId === "object") {
+			uuid = entrySynonymOrId.id;
+		} else if(validate(entrySynonymOrId)) {
+			uuid = entrySynonymOrId;
+		} else if(typeof entrySynonymOrId === "string" || entrySynonymOrId instanceof String) {
+			//FIXME	Synonym lookup
+		}
+
+		const result = this.__entries.delete(uuid);
+
+		if(result) {
+			this.$dispatch(Repository.Signal.UNREGISTER, uuid);
+		}
+
+		return result;
 	}
 };
 
