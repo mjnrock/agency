@@ -1,0 +1,10 @@
+{
+  "name": "_agency",
+  "version": "0.1.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@lespantsfancy/agency": "^0.7.36"
+  },
+  "peerDependencies": {}
+}
