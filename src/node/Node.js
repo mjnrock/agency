@@ -1,13 +1,18 @@
 import AgencyBase from "../AgencyBase";
 
 export class Node extends AgencyBase {
-	constructor({ state = {}, reducers = [], listeners = [], meta = {} } = {}) {
+	constructor({ state = {}, reducers = [], listeners = [], meta = {}, config = {} } = {}) {
 		super();
 
 		this.meta = meta;
 		this.state = state;
 		this.reducers = new Set(reducers);
 		this.listeners = new Set(listeners);
+
+		this.config = {
+			lockState: false,
+			...config,
+		};
 	}
 
 	add(reducer) {
@@ -26,22 +31,47 @@ export class Node extends AgencyBase {
 
 		return this;
 	}
+	linkMany(linkArgs = []) {
+		for(let args of linkArgs) {
+			this.link(...args);
+		}
+
+		return this;
+	}
 	unlink(node) {
 		return this.listeners.delete(node);
 	}
+	unlinkMany(unlinkArgs = []) {
+		for(let args of unlinkArgs) {
+			this.unlink(...args);
+		}
+
+		return this;
+	}
 
 	receive(data) {
+		if(this.config.lockState) {
+			return false;
+		}
+	
+		let newState = Object.assign({}, this.state);
 		for(let reducer of this.reducers) {
 			if(typeof reducer === "function") {
-				this.state = reducer(data, this.state, this.meta);
+				newState = reducer(data, newState, this.meta);
 			}
+		}
+
+		if(JSON.stringify(newState) === JSON.stringify(this.state)) {
+			return false;
+		} else {
+			this.state = newState;
 		}
 
 		for(let listener of this.listeners) {
 			if(listener instanceof Node) {
-				listener.receive(this.state, this.id);
+				listener.receive(this.state);
 			} else if(typeof listener === "function") {
-				listener(this.state, this.id);
+				listener(this.state);
 			}
 		}
 	}

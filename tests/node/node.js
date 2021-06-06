@@ -21,8 +21,25 @@ const n1 = new Node({
 		},
 	],
 	listeners: [
-		(state, nid) => Console.log(`[Connection]:`, state, nid),
+		state => Console.log(`[Connection 1]:`, state),
+	],
+});
+const n2 = new Node({
+	state: {
+		dog: 3,
+	},
+	reducers: [
+		(data, state) => {
+			state.cat = data;
+
+			return state;
+		},
+	],
+	listeners: [
+		state => Console.log(`[Connection 2]:`, state),
 	],
 });
 
+n1.link(n2);
 n1.receive(13);
+// n2.receive(13);
