@@ -1,6 +1,6 @@
 import Dispatcher from "./Dispatcher";
 import Receiver from "./Receiver";
-import NetworkController from "./NetworkController";
+import Controller from "./Controller";
 import Channel from "./Channel";
 import Router from "./Router";
 import Message from "./Message";
@@ -15,7 +15,7 @@ import Watchable from "./watchable/package";
 export default {
     Dispatcher,
     Receiver,
-    NetworkController,
+    Controller,
     Channel,
     Router,
     Message,

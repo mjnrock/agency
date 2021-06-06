@@ -8,7 +8,7 @@ import Receiver from "./Receiver";
 import Channel from "./Channel";
 import Message from "./Message";
 import Watchable from "./watchable/Watchable";
-import NetworkController from "./NetworkController";
+import Controller from "./Controller";
 
 /**
  * 
@@ -285,7 +285,7 @@ export class Network extends AgencyBase {
 			controller: {},
         };
 
-		cache.controller = new NetworkController(this, entity, cache);
+		cache.controller = new Controller(this, entity, cache);
 
         return cache;
     }

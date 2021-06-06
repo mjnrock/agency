@@ -1,7 +1,7 @@
 require = require("esm")(module/*, options*/)
 
 // module.exports = require("./tests/index.js");
-module.exports = require("./tests/repository.js");
+// module.exports = require("./tests/repository.js");
 
 // module.exports = require("./tests/event/message.js");
 // module.exports = require("./tests/event/message-collection.js");
@@ -13,6 +13,8 @@ module.exports = require("./tests/repository.js");
 
 // module.exports = require("./tests/event/watchable/watchable.js");
 // module.exports = require("./tests/event/watchable/event-watchable.js");
+
+module.exports = require("./tests/node/node");
 
 // module.exports = require("./tests/qrcode/qrcode.js");
 
