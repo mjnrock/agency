@@ -1,3 +1,5 @@
+import { isDeepStrictEqual } from "util";
+
 import AgencyBase from "../AgencyBase";
 
 export class Node extends AgencyBase {
@@ -6,13 +8,20 @@ export class Node extends AgencyBase {
 
 		this.meta = meta;
 		this.state = state;
+
 		this.reducers = new Set(reducers);
 		this.listeners = new Set(listeners);
 
 		this.config = {
-			lockState: false,
+			lockState: false,	// Toggleable prevention of state changes
 			...config,
 		};
+	}
+
+	toggle(entry) {
+		this.config[ entry ] = !this.config[ entry ];
+
+		return this;
 	}
 
 	add(reducer) {
@@ -61,7 +70,7 @@ export class Node extends AgencyBase {
 			}
 		}
 
-		if(JSON.stringify(newState) === JSON.stringify(this.state)) {
+		if(isDeepStrictEqual(newState, this.state)) {
 			return false;
 		} else {
 			this.state = newState;
