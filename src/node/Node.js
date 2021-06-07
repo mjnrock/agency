@@ -13,7 +13,7 @@ export class Node extends AgencyBase {
 		this.listeners = new Set(listeners);
 
 		this.config = {
-			lockState: false,	// Toggleable prevention of state changes
+			isLocked: false,	// Toggleable prevention of state changes
 			...config,
 		};
 	}
@@ -59,7 +59,7 @@ export class Node extends AgencyBase {
 	}
 
 	receive(data) {
-		if(this.config.lockState) {
+		if(this.config.isLocked) {
 			return false;
 		}
 	
