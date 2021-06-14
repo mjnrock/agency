@@ -58,7 +58,7 @@ export class Node extends AgencyBase {
 		return this;
 	}
 
-	receive(data) {
+	receive(data, sender) {
 		if(this.config.isLocked) {
 			return false;
 		}
@@ -66,7 +66,7 @@ export class Node extends AgencyBase {
 		let newState = Object.assign({}, this.state);
 		for(let reducer of this.reducers) {
 			if(typeof reducer === "function") {
-				newState = reducer(data, newState, this.meta);
+				newState = reducer(data, newState, sender || this);
 			}
 		}
 
@@ -78,9 +78,9 @@ export class Node extends AgencyBase {
 
 		for(let listener of this.listeners) {
 			if(listener instanceof Node) {
-				listener.receive(this.state);
+				listener.receive(this.state, this);
 			} else if(typeof listener === "function") {
-				listener(this.state);
+				listener(this.state, this);
 			}
 		}
 	}

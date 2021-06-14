@@ -14,7 +14,8 @@ require = require("esm")(module/*, options*/)
 // module.exports = require("./tests/event/watchable/watchable.js");
 // module.exports = require("./tests/event/watchable/event-watchable.js");
 
-module.exports = require("./tests/node/node");
+// module.exports = require("./tests/node/node");
+module.exports = require("./tests/node/node-2");
 
 // module.exports = require("./tests/qrcode/qrcode.js");
 

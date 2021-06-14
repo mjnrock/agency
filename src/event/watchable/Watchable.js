@@ -15,7 +15,9 @@ export const WatchableArchetype = class extends compose($Dispatchable)(AgencyBas
 };
 
 export const wrapNested = (controller, prop, input) => {
-    if(input instanceof WatchableArchetype) {
+	if(!(input instanceof AgencyBase)) {
+		return input;
+	} else if(input instanceof WatchableArchetype) {
         return input;
     } else if(prop[ 0 ] === "_") {
         return input;

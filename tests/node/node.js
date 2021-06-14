@@ -41,6 +41,6 @@ const n2 = new Node({
 });
 
 n1.link(n2);
-// n1.receive(13);
-n2.receive(13);
-n2.receive(14);
+n1.receive(13);
+// n2.receive(13);
+// n2.receive(14);
