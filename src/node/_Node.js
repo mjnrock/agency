@@ -1,5 +1,3 @@
-import Node from "./Node";
-
 export class Node {
 	constructor({ input = 1, output = 1 } = {}) {
 		if(typeof input === "number") {
