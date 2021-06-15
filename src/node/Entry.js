@@ -1,15 +1,15 @@
 import Emitter from "../event/Emitter";
 
 export class Entry extends Emitter {
-	constructor(type, data, { meta = {}, scheme = null, readOnly = false } = {}) {
+	constructor(type, data, { meta = {}, scheme, readOnly = false } = {}) {
 		super();
 
 		this.type = type;
 		this.data = data;
 
 		this.meta = {
-			scheme: scheme,
 			isReadOnly: readOnly,
+			scheme,
 			...meta,
 		};
 
@@ -93,6 +93,29 @@ export class Entry extends Emitter {
 	onChange(msg, opts = {}) {}
 	onTrue(msg, opts = {}) {}
 	onFalse(msg, opts = {}) {}
+
+
+	toObject() {
+		const obj = Object.assign({}, this);
+
+		if(obj.meta.scheme instanceof RegExp || typeof obj.meta.scheme === "function") {
+			obj.meta.scheme = obj.meta.scheme.toString();
+		}
+
+		if(this.children instanceof Set) {
+			obj.children = [];
+
+			for(let child of this.children) {
+				obj.children.push(child.toObject());
+			}
+		}
+
+		return obj;
+	}
+
+	toJSON(replacer = null, space = null) {
+		return JSON.stringify(this.toObject(), replacer, space);
+	}
 };
 
 export default Entry;
