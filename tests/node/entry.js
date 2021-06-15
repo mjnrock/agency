@@ -5,19 +5,20 @@ import Entry from "../../src/node/Entry";
 Console.NewContext();
 
 const entry = new Entry("text", "Cats!", {
-	readOnly: true,
-	options: {
-		one: "Buddha",
-		two: "Kiszka",
-	},
+	// readOnly: true,
+	// scheme: {
+	// 	one: "Buddha",
+	// 	two: "Kiszka",
+	// },
+	scheme: /za/i
 });
 
 console.log(entry);
 
-entry.setByKey(0)
+// entry.setByKey(0)
 entry.data = "Buddha";
-entry.meta.isReadOnly = false
-entry.setByKey("two")
+// entry.meta.isReadOnly = false
+// entry.setByKey("two")
 
 console.log(entry.data);
 

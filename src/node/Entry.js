@@ -1,14 +1,14 @@
 import Emitter from "../event/Emitter";
 
 export class Entry extends Emitter {
-	constructor(type, data, { meta = {}, options = null, readOnly = false } = {}) {
+	constructor(type, data, { meta = {}, scheme = null, readOnly = false } = {}) {
 		super();
 
 		this.type = type;
 		this.data = data;
 
 		this.meta = {
-			options,
+			scheme: scheme,
 			isReadOnly: readOnly,
 			...meta,
 		};
@@ -35,18 +35,19 @@ export class Entry extends Emitter {
 					}
 					
 					const oldData = target.data;
-
 					let shouldUpdate = true;
+
 					if(target.meta.options != null) {
 						shouldUpdate = false;
-						
 						let options = target.meta.options;
 				
 						if(typeof options === "function") {
 							options = options(value, target);
 						}
-				
-						if(typeof options === "object") {
+
+						if(options instanceof RegExp) {
+							shouldUpdate = options.test(value);
+						} else if(typeof options === "object") {
 							options = Object.values(options);
 						}
 				
