@@ -116,6 +116,34 @@ export class Entry extends Emitter {
 	toJSON(replacer = null, space = null) {
 		return JSON.stringify(this.toObject(), replacer, space);
 	}
+
+	static Conforms(obj) {
+		return "type" in obj
+			&& "data" in obj
+			&& "meta" in obj;
+	}
+	static FromObject(obj) {
+		if(this.Conforms(obj)) {
+			return new Entry(
+				obj.type,
+				obj.data,
+				{
+					meta: obj.meta,
+				},
+			);
+		}
+
+		return false;
+	}
+	static FromJson(json) {
+		let obj = json;
+
+		while(typeof obj === "string" || obj instanceof String) {
+			obj = JSON.parse(obj);
+		}
+
+		return this.FromObject(obj);
+	}
 };
 
 export default Entry;

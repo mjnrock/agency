@@ -35,4 +35,8 @@ const config = new Config(2, {
 	],
 });
 
-console.log(config.toJSON(null,2));
+console.log(config.toObject());
+
+Console.section();
+
+console.log(Config.FromObject(config.toObject()).toJSON(null,2));
