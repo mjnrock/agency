@@ -37,23 +37,25 @@ export class Entry extends Emitter {
 					const oldData = target.data;
 					let shouldUpdate = true;
 
-					if(target.meta.options != null) {
+					if(target.meta.scheme != null) {
 						shouldUpdate = false;
-						let options = target.meta.options;
+						let scheme = target.meta.scheme;
 				
-						if(typeof options === "function") {
-							options = options(value, target);
+						if(typeof scheme === "function") {
+							scheme = scheme(value, target);
 						}
 
-						if(options instanceof RegExp) {
-							shouldUpdate = options.test(value);
-						} else if(typeof options === "object") {
-							options = Object.values(options);
-						}
-				
-						if(Array.isArray(options)) {
-							shouldUpdate = options.includes(value);
-						}
+						if(typeof scheme === "boolean") {
+							shouldUpdate = result;
+						} else if(scheme instanceof RegExp) {
+							shouldUpdate = scheme.test(value);
+						} else if(typeof scheme === "object") {
+							scheme = Object.values(scheme);
+							
+							if(Array.isArray(scheme)) {
+								shouldUpdate = scheme.includes(value);
+							}
+						}		
 					}
 
 					if(shouldUpdate) {
