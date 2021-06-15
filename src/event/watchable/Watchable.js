@@ -1,5 +1,5 @@
 import AgencyBase from "../../AgencyBase";
-import $Dispatchable from "../$Dispatchable";
+import { $Emitter } from "../Emitter";
 import { flatten, unflatten, recurse, compose } from "../../util/helper";
 import Message from "../Message";
 import Network from "../Network";
@@ -8,7 +8,7 @@ export const createMessage = (emitter, ...args) => {
 	return new Message(emitter, ...args);
 };
 
-export const WatchableArchetype = class extends compose($Dispatchable)(AgencyBase) {
+export const WatchableArchetype = class extends compose($Emitter)(AgencyBase) {
     constructor(...args) {
         super(...args);
     }
@@ -149,7 +149,7 @@ export class Watchable extends WatchableArchetype {
      */
     constructor(state = {}, { hooks = {}, network, isStateSchema = false, emitProtected = false, emitPrivate = false, useControlMessages = false } = {}) {
         super({
-			Dispatchable: {
+			Emitter: {
 				hooks: {
 					"**": msg => {
 						if(this.__controller.network) {

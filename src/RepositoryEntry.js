@@ -1,9 +1,9 @@
 import AgencyBase from "./AgencyBase";
 import Watchable from "./event/watchable/Watchable";
-// import $Dispatchable from "./event/watchable/$Dispatchable";
+// import { $Emitter } from "./event/watchable/$Emitter";
 // import { compose } from "./util/helper";
 
-// export class RepositoryEntry extends compose($Dispatchable)(AgencyBase) {
+// export class RepositoryEntry extends compose($Emitter)(AgencyBase) {
 export class RepositoryEntry extends AgencyBase {
 	constructor(entry, order, { state = {}, synonyms = [], ...opts } = {}) {
 		super();

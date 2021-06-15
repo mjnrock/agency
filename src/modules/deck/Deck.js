@@ -1,4 +1,4 @@
-import $Dispatchable from "./../../event/$Dispatchable";
+import { $Emitter } from "../../event/Emitter";
 import { compose } from "../../util/helper";
 
 import Card from "./Card";
@@ -22,14 +22,14 @@ import CardCollection from "./CardCollection";
  * 	and the actual game should simply reference and abstract data
  * 	from the <Deck> class.
  */
-export class Deck extends compose($Dispatchable)(CardCollection) {
+export class Deck extends compose($Emitter)(CardCollection) {
 	static Signal = {
 		TX: "Deck.Transaction",
 	};
 
 	constructor({ cards = [], piles = [], hooks = {} } = {}) {
 		super({
-			Dispatchable: {
+			Emitter: {
 				hooks,
 			},
 		});

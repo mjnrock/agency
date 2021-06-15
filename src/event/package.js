@@ -8,7 +8,7 @@ import MessageCollection from "./MessageCollection";
 import MessageBus from "./MessageBus";
 import Network from "./Network";
 
-import $Dispatchable from "./$Dispatchable";
+import Emitter, { $Emitter } from "./Emitter";
 
 import Watchable from "./watchable/package";
 
@@ -23,7 +23,8 @@ export default {
     MessageBus,
     Network,
 
-	$Dispatchable,
+	Emitter,
+	$Emitter,
 
     Watchable,
 };

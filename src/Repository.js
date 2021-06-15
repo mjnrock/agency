@@ -1,7 +1,7 @@
 import { v4 as uuidv4, validate } from "uuid";
 
 import AgencyBase from "./AgencyBase";
-import $Dispatchable from "./event/$Dispatchable";
+import { $Emitter } from "./event/Emitter";
 import RepositoryEntry from "./RepositoryEntry";
 import { compose } from "./util/helper";
 
@@ -9,7 +9,7 @@ import { compose } from "./util/helper";
  * <Repository> **only** accepts <Object> entries with a << .id >>
  * 	property that **must** be a UUID.
  */
-export class Repository extends compose($Dispatchable)(AgencyBase) {
+export class Repository extends compose($Emitter)(AgencyBase) {
 	static Signal = {
 		REGISTER: "Repository.Register",
 		UNREGISTER: "Repository.Unregister",
@@ -17,7 +17,7 @@ export class Repository extends compose($Dispatchable)(AgencyBase) {
 
 	constructor({ config = {}, hooks = {} } = {}) {
 		super({
-			Dispatchable: {
+			Emitter: {
 				hooks,
 			},
 		});
@@ -129,7 +129,7 @@ export class Repository extends compose($Dispatchable)(AgencyBase) {
 		));
 
 		const eventArgs = [ uuid, ORDER, synonyms ];
-		this.$dispatch(Repository.Signal.REGISTER, ...eventArgs);
+		this.$emit(Repository.Signal.REGISTER, ...eventArgs);
 
 		return true;
 	}
@@ -146,7 +146,7 @@ export class Repository extends compose($Dispatchable)(AgencyBase) {
 		const result = this.__entries.delete(uuid);
 
 		if(result) {
-			this.$dispatch(Repository.Signal.UNREGISTER, uuid);
+			this.$emit(Repository.Signal.UNREGISTER, uuid);
 		}
 
 		return result;
