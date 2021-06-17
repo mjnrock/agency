@@ -3,6 +3,8 @@ import { $Emitter } from "../Emitter";
 import { flatten, unflatten, recurse, compose } from "../../util/helper";
 import Message from "../Message";
 import Network from "../Network";
+import AgencySet from "../../AgencySet";
+import AgencyMap from "../../AgencyMap";
 
 export const createMessage = (emitter, ...args) => {
 	return new Message(emitter, ...args);
@@ -15,6 +17,13 @@ export const WatchableArchetype = class extends compose($Emitter)(AgencyBase) {
 };
 
 export const wrapNested = (controller, prop, input) => {
+	//FIXME	This is incomplete, as the Agency versions don't have listeners attached
+	// if(input instanceof Set) {
+	// 	input = new AgencySet(input.values());
+	// } else if(input instanceof Map) {
+	// 	input = new AgencyMap(input.entries());
+	// }
+
 	if(!(input instanceof AgencyBase)) {
 		return input;
 	} else if(input instanceof WatchableArchetype) {
