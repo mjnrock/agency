@@ -71,7 +71,7 @@ export class AgencySet extends Emitter {
 		return [ ...this.__set ].map((v, i) => [ i, v ]);
 	}
 
-	map(fn, { reseed = false, asObject = false } = {}) {
+	map(fn, { asReseed = false, asObject = false } = {}) {
 		const entries = this.entries();
 		const result = [];
 
@@ -86,7 +86,7 @@ export class AgencySet extends Emitter {
 			return Object.fromEntries(result.map((v, i) => [ i, v ]));
 		}
 		
-		if(reseed) {
+		if(asReseed) {
 			return this.reseed(result);
 		}
 

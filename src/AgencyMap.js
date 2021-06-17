@@ -80,7 +80,7 @@ export class AgencyMap extends Emitter {
 		return [ ...this.__map.entries() ];
 	}
 
-	map(fn, { reseed = false, asObject = false } = {}) {
+	map(fn, { asReseed = false, asObject = false } = {}) {
 		const entries = this.entries();
 		const result = [];
 
@@ -94,8 +94,8 @@ export class AgencyMap extends Emitter {
 		if(asObject) {
 			return Object.fromEntries(result);
 		}
-		
-		if(reseed) {
+
+		if(asReseed) {
 			return this.reseed(result);
 		}
 
