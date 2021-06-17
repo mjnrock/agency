@@ -72,6 +72,10 @@ export class AgencySet extends Emitter {
 	}
 
 	map(fn, { asReseed = false, asObject = false } = {}) {
+		if(asReseed && asObject) {
+			throw new Error(`XOR check [FAILED] on passed options.`);
+		}
+
 		const entries = this.entries();
 		const result = [];
 

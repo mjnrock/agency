@@ -24,4 +24,4 @@ console.log(map.values())
 console.log(map.entries())
 console.log(map.map((k, v, i, t) => {
 	return [ k, Math.random() ];
-}, { asObject: true }));
+}, { asObject: true, asReseed: true }));
