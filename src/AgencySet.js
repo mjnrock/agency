@@ -71,8 +71,8 @@ export class AgencySet extends Emitter {
 		return [ ...this.__set ].map((v, i) => [ i, v ]);
 	}
 
-	map(fn, { asReseed = false, asObject = false } = {}) {
-		if(asReseed && asObject) {
+	map(fn, { save = false, asObject = false } = {}) {
+		if(save && asObject) {
 			throw new Error(`XOR check [FAILED] on passed options.`);
 		}
 
@@ -90,7 +90,7 @@ export class AgencySet extends Emitter {
 			return Object.fromEntries(result.map((v, i) => [ i, v ]));
 		}
 		
-		if(asReseed) {
+		if(save) {
 			return this.reseed(result);
 		}
 

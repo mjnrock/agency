@@ -80,8 +80,8 @@ export class AgencyMap extends Emitter {
 		return [ ...this.__map.entries() ];
 	}
 
-	map(fn, { asReseed = false, asObject = false } = {}) {
-		if(asReseed && asObject) {
+	map(fn, { save = false, asObject = false } = {}) {
+		if(save && asObject) {
 			throw new Error(`XOR check [FAILED] on passed options.`);
 		}
 
@@ -99,7 +99,7 @@ export class AgencyMap extends Emitter {
 			return Object.fromEntries(result);
 		}
 
-		if(asReseed) {
+		if(save) {
 			return this.reseed(result);
 		}
 
