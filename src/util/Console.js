@@ -1,9 +1,10 @@
 export class Console {
-	static NewContext() {
+	static NewContext(title) {
 		console.clear();
 		console.warn(`*************************************************`);
 		console.warn(`************* NEW EXECUTION CONTEXT *************`);
 		console.warn(`*************************************************`);
+
 		Console.br(1);
 
 		return this;
