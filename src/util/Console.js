@@ -1,5 +1,5 @@
 export class Console {
-	static NewContext(title) {
+	static NewContext() {
 		console.clear();
 		console.warn(`*************************************************`);
 		console.warn(`************* NEW EXECUTION CONTEXT *************`);
@@ -88,7 +88,7 @@ export class Console {
 		Console.br(1);
 	}
 	static close(text) {
-		let l1 = `****************** < ${ text } > ******************`;
+		let l1 = `****************** </ ${ text } > ******************`;
 		
 		Console.br(1);
 		Console.log(l1);

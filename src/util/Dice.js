@@ -1,6 +1,6 @@
 export const Dice = {
 	random: (min, max) => {
-        if(!arguments.length) {
+        if(min == null) {
             return Math.random();
         }
 

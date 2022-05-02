@@ -1,3 +1,4 @@
+//TODO Newer JS syntax is not supported in a node-fetch dependency
 import isBase64 from "is-base64";
 import nodeFetch from "node-fetch";
 

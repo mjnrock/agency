@@ -144,6 +144,15 @@ export function seedObject(keys = [], fn = () => null) {
 
     return obj;
 };
+
+export function seedArray(size, fn = () => null) {
+	const arr = [];
+	for(let i = 0; i < size; i++) {
+		arr.push(fn(i, [ size, fn ]));
+	}
+
+	return arr;
+}
 // console.log(seedObject([ "world", "x", "y", "cat.dog", "cat.fish", "cat.fish.a" ], (key) => {
 //     if(key === "world") {
 //         return 14;
@@ -151,6 +160,12 @@ export function seedObject(keys = [], fn = () => null) {
     
 //     return 1;
 // }));
+
+export function capitalizeFirstLetter(input) {
+	let string = input.toLowerCase();
+	
+	return string.charAt(0).toUpperCase() + string.slice(1);
+}
 
 /**
  * ! This may produce shallowly-unantipicated rounding calculations.  (cf. Math.round for nuances)
@@ -214,9 +229,9 @@ export function isSameText(a, b) {
         : a === b;
 }
 
-export function array_range(input) {
+export function arrayRange(input, length) {
 	if(typeof input === "function") {
-		return Array.apply(null, Array(input)).map((x, i) => input(i));
+		return arrayRange(length).map((x, i) => input(i));
 	}
 
 	return Array.apply(null, Array(input)).map((x, i) => i);
@@ -274,6 +289,8 @@ export default {
     unflatten,
     recurse,
     seedObject,
+    seedArray,
+	capitalizeFirstLetter,
     round,
     floor,
     ceil,
@@ -281,7 +298,7 @@ export default {
     near,
     clamp,
 	isSameText,
-	array_range,
+	arrayRange,
 
     extendJavascript,
     factory,
