@@ -1,35 +1,35 @@
 Arguments: 
-  C:\Program Files\nodejs\node.exe C:\Program Files (x86)\Yarn\bin\yarn.js publish
+  C:\Program Files\nodejs\node.exe C:\Users\mjnro\.node\corepack\yarn\1.22.15\bin\yarn.js publish
 
 PATH: 
-  C:\Program Files\Microsoft MPI\Bin\;C:\Python39\Scripts\;C:\Python39\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\ProgramData\chocolatey\bin;C:\Program Files\Git\cmd;C:\Program Files (x86)\Yarn\bin\;C:\Program Files\nodejs\;D:\Program Files (x86)\Microsoft SQL Server\150\Tools\Binn\;D:\Program Files\Microsoft SQL Server\150\Tools\Binn\;D:\Program Files (x86)\Microsoft SQL Server\150\DTS\Binn\;D:\Program Files\Microsoft SQL Server\150\DTS\Binn\;D:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files\Azure Data Studio\bin;C:\Users\mjnro\AppData\Local\Microsoft\WindowsApps;C:\Users\mjnro\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\mjnro\AppData\Local\GitHubDesktop\bin;C:\Users\mjnro\AppData\Local\Yarn\bin;C:\Users\mjnro\AppData\Roaming\npm;C:\Program Files\OpenSSL-Win64\bin;;C:\Program Files\Azure Data Studio\bin
+  C:\Python310\Scripts\;C:\Python310\;C:\Program Files\Microsoft MPI\Bin\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\ProgramData\chocolatey\bin;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files (x86)\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\Microsoft SQL Server\150\DTS\Binn\;C:\Program Files (x86)\Microsoft SQL Server\150\DTS\Binn\;C:\Program Files\nodejs\;C:\Program Files\dotnet\;C:\Program Files\Git\cmd;C:\tools\php81;C:\Program Files\Cryptowatch Desktop\;C:\Users\mjnro\AppData\Local\Microsoft\WindowsApps;C:\Users\mjnro\AppData\Local\GitHubDesktop\bin;C:\Users\mjnro\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\mjnro\AppData\Roaming\npm
 
 Yarn version: 
-  1.22.5
+  1.22.15
 
 Node version: 
-  14.17.0
+  16.13.1
 
 Platform: 
   win32 x64
 
 Trace: 
-  Error: canceled
-      at Interface.<anonymous> (C:\Program Files (x86)\Yarn\lib\cli.js:137009:13)
-      at Interface.emit (events.js:376:20)
-      at Interface._ttyWrite (readline.js:880:16)
-      at ReadStream.onkeypress (readline.js:213:10)
-      at ReadStream.emit (events.js:376:20)
-      at emitKeys (internal/readline/utils.js:345:14)
-      at emitKeys.next (<anonymous>)
-      at ReadStream.onData (readline.js:1149:36)
-      at ReadStream.emit (events.js:376:20)
-      at addChunk (internal/streams/readable.js:309:12)
+  Error: https://registry.yarnpkg.com/-/user/org.couchdb.user:lespantsfancy: Auth rate limited
+      at Request.params.callback [as _callback] (C:\Users\mjnro\.node\corepack\yarn\1.22.15\lib\cli.js:66149:18)
+      at Request.self.callback (C:\Users\mjnro\.node\corepack\yarn\1.22.15\lib\cli.js:140885:22)
+      at Request.emit (node:events:390:28)
+      at Request.<anonymous> (C:\Users\mjnro\.node\corepack\yarn\1.22.15\lib\cli.js:141857:10)
+      at Request.emit (node:events:390:28)
+      at IncomingMessage.<anonymous> (C:\Users\mjnro\.node\corepack\yarn\1.22.15\lib\cli.js:141779:12)
+      at Object.onceWrapper (node:events:509:28)
+      at IncomingMessage.emit (node:events:402:35)
+      at endReadableNT (node:internal/streams/readable:1343:12)
+      at processTicksAndRejections (node:internal/process/task_queues:83:21)
 
 npm manifest: 
   {
       "name": "@lespantsfancy/agency",
-      "version": "0.8.5",
+      "version": "0.9.0",
       "main": "lib/index.js",
       "author": "Matt Nawrocki <mjnrock@umich.edu>",
       "license": "None",
